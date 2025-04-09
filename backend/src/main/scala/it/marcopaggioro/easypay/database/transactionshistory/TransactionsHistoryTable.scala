@@ -1,0 +1,47 @@
+package it.marcopaggioro.easypay.database.transactionshistory
+
+import slick.jdbc.H2Profile.Table
+import slick.jdbc.JdbcType
+import it.marcopaggioro.easypay.database.PostgresProfile.api.*
+import it.marcopaggioro.easypay.domain.classes.Aliases.{CustomerId, TransactionId}
+import it.marcopaggioro.easypay.domain.classes.Money
+import slick.ast.BaseTypedType
+import slick.lifted.{PrimaryKey, ProvenShape, Rep, Tag}
+import slick.lifted.{Rep, TableQuery, Tag, *}
+
+import java.sql.Timestamp
+import java.time.{Instant, OffsetDateTime, ZoneId, ZonedDateTime}
+import java.util.UUID
+import it.marcopaggioro.easypay.database.transactionshistory.TransactionsHistoryTable.InstantMapper
+import it.marcopaggioro.easypay.database.transactionshistory.TransactionsHistoryTable.MoneyMapper
+
+class TransactionsHistoryTable(tag: Tag) extends Table[TransactionsHistoryRecord](tag, "transactions_history") {
+
+  def transactionId: Rep[TransactionId] = column[TransactionId]("transaction_id")
+  def customerId: Rep[CustomerId] = column[CustomerId]("customer_id")
+  def recipientCustomerId: Rep[Option[CustomerId]] = column[Option[CustomerId]]("recipient_customer_id")
+  def instant: Rep[Instant] = column[Instant]("instant")(InstantMapper)
+  def amount: Rep[Money] = column[Money]("amount")(MoneyMapper)
+
+  override def * : ProvenShape[TransactionsHistoryRecord] =
+    (transactionId, customerId, recipientCustomerId, instant, amount).mapTo[TransactionsHistoryRecord]
+
+  def pk = primaryKey("pk_transactions_history", transactionId)
+
+}
+
+object TransactionsHistoryTable {
+
+  lazy val Table: TableQuery[TransactionsHistoryTable] = TableQuery[TransactionsHistoryTable]
+
+  implicit val MoneyMapper: JdbcType[Money] = MappedColumnType.base[Money, BigDecimal](
+    money => money.value,
+    bigDecimal => Money(bigDecimal)
+  )
+
+  implicit val InstantMapper: JdbcType[Instant] & BaseTypedType[Instant] = MappedColumnType.base[Instant, Long](
+    instant => instant.toEpochMilli,
+    milliSeconds => Instant.ofEpochMilli(milliSeconds)
+  )
+
+}

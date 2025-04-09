@@ -1,0 +1,10 @@
+services:
+  easypay_database:
+    container_name: easypay_database
+    image: postgres:17.4
+    environment:
+      - POSTGRES_DB=easypay
+      - POSTGRES_USER=easypay
+      - POSTGRES_PASSWORD=easypay
+    ports:
+      - "5432:5432"

@@ -39,7 +39,7 @@ object UpdateUserDataPayload {
       maybeName <- cursor.get[Option[CustomerName]]("name")
       maybeSurname <- cursor.get[Option[CustomerSurname]]("surname")
       maybeEncryptedPassword <- cursor.get[Option[EncryptedPassword]]("encryptedPassword")
-    } yield UpdateUserDataPayload(maybeEmail, maybeName, maybeSurname, maybeEncryptedPassword)
+    } yield UpdateUserDataPayload(maybeEmail, maybeName.map(_.capitalize), maybeSurname.map(_.capitalize), maybeEncryptedPassword)
   }
 
 }

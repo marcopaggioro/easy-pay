@@ -5,6 +5,7 @@ import cats.data.ValidatedNel
 import io.circe.{Decoder, Encoder}
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import it.marcopaggioro.easypay.domain.classes.Aliases.{CustomerName, CustomerSurname, EncryptedPassword}
+import it.marcopaggioro.easypay.routes.payloads.UpdateUserDataPayload
 import it.marcopaggioro.easypay.utilities.ValidationUtilities.{
   validateBirthDate,
   validateCustomerName,
@@ -15,11 +16,11 @@ import it.marcopaggioro.easypay.utilities.ValidationUtilities.{
 import java.time.{LocalDate, Period}
 
 case class UserData private (
-    email: Email,
     name: CustomerName,
     surname: CustomerSurname,
-    encryptedPassword: EncryptedPassword,
-    birthDate: LocalDate
+    birthDate: LocalDate,
+    email: Email,
+    encryptedPassword: EncryptedPassword
 ) extends Validable[UserData] {
 
   override def validate(): ValidatedNel[String, UserData] = email
@@ -39,15 +40,23 @@ case class UserData private (
 object UserData {
 
   def apply(
-      email: Email,
       name: CustomerName,
       surname: CustomerSurname,
-      encryptedPassword: EncryptedPassword,
-      birthDate: LocalDate
+      birthDate: LocalDate,
+      email: Email,
+      encryptedPassword: EncryptedPassword
   ) =
-    new UserData(email, name.trim, surname.trim, encryptedPassword.trim, birthDate)
+    new UserData(name.trim.capitalize, surname.trim.capitalize, birthDate, email, encryptedPassword.trim)
 
   implicit val UserDataEncoder: Encoder[UserData] = deriveEncoder[UserData]
-  implicit val UserDataDecoder: Decoder[UserData] = deriveDecoder[UserData]
+  implicit val UserDataDecoder: Decoder[UserData] = Decoder.instance { cursor =>
+    for {
+      name <- cursor.get[CustomerName]("name")
+      surname <- cursor.get[CustomerSurname]("surname")
+      birthDate <- cursor.get[LocalDate]("encryptedPassword")
+      email <- cursor.get[Email]("email")
+      encryptedPassword <- cursor.get[EncryptedPassword]("encryptedPassword")
+    } yield UserData(name, surname, birthDate, email, encryptedPassword)
+  }
 
 }

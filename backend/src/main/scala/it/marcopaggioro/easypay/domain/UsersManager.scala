@@ -3,7 +3,7 @@ package it.marcopaggioro.easypay.domain
 import akka.Done
 import akka.actor.typed.ActorRef
 import akka.pattern.StatusReply
-import cats.data.Validated.{condNel, invalidNel, validNel}
+import cats.data.Validated.{Invalid, Valid, condNel, invalidNel, validNel}
 import cats.data.{NonEmptyList, Validated, ValidatedNel}
 import cats.implicits.toTraverseOps
 import it.marcopaggioro.easypay.AppConfig
@@ -38,6 +38,12 @@ object UsersManager {
         case None           => invalidNel(s"Customer id $customerId not exists")
       }
 
+    def customerIdNotExistsValidation(state: UsersManagerState, customerId: CustomerId): ValidatedNel[String, Unit] =
+      customerIdExistsValidation(state, customerId) match {
+        case Valid(_)        => invalidNel(s"Customer id $customerId already exists")
+        case Invalid(errors) => validNel(())
+      }
+
     def customerEmailExistsValidation(state: UsersManagerState, email: Email): ValidatedNel[String, (CustomerId, UserData)] =
       state.users
         .collectFirst {
@@ -50,14 +56,16 @@ object UsersManager {
   }
 
   // -----
-  case class CreateUser(userData: UserData)(val replyTo: ActorRef[StatusReply[Done]]) extends UsersManagerCommand {
+  case class CreateUser(customerId: UUID, userData: UserData)(val replyTo: ActorRef[StatusReply[CustomerId]])
+      extends UsersManagerCommand {
     override def validate(state: UsersManagerState): ValidatedNel[String, Unit] =
       userData
         .validate()
+        .andThen(_ => customerIdNotExistsValidation(state, customerId))
         .andThen(_ => emailNotAlreadyExistsValidation(state, userData.email))
 
     override protected def generateEvents(state: UsersManagerState): List[UsersManagerEvent] = List(
-      UserCreated(UUID.randomUUID(), userData)
+      UserCreated(customerId, userData)
     )
   }
 

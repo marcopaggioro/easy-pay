@@ -30,15 +30,21 @@ object UsersManagerActor extends PersistentActor[UsersManagerCommand, UsersManag
   private def eventHandler(state: UsersManagerState, event: UsersManagerEvent): UsersManagerState = event.applyTo(state)
 
   private def commandHandler(
-                              context: ActorContext[UsersManagerCommand],
-                              state: UsersManagerState,
-                              command: UsersManagerCommand
+      context: ActorContext[UsersManagerCommand],
+      state: UsersManagerState,
+      command: UsersManagerCommand
   ): Effect[UsersManagerEvent, UsersManagerState] = {
     context.log.debug(s"Received command $command")
 
     command match {
       case createUser: CreateUser =>
-        handleWithPersistenceAndACK(context, state, command, createUser.replyTo)
+        standardCommandHandler(
+          context,
+          state,
+          command,
+          events => Effect.persist(events).thenReply(createUser.replyTo)(_ => StatusReply.Success(createUser.customerId)),
+          errors => defaultInvalidHandler(context, command, errors, createUser.replyTo)
+        )
 
       case loginUserWithEmail: LoginUserWithEmail =>
         loginUserWithEmail.validateAndGetCustomerId(state) match {

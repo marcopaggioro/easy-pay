@@ -121,9 +121,9 @@ class EasyPayAppRoutes(database: Database)(implicit system: ActorSystem[Nothing]
         post { // POST /user
           entity(as[UserData]) { userData =>
             checkPayloadIsValid(userData) {
-              askToUsersManagerActor[Done](
-                UsersManager.CreateUser(userData)(_),
-                _ => complete(StatusCodes.OK)
+              askToUsersManagerActor[CustomerId](
+                UsersManager.CreateUser(UUID.randomUUID(), userData)(_),
+                customerId => completeWithToken(customerId)
               )
             }
           }
@@ -264,6 +264,10 @@ class EasyPayAppRoutes(database: Database)(implicit system: ActorSystem[Nothing]
     }
   }
 
+  private def completeWithToken(customerId: CustomerId): Route = setCookie(JwtUtils.getSignedJwtCookie(customerId)) {
+    completeWithJson(customerId.asJson)
+  }
+
   def loginUser(payload: LoginPayload)(implicit system: ActorSystem[Nothing], uri: Uri): Route = {
     lazy val future: Future[CustomerId] = usersManagerActorRef
       .askWithStatus[CustomerId](replyTo => UsersManager.LoginUserWithEmail(payload.email, payload.encryptedPassword)(replyTo))
@@ -275,9 +279,7 @@ class EasyPayAppRoutes(database: Database)(implicit system: ActorSystem[Nothing]
         completeWithError(StatusCodes.Unauthorized, "Failed to login")
 
       case Success(customerId) =>
-        setCookie(JwtUtils.getSignedJwtCookie(customerId)) {
-          completeWithJson(customerId.asJson)
-        }
+        completeWithToken(customerId)
     }
   }
 

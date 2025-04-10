@@ -53,7 +53,7 @@ object UserData {
     for {
       name <- cursor.get[CustomerName]("name")
       surname <- cursor.get[CustomerSurname]("surname")
-      birthDate <- cursor.get[LocalDate]("encryptedPassword")
+      birthDate <- cursor.get[LocalDate]("birthDate")
       email <- cursor.get[Email]("email")
       encryptedPassword <- cursor.get[EncryptedPassword]("encryptedPassword")
     } yield UserData(name, surname, birthDate, email, encryptedPassword)

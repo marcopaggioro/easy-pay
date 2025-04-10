@@ -89,7 +89,7 @@ object UsersManager {
       extends UsersManagerCommand {
     override def validate(state: UsersManagerState): ValidatedNel[String, Unit] =
       customerIdExistsValidation(state, customerId)
-        .andThen(_ => maybeEmail.traverse(_.validate()))
+        .andThen(_ => maybeEmail.traverse(email => email.validate().andThen(_ => emailNotAlreadyExistsValidation(state, email))))
         .andThen(_ => maybeName.traverse(validateCustomerName))
         .andThen(_ => maybeSurname.traverse(validateCustomerSurname))
         .andThen(_ => maybeEncryptedPassword.traverse(validateEncryptedPassword))

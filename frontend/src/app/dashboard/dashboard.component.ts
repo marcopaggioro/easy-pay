@@ -1,36 +1,27 @@
-import {Component, OnInit} from '@angular/core';
-import {AuthorizationService} from '../utilities/authorization.service';
-import Decimal from 'decimal.js';
-import {Operation} from '../classes/Operation';
-import {HttpClient} from '@angular/common/http';
-import {Wallet} from '../classes/Wallet';
+import {Component} from '@angular/core';
+import {Router, RouterLink, RouterLinkActive, RouterOutlet} from '@angular/router';
 import {SpinnerComponent} from '../utilities/spinner.component';
+import {HttpClient} from '@angular/common/http';
 
 @Component({
   selector: 'app-dashboard',
   imports: [
+    RouterOutlet,
+    RouterLink,
+    RouterLinkActive,
     SpinnerComponent
   ],
-  templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.css'
+  templateUrl: './dashboard.component.html'
 })
-export class DashboardComponent implements OnInit {
-  balance!: Decimal;
-  operationsHistory: Operation[] = [];
+export class DashboardComponent {
 
-  constructor(private authorizationService: AuthorizationService, private http: HttpClient ) {
+  constructor(private http: HttpClient, private router: Router) {
   }
 
-  ngOnInit(): void {
-    this.authorizationService.redirectIfNotLoggedIn();
-    this.getWallet();
-  }
-
-  getWallet(): void {
-    this.http.get<Wallet>("http://localhost:9000/wallet", {withCredentials: true}).subscribe(wallet => {
-      this.balance = wallet.balance;
-      this.operationsHistory = wallet.history;
-    });
+  logout(): void {
+    this.http.post("http://localhost:9000/user/logout", {}, {withCredentials: true, responseType: 'text'}).subscribe(
+      () => this.router.navigate(["/"])
+    )
   }
 
 }

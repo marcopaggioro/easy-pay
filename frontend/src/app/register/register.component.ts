@@ -12,11 +12,10 @@ import {NgIf} from '@angular/common';
     SpinnerComponent,
     NgIf
   ],
-  templateUrl: './register.component.html',
-  styleUrl: './register.component.css'
+  templateUrl: './register.component.html'
 })
 export class RegisterComponent implements OnInit {
-  @ViewChild('loading') loading!: ElementRef;
+  @ViewChild(SpinnerComponent) spinner!: SpinnerComponent;
 
   constructor(private authorizationService: AuthorizationService) {
   }
@@ -31,7 +30,7 @@ export class RegisterComponent implements OnInit {
 
   ngOnInit(): void {
     this.authorizationService.redirectIfAlreadyLoggedIn(
-      () => this.loading.nativeElement.classList.add('invisible')
+      () => this.spinner.hide()
     );
   }
 

@@ -10,7 +10,6 @@ export const authorizationInterceptor: HttpInterceptorFn = (request, next) => {
   return next(request).pipe(
     catchError((error: HttpErrorResponse) => {
       //TODO path parametrizzato
-      console.log(request.url)
       if (error.status === 401 && !request.url.includes("login/check")) {
         router.navigate(["/login"]);
         return throwError(() => error);

@@ -1,0 +1,20 @@
+<main class="h-100">
+  <div class="container-fluid h-100 w-100 align-items-center">
+    <div class="row h-100 align-items-center">
+      <div class="col-10 col-sm-8 col-md-6 col-lg-4 mx-auto">
+        <form [formGroup]="rechargeForm" (ngSubmit)="onSubmit()">
+          <!-- Amount -->
+          <div class="form-floating my-3">
+            <input type="number" class="form-control" id="amount" placeholder="amount" formControlName="amount">
+            <label for="amount">Quantità</label>
+            <div class="text-danger" *ngIf="rechargeForm.controls.amount.touched && rechargeForm.controls.amount.invalid">
+              Campo obbligatorio
+            </div>
+          </div>
+
+          <button class="btn btn-primary w-100 py-2" type="submit" [disabled]="rechargeForm.invalid">Invia</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</main>

@@ -1,9 +1,6 @@
-<main class="h-100">
-  <div #loading class="h-100 w-100 position-absolute d-flex justify-content-center align-items-center text-light"
-       style="background-color: rgba(0, 0, 0, 0.5); z-index: 1">
-    <app-spinner/>
-  </div>
+<app-spinner/>
 
+<main class="h-100">
   <div class="container-fluid h-100 w-100 align-items-center">
     <div class="row h-100 align-items-center">
       <div class="col-10 col-sm-8 col-md-6 col-lg-4 col-xxl-2 mx-auto">
@@ -28,6 +25,7 @@
           </div>
           <!-- Birth date -->
           <div class="form-floating my-3">
+<!--            TODO ngdatepicker -->
             <input type="date" class="form-control" id="birthDate" formControlName="birthDate">
             <label for="birthDate">Data di nascita</label>
             <div class="text-danger" *ngIf="registerForm.controls.birthDate.touched && registerForm.controls.birthDate.invalid">

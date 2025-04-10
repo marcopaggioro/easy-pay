@@ -3,6 +3,7 @@ import {AuthorizationService} from '../utilities/authorization.service';
 import {NgIf} from "@angular/common";
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
 import {SpinnerComponent} from "../utilities/spinner.component";
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -11,13 +12,12 @@ import {SpinnerComponent} from "../utilities/spinner.component";
     ReactiveFormsModule,
     SpinnerComponent
   ],
-  templateUrl: './login.component.html',
-  styleUrl: './login.component.css'
+  templateUrl: './login.component.html'
 })
 export class LoginComponent implements OnInit {
-  @ViewChild('loading') loading!: ElementRef;
+  @ViewChild(SpinnerComponent) spinner!: SpinnerComponent;
 
-  constructor(private authorizationService: AuthorizationService) {
+  constructor(private authorizationService: AuthorizationService, private router: Router) {
   }
 
   loginForm = new FormGroup({
@@ -27,7 +27,7 @@ export class LoginComponent implements OnInit {
 
   ngOnInit(): void {
     this.authorizationService.redirectIfAlreadyLoggedIn(
-      () => this.loading.nativeElement.classList.add('invisible')
+      () => this.spinner.hide()
     )
   }
 
@@ -37,10 +37,11 @@ export class LoginComponent implements OnInit {
       return;
     }
 
+    //TODO popup errore login
     this.authorizationService.login(this.loginForm.controls.email.value || "",
       this.loginForm.controls.password.value || "").subscribe(
-      isLogged => {
-        console.log("TODO");
+      () => {
+        this.router.navigate(["dashboard"]);
       }
     );
   }

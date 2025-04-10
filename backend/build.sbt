@@ -1,3 +1,4 @@
+import com.typesafe.sbt.packager.docker.DockerApiVersion
 
 // ############### VARIABLES ###############
 val ProjectName: String = "backend"
@@ -11,7 +12,7 @@ val dockerSettings = Seq(
   Docker / maintainer := "marco.paggioro@studenti.unipegaso.it",
   dockerBaseImage := "eclipse-temurin:23",
   dockerExposedPorts := Seq(9000),
-  dockerRepository := Some("marcopaggioro")
+  dockerApiVersion := Some(DockerApiVersion(1, 48))
 )
 
 val allowedWarts = Warts.unsafe.filterNot(

@@ -2,7 +2,7 @@ package it.marcopaggioro.easypay.utilities
 
 import akka.http.javadsl.model.headers.SameSite
 import akka.http.scaladsl.model.headers.HttpCookie
-import akka.http.scaladsl.model.{DateTime, StatusCodes, Uri}
+import akka.http.scaladsl.model.{DateTime, HttpEntity, StatusCodes, Uri}
 import akka.http.scaladsl.server.Directive1
 import akka.http.scaladsl.server.Directives.{complete, optionalCookie, provide}
 import com.typesafe.scalalogging.LazyLogging

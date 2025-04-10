@@ -93,13 +93,22 @@ class EasyPayAppRoutes(database: Database)(implicit system: ActorSystem[Nothing]
     pathPrefix("user") {
       concat(
         pathPrefix("login") {
-          post { // POST /user/login
-            entity(as[LoginPayload]) { payload =>
-              checkPayloadIsValid(payload) {
-                loginUser(payload)
+          concat(
+            pathPrefix("check") {
+              get {
+                JwtUtils.withCustomerIdFromToken(uri) { customerId =>
+                  complete(StatusCodes.OK)
+                }
+              }
+            },
+            post { // POST /user/login
+              entity(as[LoginPayload]) { payload =>
+                checkPayloadIsValid(payload) {
+                  loginUser(payload)
+                }
               }
             }
-          }
+          )
         },
         post { // POST /user
           entity(as[UserData]) { userData =>
@@ -199,14 +208,16 @@ class EasyPayAppRoutes(database: Database)(implicit system: ActorSystem[Nothing]
 
   lazy val Routes: Route = extractRequest { request =>
     implicit val uri: Uri = request.uri
-    system.log.info(s"Received ${request.method.value} ${request.uri.path.toString()}")
+    system.log.debug(s"Received ${request.method.value} ${request.uri.path.toString()}")
 
-    handleErrors(request.uri) {
-      concat(
-        UserRoutes(uri),
-        WalletRoutes(uri),
-        pathEndOrSingleSlash(complete("Server up and running"))
-      )
+    cors() {
+      handleErrors(request.uri) {
+        concat(
+          UserRoutes(uri),
+          WalletRoutes(uri),
+          pathEndOrSingleSlash(complete("Server up and running"))
+        )
+      }
     }
   }
 

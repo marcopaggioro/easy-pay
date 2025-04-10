@@ -11,6 +11,10 @@ import {Component, ElementRef, ViewChild} from '@angular/core';
 export class SpinnerComponent {
   @ViewChild('loading') loading!: ElementRef;
 
+  show() {
+    this.loading.nativeElement.classList.remove('invisible');
+  }
+
   hide() {
     this.loading.nativeElement.classList.add('invisible');
   }

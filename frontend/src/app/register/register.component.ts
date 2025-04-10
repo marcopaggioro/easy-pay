@@ -1,8 +1,9 @@
-import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {Component, OnInit, ViewChild} from '@angular/core';
 import {AuthorizationService} from '../utilities/authorization.service';
 import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {SpinnerComponent} from '../utilities/spinner.component';
 import {NgIf} from '@angular/common';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'app-register',
@@ -17,14 +18,14 @@ import {NgIf} from '@angular/common';
 export class RegisterComponent implements OnInit {
   @ViewChild(SpinnerComponent) spinner!: SpinnerComponent;
 
-  constructor(private authorizationService: AuthorizationService) {
+  constructor(private authorizationService: AuthorizationService, private router: Router) {
   }
 
   registerForm = new FormGroup({
     name: new FormControl('', Validators.required),
     surname: new FormControl('', Validators.required),
-    email: new FormControl('', [Validators.required, Validators.email]), //TODO  validazione insufficiente
     birthDate: new FormControl('', Validators.required),
+    email: new FormControl('', [Validators.required, Validators.email]), //TODO  validazione insufficiente
     password: new FormControl('', Validators.required),
   });
 
@@ -40,13 +41,13 @@ export class RegisterComponent implements OnInit {
       return;
     }
 
-    this.authorizationService.register(this.registerForm.controls.name.value || "",
-      this.registerForm.controls.surname.value || "",
-      this.registerForm.controls.birthDate.value || "",
-      this.registerForm.controls.email.value || "",
-      this.registerForm.controls.password.value || "").subscribe(
+    this.authorizationService.register(this.registerForm.controls.name.value!,
+      this.registerForm.controls.surname.value!,
+      this.registerForm.controls.birthDate.value!,
+      this.registerForm.controls.email.value!,
+      this.registerForm.controls.password.value!).subscribe(
       isLogged => {
-        console.log("TODO");
+        this.router.navigate(["./dashboard"])
       }
     );
   }

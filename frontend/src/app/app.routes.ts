@@ -6,6 +6,7 @@ import {WalletComponent} from './dashboard/wallet/wallet.component';
 import {TransferComponent} from './dashboard/transfer/transfer.component';
 import {RechargeComponent} from './dashboard/recharge/recharge.component';
 import {ProfileComponent} from './dashboard/profile/profile.component';
+import {HomepageComponent} from './homepage/homepage.component';
 
 export const routes: Routes = [
   {path: "register", component: RegisterComponent},
@@ -19,8 +20,6 @@ export const routes: Routes = [
       {path: "profile", component: ProfileComponent}
     ]
   },
-
-  //TODO cos'è?
-  {path: "", redirectTo: "login", pathMatch: "full"},
-  // TODO {path: "**", component: ErrorNotFoundComponent, title: "Areson - Pagina non trovata"}
+  {path: "", component: HomepageComponent},
+  {path: "**", redirectTo: ""}
 ];

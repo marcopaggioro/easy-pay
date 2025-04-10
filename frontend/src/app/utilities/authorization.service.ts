@@ -22,7 +22,7 @@ export class AuthorizationService {
 
   register(name: string, surname: string, birthDate: string, email: string, password: string): Observable<string> {
     const body = {name, surname, birthDate, email, encryptedPassword: this.hashPassword(password)};
-    return this.http.post<string>("http://localhost:9000/user", body);
+    return this.http.post<string>("http://localhost:9000/user", body, {withCredentials: true});
   }
 
   login(email: string, password: string): Observable<void> {

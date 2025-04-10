@@ -1,4 +1,4 @@
-import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {Component, OnInit, ViewChild} from '@angular/core';
 import {AuthorizationService} from '../utilities/authorization.service';
 import {NgIf} from "@angular/common";
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
@@ -38,8 +38,7 @@ export class LoginComponent implements OnInit {
     }
 
     //TODO popup errore login
-    this.authorizationService.login(this.loginForm.controls.email.value || "",
-      this.loginForm.controls.password.value || "").subscribe(
+    this.authorizationService.login(this.loginForm.controls.email.value!, this.loginForm.controls.password.value!).subscribe(
       () => {
         this.router.navigate(["dashboard"]);
       }

@@ -1,6 +1,5 @@
 import {Component} from '@angular/core';
 import {Router, RouterLink, RouterLinkActive, RouterOutlet} from '@angular/router';
-import {SpinnerComponent} from '../utilities/spinner.component';
 import {HttpClient} from '@angular/common/http';
 
 @Component({
@@ -8,8 +7,7 @@ import {HttpClient} from '@angular/common/http';
   imports: [
     RouterOutlet,
     RouterLink,
-    RouterLinkActive,
-    SpinnerComponent
+    RouterLinkActive
   ],
   templateUrl: './dashboard.component.html'
 })

@@ -4,3 +4,10 @@
 /backend/.bsp/
 /backend/target/
 /backend/project/project/target/
+/frontend/.vscode/
+/frontend/.angular/
+/frontend/node_modules/
+/frontend/package-lock.json
+/backend/.sbt/
+/backend/.cache/
+/backend/.ivy2/

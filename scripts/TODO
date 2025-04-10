@@ -1,0 +1,16 @@
+TODO script linux per build
+TODO name in firstName
+TODO surname in lastName
+TODO capitalize names in BE
+
+[warn] 19 |  override def commit(): Unit = connection.commit()
+[warn]    |               ^
+[warn]    |               No DRI found for query: Connection#commit()
+[warn] -- Warning: src/main/scala/it/marcopaggioro/easypay/database/PlainJdbcSession.scala:21:15
+[warn] 21 |  override def rollback(): Unit = connection.rollback()
+[warn]    |               ^
+[warn]    |               No DRI found for query: Connection#rollback()
+[warn] -- Warning: src/main/scala/it/marcopaggioro/easypay/database/PlainJdbcSession.scala:23:15
+[warn] 23 |  override def close(): Unit = connection.close()
+[warn]    |               ^
+[warn]    |               No DRI found for query: Connection#close()

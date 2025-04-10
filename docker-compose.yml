@@ -8,3 +8,24 @@ services:
       - POSTGRES_PASSWORD=easypay
     ports:
       - "5432:5432"
+    restart: unless-stopped
+
+  easypay_backend:
+    container_name: easypay_backend
+    build: ./backend/target/docker/stage
+    environment:
+      "DB_HOST": "easypay_database"
+    ports:
+      - "9000:9000"
+    depends_on:
+      - easypay_database
+    restart: unless-stopped
+
+#  easypay_frontend:
+#    container_name: easypay_frontend
+#    build: ./frontend
+#    ports:
+#      - "4200:4200"
+#    depends_on:
+#      - easypay_backend
+#    restart: unless-stopped

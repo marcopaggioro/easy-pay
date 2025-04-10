@@ -11,3 +11,5 @@
 /backend/.sbt/
 /backend/.cache/
 /backend/.ivy2/
+/package-lock.json
+/frontend/dist/

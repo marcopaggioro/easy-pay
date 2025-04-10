@@ -38,6 +38,7 @@ import it.marcopaggioro.easypay.domain.UsersManager.UsersManagerCommand
 import it.marcopaggioro.easypay.domain.classes.{Email, Money, ScheduledOperation, UserData, Validable}
 import it.marcopaggioro.easypay.routes.payloads.scheduledoperation.CreateScheduledOperationPayload
 import it.marcopaggioro.easypay.utilities.JwtUtils
+import it.marcopaggioro.easypay.utilities.JwtUtils.withAuthCookie
 import pdi.jwt.Jwt
 import slick.jdbc.JdbcBackend.Database
 import slick.lifted.TableQuery.Extract
@@ -109,6 +110,13 @@ class EasyPayAppRoutes(database: Database)(implicit system: ActorSystem[Nothing]
               }
             }
           )
+        },
+        pathPrefix("logout") {
+          post { // POST /user/logout
+            deleteCookie(JwtUtils.baseCookie) {
+              complete(StatusCodes.OK)
+            }
+          }
         },
         post { // POST /user
           entity(as[UserData]) { userData =>
@@ -302,6 +310,7 @@ class EasyPayAppRoutes(database: Database)(implicit system: ActorSystem[Nothing]
       system: ActorSystem[Nothing],
       uri: Uri
   ): Route = {
+    // TODO get user names from UUID
     val getBalance: Future[Money] = transactionsManagerActorRef
       .askWithStatus[Money](replyTo => TransactionsManager.GetBalance(customerId)(replyTo))
 

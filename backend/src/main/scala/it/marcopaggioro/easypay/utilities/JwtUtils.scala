@@ -22,14 +22,14 @@ object JwtUtils extends LazyLogging {
   private lazy val TokenAlgorithm: JwtHmacAlgorithm = JwtAlgorithm.HS512
   private lazy val TokenEncryptionSecret = "super-secret-key"
   private lazy val TokenDuration: Duration = Duration.ofHours(1)
-  private lazy val TokenCookieName: String = "EasyPayToken"
+  lazy val TokenCookieName: String = "EasyPayToken"
   private lazy val TokenCustomerField: String = "customerId"
 
   case class JwtContent(customerId: CustomerId)
   implicit val JwtContentDecoder: Decoder[JwtContent] = deriveDecoder[JwtContent]
   implicit val JwtContentEncoder: Encoder[JwtContent] = deriveEncoder[JwtContent]
 
-  private def generateSignedJwt(customerId: CustomerId, expiration: DateTime): String = {
+  private def generateSignedClaim(customerId: CustomerId, expiration: DateTime): String = {
     val jwtClaim: JwtClaim = JwtClaim(
       expiration = Some(Instant.now.plus(TokenDuration).getEpochSecond),
       issuedAt = Some(Instant.now.getEpochSecond),
@@ -38,40 +38,46 @@ object JwtUtils extends LazyLogging {
     JwtCirce.encode(jwtClaim, TokenEncryptionSecret, TokenAlgorithm)
   }
 
+  lazy val baseCookie: HttpCookie = HttpCookie(
+    name = TokenCookieName,
+    value = "",
+    secure = true,
+    httpOnly = true,
+    path = Some("/")
+  ).withSameSite(SameSite.None)
+
   def getSignedJwtCookie(customerId: CustomerId): HttpCookie = {
     val expirationDate = DateTime.now.plus(TokenDuration.toMillis)
-
-    HttpCookie(
-      TokenCookieName,
-      generateSignedJwt(customerId, expirationDate),
-      secure = true,
-      httpOnly = true,
-      path = Some("/"),
-      expires = Some(expirationDate)
-    ).withSameSite(SameSite.None)
+    baseCookie
+      .withValue(generateSignedClaim(customerId, expirationDate))
+      .withExpires(expirationDate)
   }
 
-  def decodeToken(token: String): Try[JwtClaim] = JwtCirce.decode(
+  private def decodeToken(token: String): Try[JwtClaim] = JwtCirce.decode(
     token,
     TokenEncryptionSecret,
     Seq(TokenAlgorithm),
     JwtOptions(signature = true, expiration = true, notBefore = true)
   )
 
-  def withCustomerIdFromToken(implicit uri: Uri): Directive1[CustomerId] = optionalCookie(TokenCookieName).flatMap {
+  private def withAuthCookie(implicit uri: Uri): Directive1[HttpCookie] = optionalCookie(TokenCookieName).flatMap {
     case Some(cookie) =>
-      decodeToken(cookie.value).flatMap(jwtClaim => decode[JwtContent](jwtClaim.content).toTry) match {
-        case Failure(exception) =>
-          logger.warn(s"Invalid or expired token in ${uri.path.toString()}", exception)
-          complete(StatusCodes.Unauthorized)
-
-        case Success(jwtContent) =>
-          provide(jwtContent.customerId)
-      }
+      provide(cookie.toCookie)
 
     case None =>
       logger.warn(s"Received request without token in ${uri.path.toString()}")
       complete(StatusCodes.Unauthorized)
+  }
+
+  def withCustomerIdFromToken(implicit uri: Uri): Directive1[CustomerId] = withAuthCookie.flatMap { cookie =>
+    decodeToken(cookie.value).flatMap(jwtClaim => decode[JwtContent](jwtClaim.content).toTry) match {
+      case Failure(exception) =>
+        logger.warn(s"Invalid or expired token in ${uri.path.toString()}", exception)
+        complete(StatusCodes.Unauthorized)
+
+      case Success(jwtContent) =>
+        provide(jwtContent.customerId)
+    }
   }
 
 }

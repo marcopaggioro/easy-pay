@@ -1,23 +1,21 @@
 package it.marcopaggioro.easypay.database.transactionshistory
 
-import io.circe.{Encoder, Json}
-import io.circe.generic.semiauto.deriveEncoder
 import io.circe.syntax.EncoderOps
+import io.circe.{Encoder, Json}
 import it.marcopaggioro.easypay.database.users.UserRecord
 import it.marcopaggioro.easypay.database.users.UserRecord.UserRecordInteractedEncoder
 import it.marcopaggioro.easypay.domain.classes.Aliases.{CustomerId, TransactionId}
-import it.marcopaggioro.easypay.domain.classes.userdata.{Email, UserData}
 import it.marcopaggioro.easypay.domain.classes.Money
 
 import java.time.Instant
 
 final case class TransactionsHistoryRecord(
-                                            transactionId: TransactionId,
-                                            senderCustomerId: CustomerId,
-                                            recipientCustomerId: CustomerId,
-                                            description: Option[String],
-                                            instant: Instant,
-                                            amount: Money
+    transactionId: TransactionId,
+    senderCustomerId: CustomerId,
+    recipientCustomerId: CustomerId,
+    description: Option[String],
+    instant: Instant,
+    amount: Money
 )
 
 object TransactionsHistoryRecord {

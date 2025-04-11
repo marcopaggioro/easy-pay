@@ -7,7 +7,13 @@ import it.marcopaggioro.easypay.domain.classes.userdata.{CustomerFirstName, Cust
 
 import java.time.LocalDate
 
-case class UserRecord(customerId: CustomerId, firstName: CustomerFirstName, lastName: CustomerLastName, birthDate: LocalDate, email: Email)
+case class UserRecord(
+    customerId: CustomerId,
+    firstName: CustomerFirstName,
+    lastName: CustomerLastName,
+    birthDate: LocalDate,
+    email: Email
+)
 
 object UserRecord {
 

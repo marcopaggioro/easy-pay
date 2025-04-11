@@ -5,6 +5,10 @@ val ProjectName: String = "backend"
 val ProjectVersion: String = "1.0.0"
 val ScalaVersion: String = "3.3.5"
 
+// ############### ALIASES ###############
+addCommandAlias("ff", "scalafixAll; scalafmtAll")
+addCommandAlias("validate", "scalafix --check; scalafmtCheckAll")
+
 // ############### SETTINGS ###############
 val dockerSettings = Seq(
   Docker / packageName := ProjectName,
@@ -33,9 +37,15 @@ lazy val root = (project in file("."))
     scalaVersion := ScalaVersion,
     run / fork := true,
     dockerSettings,
+
     // wartremover
     Compile / compile / wartremoverErrors ++= allowedWarts,
-    wartremoverExcluded += baseDirectory.value / "target"
+    wartremoverExcluded += baseDirectory.value / "target",
+
+    // scalafix
+    semanticdbEnabled := true,
+    semanticdbVersion := scalafixSemanticdb.revision,
+    scalacOptions += "-Wunused:imports",
   )
 
 // ############### DEPENDENCIES ###############

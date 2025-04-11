@@ -5,7 +5,13 @@ import cats.implicits.toTraverseOps
 import io.circe.Encoder
 import io.circe.generic.semiauto.deriveEncoder
 import it.marcopaggioro.easypay.domain.classes.Aliases.CustomerId
-import it.marcopaggioro.easypay.utilities.ValidationUtilities.{differentCustomerIdsValidation, validateDateTimeInFuture, validateDescription, validateMinimumPeriod, validatePositiveAmount}
+import it.marcopaggioro.easypay.utilities.ValidationUtilities.{
+  differentCustomerIdsValidation,
+  validateDateTimeInFuture,
+  validateDescription,
+  validateMinimumPeriod,
+  validatePositiveAmount
+}
 
 import java.time.{LocalDateTime, Period}
 

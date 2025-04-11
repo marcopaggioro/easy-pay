@@ -1,21 +1,17 @@
 package it.marcopaggioro.easypay.routes.payloads
 
-import cats.data.ValidatedNel
-import io.circe.Decoder
-import io.circe.generic.semiauto.deriveDecoder
-import it.marcopaggioro.easypay.domain.classes.Validable
-import cats.data.ValidatedNel
-import cats.data.Validated
+import cats.data.{Validated, ValidatedNel}
 import cats.implicits.toTraverseOps
-import cats.syntax.validated.*
+import cats.syntax.validated._
+import io.circe.Decoder
+import it.marcopaggioro.easypay.domain.classes.Validable
 import it.marcopaggioro.easypay.domain.classes.userdata.{CustomerFirstName, CustomerLastName, Email, EncryptedPassword}
-import it.marcopaggioro.easypay.utilities.ValidationUtilities.validateBirthDate
 
 case class UpdateUserDataPayload(
-                                  maybeEmail: Option[Email],
-                                  maybeFirstName: Option[CustomerFirstName],
-                                  maybeLastName: Option[CustomerLastName],
-                                  maybeEncryptedPassword: Option[EncryptedPassword]
+    maybeEmail: Option[Email],
+    maybeFirstName: Option[CustomerFirstName],
+    maybeLastName: Option[CustomerLastName],
+    maybeEncryptedPassword: Option[EncryptedPassword]
 ) extends Validable[UpdateUserDataPayload] {
   override def validate(): ValidatedNel[String, UpdateUserDataPayload] =
     maybeEmail

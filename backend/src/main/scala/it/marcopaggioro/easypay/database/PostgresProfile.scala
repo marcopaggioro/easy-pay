@@ -1,6 +1,6 @@
 package it.marcopaggioro.easypay.database
 
-import com.github.tminglei.slickpg.*
+import com.github.tminglei.slickpg._
 import it.marcopaggioro.easypay.domain.classes.Money
 import it.marcopaggioro.easypay.domain.classes.userdata.{CustomerFirstName, CustomerLastName, Email}
 import slick.ast.BaseTypedType

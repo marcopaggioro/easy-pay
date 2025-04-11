@@ -5,7 +5,7 @@ import cats.data.ValidatedNel
 import io.circe.{Decoder, Encoder}
 import it.marcopaggioro.easypay.domain.classes.Validable
 
-case class CustomerLastName private(value: String) extends Validable[CustomerLastName] {
+case class CustomerLastName private (value: String) extends Validable[CustomerLastName] {
 
   private lazy val maxLength: Int = 50
 

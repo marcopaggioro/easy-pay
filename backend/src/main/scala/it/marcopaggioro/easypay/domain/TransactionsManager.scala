@@ -5,15 +5,16 @@ import akka.actor.typed.ActorRef
 import akka.pattern.StatusReply
 import cats.data.Validated.{condNel, validNel}
 import cats.data.ValidatedNel
-import it.marcopaggioro.easypay.domain.TransactionsManager.TransactionsManagerEvent
-import it.marcopaggioro.easypay.domain.UsersManager.{UsersManagerEvent, UsersManagerState}
 import it.marcopaggioro.easypay.domain.classes.Aliases.{CustomerId, ScheduledOperationId, TransactionId}
 import it.marcopaggioro.easypay.domain.classes.Domain.{DomainCommand, DomainEvent, DomainState}
 import it.marcopaggioro.easypay.domain.classes.{Money, ScheduledOperation, Status}
-import it.marcopaggioro.easypay.utilities.ValidationUtilities.{differentCustomerIdsValidation, validateDescription, validatePositiveAmount}
+import it.marcopaggioro.easypay.utilities.ValidationUtilities.{
+  differentCustomerIdsValidation,
+  validateDescription,
+  validatePositiveAmount
+}
 
 import java.time.{Instant, LocalDateTime, Period}
-import java.util.UUID
 
 object TransactionsManager {
   case class TransactionsManagerState(
@@ -26,12 +27,13 @@ object TransactionsManager {
   sealed trait TransactionsManagerCommand extends DomainCommand[TransactionsManagerState, TransactionsManagerEvent]
 
   // -----
-  case class RechargeWallet(customerId: CustomerId, amount: Money)(val replyTo: ActorRef[StatusReply[Done]])
-      extends TransactionsManagerCommand {
+  case class RechargeWallet(transactionId: TransactionId, customerId: CustomerId, amount: Money)(
+      val replyTo: ActorRef[StatusReply[Done]]
+  ) extends TransactionsManagerCommand {
     override def validate(state: TransactionsManagerState): ValidatedNel[String, Unit] = validatePositiveAmount(amount)
 
     override protected def generateEvents(state: TransactionsManagerState): List[TransactionsManagerEvent] = List(
-      WalletRecharged(UUID.randomUUID(), customerId, amount)
+      WalletRecharged(transactionId, customerId, amount)
     )
   }
 
@@ -54,6 +56,7 @@ object TransactionsManager {
   case class TransferMoney(
       customerId: CustomerId,
       recipientCustomerId: CustomerId,
+      transactionId: TransactionId,
       description: String,
       amount: Money
   )(val replyTo: ActorRef[StatusReply[Done]])
@@ -71,7 +74,7 @@ object TransactionsManager {
         .andThen(_ => validateDescription(description))
 
     override protected def generateEvents(state: TransactionsManagerState): List[TransactionsManagerEvent] = List(
-      MoneyTransferred(customerId, recipientCustomerId, UUID.randomUUID(), description, amount)
+      MoneyTransferred(customerId, recipientCustomerId, transactionId, description, amount)
     )
   }
 
@@ -99,14 +102,16 @@ object TransactionsManager {
   }
 
   // -----
-  case class CreateScheduledOperation(scheduledOperation: ScheduledOperation)(val replyTo: ActorRef[StatusReply[Done]])
-      extends TransactionsManagerCommand {
+  case class CreateScheduledOperation(scheduledOperationId: ScheduledOperationId, scheduledOperation: ScheduledOperation)(
+      val replyTo: ActorRef[StatusReply[Done]]
+  ) extends TransactionsManagerCommand {
 
     override def validate(state: TransactionsManagerState): ValidatedNel[String, Unit] =
-      scheduledOperation.resetSeconds().validate().map(_ => ())
+      condNel(!state.scheduledOperations.contains(scheduledOperationId), (), "Scheduled transaction id already exists")
+        .andThen(_ => scheduledOperation.resetSeconds().validate().map(_ => ()))
 
     override protected def generateEvents(state: TransactionsManagerState): List[TransactionsManagerEvent] = List(
-      ScheduledOperationCreated(UUID.randomUUID(), scheduledOperation.resetSeconds())
+      ScheduledOperationCreated(scheduledOperationId, scheduledOperation.resetSeconds())
     )
   }
 

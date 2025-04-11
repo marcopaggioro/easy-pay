@@ -1,26 +1,21 @@
 package it.marcopaggioro.easypay.actor
 
-import akka.Done
 import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.ActorContext
 import akka.pattern.StatusReply
 import akka.persistence.typed.scaladsl.Effect
-import cats.data.Validated
-import cats.data.Validated.{Invalid, Valid, catchOnly}
+import cats.data.Validated.{Invalid, Valid}
+import cats.data.{NonEmptyList, Validated}
 import it.marcopaggioro.easypay.actor.TransactionsManagerActor.handleWithPersistenceAndACK
 import it.marcopaggioro.easypay.domain.UsersManager
 import it.marcopaggioro.easypay.domain.UsersManager.{
   CreateUser,
-  GetCustomerId,
-  GetCustomerUserData,
   LoginUserWithEmail,
   UpdateUserData,
   UsersManagerCommand,
   UsersManagerEvent,
   UsersManagerState
 }
-
-import scala.concurrent.ExecutionContext
 
 object UsersManagerActor extends PersistentActor[UsersManagerCommand, UsersManagerEvent, UsersManagerState] {
 
@@ -55,26 +50,9 @@ object UsersManagerActor extends PersistentActor[UsersManagerCommand, UsersManag
             defaultInvalidHandler(context, command, errors, loginUserWithEmail.replyTo)
         }
 
-      case getCustomerUserData: GetCustomerUserData =>
-        getCustomerUserData.validateAndGetUserData(state) match {
-          case Valid(userData) =>
-            Effect.reply(getCustomerUserData.replyTo)(StatusReply.Success(userData))
-
-          case Invalid(errors) =>
-            defaultInvalidHandler(context, command, errors, getCustomerUserData.replyTo)
-        }
-
       case updateUserData: UpdateUserData =>
         handleWithPersistenceAndACK(context, state, command, updateUserData.replyTo)
 
-      case getCustomerId: GetCustomerId =>
-        getCustomerId.validateAndGetCustomerId(state) match {
-          case Valid(customerId) =>
-            Effect.reply(getCustomerId.replyTo)(StatusReply.Success(customerId))
-
-          case Invalid(errors) =>
-            defaultInvalidHandler(context, command, errors, getCustomerId.replyTo)
-        }
     }
 
   }

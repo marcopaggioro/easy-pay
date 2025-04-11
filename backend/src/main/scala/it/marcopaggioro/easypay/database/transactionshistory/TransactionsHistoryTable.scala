@@ -1,19 +1,14 @@
 package it.marcopaggioro.easypay.database.transactionshistory
 
-import slick.jdbc.H2Profile.Table
-import slick.jdbc.JdbcType
-import it.marcopaggioro.easypay.database.PostgresProfile.api.*
+import it.marcopaggioro.easypay.database.PostgresProfile.api._
+import it.marcopaggioro.easypay.database.PostgresProfile.{InstantMapper, MoneyMapper}
 import it.marcopaggioro.easypay.domain.classes.Aliases.{CustomerId, TransactionId}
 import it.marcopaggioro.easypay.domain.classes.Money
-import slick.ast.BaseTypedType
-import slick.lifted.{PrimaryKey, ProvenShape, Rep, Tag}
-import slick.lifted.{Rep, TableQuery, Tag, *}
+import slick.jdbc.H2Profile.Table
+import slick.lifted.{Rep, TableQuery, Tag, _}
 
-import java.sql.Timestamp
-import java.time.{Instant, OffsetDateTime, ZoneId, ZonedDateTime}
+import java.time.Instant
 import java.util.UUID
-import it.marcopaggioro.easypay.database.PostgresProfile.{EmailMapper, InstantMapper, MoneyMapper}
-import it.marcopaggioro.easypay.domain.classes.userdata.Email
 
 class TransactionsHistoryTable(tag: Tag) extends Table[TransactionsHistoryRecord](tag, "transactions_history") {
 
@@ -25,7 +20,7 @@ class TransactionsHistoryTable(tag: Tag) extends Table[TransactionsHistoryRecord
   def amount: Rep[Money] = column[Money]("amount")
 
   override def * : ProvenShape[TransactionsHistoryRecord] =
-    (transactionId, senderCustomerId, recipientCustomerId, description, instant,  amount).mapTo[TransactionsHistoryRecord]
+    (transactionId, senderCustomerId, recipientCustomerId, description, instant, amount).mapTo[TransactionsHistoryRecord]
 
   def pk = primaryKey("pk_transactions_history", transactionId)
 

@@ -1,10 +1,9 @@
 package it.marcopaggioro.easypay
 
-import akka.actor.typed.{ActorRef, ActorSystem, Behavior, SupervisorStrategy}
 import akka.actor.typed.scaladsl.Behaviors
+import akka.actor.typed.{ActorRef, ActorSystem, Behavior, SupervisorStrategy}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.ServerBinding
-import akka.projection.ProjectionBehavior
 import akka.serialization.jackson.CborSerializable
 import buildinfo.BuildInfo
 import it.marcopaggioro.easypay.actor.UsersManagerActor
@@ -15,7 +14,6 @@ import org.flywaydb.core.Flyway
 import slick.jdbc.JdbcBackend.Database
 
 import scala.concurrent.Future
-import scala.io.StdIn
 import scala.util.{Failure, Success}
 
 object EasyPayApp {
@@ -24,7 +22,7 @@ object EasyPayApp {
   private final case class ServerStarted(serverBinding: ServerBinding) extends AppCommand
   private final case class ServerStartupFailed(cause: Throwable) extends AppCommand
 
-  private def startProjectors(usersManagerActorRef: ActorRef[UsersManagerCommand], database: Database)(implicit system: ActorSystem[Nothing]): Unit = {
+  private def startProjectors(database: Database)(implicit system: ActorSystem[Nothing]): Unit = {
     UsersManagerProjectorActor.startProjectorActor(database, system)
     TransactionsProjectorActor.startProjectorActor(database, system)
   }
@@ -59,7 +57,7 @@ object EasyPayApp {
       Behaviors.supervise(UsersManagerActor()).onFailure[Exception](SupervisorStrategy.restart),
       UsersManagerActor.Name
     )
-    startProjectors(usersManagerActorRef, database)
+    startProjectors(database)
 
     val webServerBinding: Future[ServerBinding] = Http()
       .newServerAt(AppConfig.httpAddress, AppConfig.httpPort)
@@ -75,8 +73,6 @@ object EasyPayApp {
 
   // TODO commenti ovunque
   // TODO numero di telefono su utente? login etc
-  // TODO la generazione di UUID dovrebbe controllare sia univoca? (userid, transactionid, scheduledoperationid)
-  // TODO inizializzare degli utenti di prova
   def main(args: Array[String]): Unit = {
     Flyway.configure().dataSource(AppConfig.dbUrl, AppConfig.dbUser, AppConfig.dbPassword).load().migrate()
 

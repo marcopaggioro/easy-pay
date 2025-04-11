@@ -3,7 +3,6 @@ package it.marcopaggioro.easypay
 import akka.util.Timeout
 import com.typesafe.config.{Config, ConfigFactory}
 
-import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.duration.DurationLong
 
 object AppConfig {

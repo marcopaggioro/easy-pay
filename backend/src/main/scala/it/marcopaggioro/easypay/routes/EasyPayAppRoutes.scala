@@ -1,54 +1,43 @@
 package it.marcopaggioro.easypay.routes
 
 import akka.Done
-import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
-import akka.actor.typed.scaladsl.AskPattern.*
+import akka.actor.typed.scaladsl.AskPattern._
+import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, ActorSystem, Scheduler, SupervisorStrategy}
-import akka.http.scaladsl.model.headers.{HttpCookie, RawHeader}
-import akka.http.scaladsl.model.*
-import akka.http.scaladsl.server.Directives.*
-import akka.http.scaladsl.server.PathMatchers.Segment
+import akka.http.scaladsl.model._
+import akka.http.scaladsl.model.headers.HttpCookie
+import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server._
 import akka.http.scaladsl.server.directives.BasicDirectives.extractRequest
-import akka.http.scaladsl.server.*
-import it.marcopaggioro.easypay.database.PostgresProfile.api.*
 import akka.http.scaladsl.unmarshalling.{FromEntityUnmarshaller, Unmarshaller}
 import akka.pattern.StatusReply
-import akka.projection.ProjectionBehavior
 import akka.stream.scaladsl.Flow
-import akka.util.{ByteString, Timeout}
+import akka.util.ByteString
 import cats.data.Validated
 import io.circe.Encoder.encodeSeq
-import com.typesafe.scalalogging.LazyLogging
-import io.circe.Json
+import io.circe._
 import io.circe.jawn.decode
-import it.marcopaggioro.easypay.AppConfig.askTimeout
-import it.marcopaggioro.easypay.domain.{TransactionsManager, UsersManager}
-import it.marcopaggioro.easypay.routes.payloads.{CreateUserPayload, LoginPayload, TransferMoneyPayload, UpdateUserDataPayload}
-import it.marcopaggioro.easypay.routes.payloads.CreateUserPayload.CreateUserPayloadDecoder
-import it.marcopaggioro.easypay.routes.payloads.LoginPayload.LoginPayloadDecoder
-import it.marcopaggioro.easypay.AppConfig.askTimeout
-import io.circe.*
-import it.marcopaggioro.easypay.routes.EasyPayAppRoutes.circeUnmarshaller
 import io.circe.syntax.EncoderOps
-import io.circe.Decoder
-import it.marcopaggioro.easypay.actor.{TransactionsManagerActor, UsersManagerActor}
+import it.marcopaggioro.easypay.AppConfig.askTimeout
+import it.marcopaggioro.easypay.actor.TransactionsManagerActor
+import it.marcopaggioro.easypay.database.PostgresProfile._
+import it.marcopaggioro.easypay.database.PostgresProfile.api._
 import it.marcopaggioro.easypay.database.transactionshistory.TransactionsHistoryRecord.TransactionUserJoinEncoder
 import it.marcopaggioro.easypay.database.transactionshistory.{TransactionsHistoryRecord, TransactionsHistoryTable}
-import it.marcopaggioro.easypay.database.users.{UserRecord, UsersTable}
 import it.marcopaggioro.easypay.database.users.UserRecord.UserRecordEncoder
-import it.marcopaggioro.easypay.domain.TransactionsManager.{RechargeWallet, TransactionsManagerCommand}
-import it.marcopaggioro.easypay.domain.classes.Aliases.{CustomerId, ScheduledOperationId, TransactionId}
+import it.marcopaggioro.easypay.database.users.{UserRecord, UsersTable}
+import it.marcopaggioro.easypay.domain.TransactionsManager.TransactionsManagerCommand
 import it.marcopaggioro.easypay.domain.UsersManager.UsersManagerCommand
+import it.marcopaggioro.easypay.domain.classes.Aliases.{CustomerId, ScheduledOperationId}
 import it.marcopaggioro.easypay.domain.classes.userdata.{Email, UserData}
 import it.marcopaggioro.easypay.domain.classes.{Money, ScheduledOperation, Validable}
+import it.marcopaggioro.easypay.domain.{TransactionsManager, UsersManager}
+import it.marcopaggioro.easypay.routes.EasyPayAppRoutes.{ScheduledOperationTupleEncoder, circeUnmarshaller}
+import it.marcopaggioro.easypay.routes.payloads.LoginPayload.LoginPayloadDecoder
 import it.marcopaggioro.easypay.routes.payloads.scheduledoperation.CreateScheduledOperationPayload
+import it.marcopaggioro.easypay.routes.payloads.{LoginPayload, TransferMoneyPayload, UpdateUserDataPayload}
 import it.marcopaggioro.easypay.utilities.JwtUtils
-import it.marcopaggioro.easypay.utilities.JwtUtils.withAuthCookie
-import pdi.jwt.Jwt
 import slick.jdbc.JdbcBackend.Database
-import slick.lifted.TableQuery.Extract
-import it.marcopaggioro.easypay.routes.EasyPayAppRoutes.ScheduledOperationTupleEncoder
-import slick.lifted.ShapedValue.Unconst
 
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
@@ -177,7 +166,7 @@ class EasyPayAppRoutes(usersManagerActorRef: ActorRef[UsersManagerCommand], data
               post { // POST /wallet/recharge
                 entity(as[Money]) { amount =>
                   askToTransactionsManagerActor[Done](
-                    TransactionsManager.RechargeWallet(customerId, amount)(_),
+                    TransactionsManager.RechargeWallet(UUID.randomUUID(), customerId, amount)(_),
                     _ => complete(StatusCodes.OK)
                   )
                 }
@@ -307,22 +296,27 @@ class EasyPayAppRoutes(usersManagerActorRef: ActorRef[UsersManagerCommand], data
     }
   }
 
+  def getCustomerId(email: Email): Future[CustomerId] =
+    database.run(UsersTable.Table.filter(_.email === email).map(_.customerId).result.head)
+
   def transferMoney(senderCustomerId: CustomerId, payload: TransferMoneyPayload)(implicit
       system: ActorSystem[Nothing],
       uri: Uri
   ): Route = {
-    lazy val getRecipientCustomerId: Future[CustomerId] =
-      usersManagerActorRef
-        .askWithStatus[CustomerId](replyTo => UsersManager.GetCustomerId(payload.recipientEmail)(replyTo))
-
     lazy val transferMoney: CustomerId => Future[Done] = recipientCustomerId =>
       transactionsManagerActorRef.askWithStatus[Done](replyTo =>
-        TransactionsManager.TransferMoney(senderCustomerId, recipientCustomerId, payload.description, payload.amount)(
+        TransactionsManager.TransferMoney(
+          senderCustomerId,
+          recipientCustomerId,
+          UUID.randomUUID(),
+          payload.description,
+          payload.amount
+        )(
           replyTo
         )
       )
 
-    onComplete(getRecipientCustomerId.flatMap(recipientCustomerId => transferMoney(recipientCustomerId))) {
+    onComplete(getCustomerId(payload.recipientEmail).flatMap(recipientCustomerId => transferMoney(recipientCustomerId))) {
       case Failure(throwable) =>
         system.log.error(s"Failure while transferring money", throwable)
         completeWithError(StatusCodes.InternalServerError, throwable.getMessage)
@@ -365,7 +359,8 @@ class EasyPayAppRoutes(usersManagerActorRef: ActorRef[UsersManagerCommand], data
         .filter(record => record.senderCustomerId === customerId || record.recipientCustomerId === customerId)
         .joinLeft(UsersTable.Table)
         .on { case (transactionRecord, userRecord) =>
-          Case.If(transactionRecord.senderCustomerId === customerId)
+          Case
+            .If(transactionRecord.senderCustomerId === customerId)
             .Then(transactionRecord.recipientCustomerId === userRecord.customerId)
             .Else(transactionRecord.senderCustomerId === userRecord.customerId)
         }
@@ -391,15 +386,10 @@ class EasyPayAppRoutes(usersManagerActorRef: ActorRef[UsersManagerCommand], data
       system: ActorSystem[Nothing],
       uri: Uri
   ): Route = {
-    lazy val getRecipientCustomerId: Future[CustomerId] = usersManagerActorRef.askWithStatus[CustomerId](replyTo =>
-      UsersManager.GetCustomerId(payload.toCustomerEmail)(
-        replyTo
-      )
-    )
-
     lazy val createScheduledOperation: CustomerId => Future[Done] = recipientCustomerId =>
       transactionsManagerActorRef.askWithStatus[Done](replyTo =>
         TransactionsManager.CreateScheduledOperation(
+          UUID.randomUUID(),
           ScheduledOperation(
             customerId,
             recipientCustomerId,
@@ -413,7 +403,9 @@ class EasyPayAppRoutes(usersManagerActorRef: ActorRef[UsersManagerCommand], data
         )
       )
 
-    onComplete(getRecipientCustomerId.flatMap(recipientCustomerId => createScheduledOperation(recipientCustomerId))) {
+    onComplete(
+      getCustomerId(payload.recipientEmail).flatMap(recipientCustomerId => createScheduledOperation(recipientCustomerId))
+    ) {
       case Failure(throwable) =>
         system.log.error(s"Failure while creating scheduled operation", throwable)
         completeWithError(StatusCodes.InternalServerError, throwable.getMessage)

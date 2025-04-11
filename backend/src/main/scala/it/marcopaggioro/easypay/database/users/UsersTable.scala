@@ -1,16 +1,13 @@
 package it.marcopaggioro.easypay.database.users
 
-import it.marcopaggioro.easypay.database.PostgresProfile.api.*
 import it.marcopaggioro.easypay.database.PostgresProfile._
-import it.marcopaggioro.easypay.domain.classes.Aliases.{CustomerId, TransactionId}
-import it.marcopaggioro.easypay.domain.classes.Money
+import it.marcopaggioro.easypay.database.PostgresProfile.api._
+import it.marcopaggioro.easypay.domain.classes.Aliases.CustomerId
 import it.marcopaggioro.easypay.domain.classes.userdata.{CustomerFirstName, CustomerLastName, Email}
-import slick.ast.BaseTypedType
 import slick.jdbc.H2Profile.Table
-import slick.jdbc.JdbcType
 import slick.lifted.{ProvenShape, Rep, TableQuery, Tag}
 
-import java.time.{Instant, LocalDate}
+import java.time.LocalDate
 
 class UsersTable(tag: Tag) extends Table[UserRecord](tag, "users") {
 

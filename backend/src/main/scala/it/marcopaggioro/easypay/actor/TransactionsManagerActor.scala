@@ -1,11 +1,13 @@
 package it.marcopaggioro.easypay.actor
 
 import akka.Done
-import akka.actor.typed.{Behavior, Scheduler}
+import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
+import akka.actor.typed.{Behavior, Scheduler}
 import akka.pattern.StatusReply
 import akka.persistence.typed.scaladsl.Effect
 import cats.data.Validated.{Invalid, Valid}
+import it.marcopaggioro.easypay.AppConfig.askTimeout
 import it.marcopaggioro.easypay.actor.UsersManagerActor.standardCommandHandler
 import it.marcopaggioro.easypay.domain.TransactionsManager
 import it.marcopaggioro.easypay.domain.TransactionsManager.{
@@ -15,23 +17,19 @@ import it.marcopaggioro.easypay.domain.TransactionsManager.{
   GetBalance,
   GetScheduledOperations,
   RechargeWallet,
-  ScheduledOperationExecuted,
   ScheduledOperationFeedback,
   TransactionsManagerCommand,
   TransactionsManagerEvent,
   TransactionsManagerState,
   TransferMoney
 }
-import it.marcopaggioro.easypay.AppConfig.{askTimeout, config}
-import akka.actor.typed.scaladsl.AskPattern.*
-import it.marcopaggioro.easypay.domain.classes.Aliases.ScheduledOperationId
 import it.marcopaggioro.easypay.domain.classes.Money
 
 import java.time.LocalDateTime
-import java.time.temporal.ChronoUnit
+import java.util.UUID
 import java.util.concurrent.TimeUnit
+import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
-import scala.concurrent.duration.{Duration, FiniteDuration}
 import scala.util.{Failure, Success}
 
 object TransactionsManagerActor
@@ -107,8 +105,9 @@ object TransactionsManagerActor
                 TransferMoney(
                   scheduledOperation.senderCustomerId,
                   scheduledOperation.recipientCustomerId,
+                  UUID.randomUUID(),
                   scheduledOperation.description,
-                  scheduledOperation.amount,
+                  scheduledOperation.amount
                 )(replyTo)
               )
               context.pipeToSelf(transfer) {

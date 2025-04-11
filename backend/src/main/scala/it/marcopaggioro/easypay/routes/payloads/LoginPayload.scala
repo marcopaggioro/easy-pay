@@ -1,6 +1,5 @@
 package it.marcopaggioro.easypay.routes.payloads
 
-import cats.data.Validated.condNel
 import cats.data.ValidatedNel
 import io.circe.Decoder
 import io.circe.generic.semiauto.deriveDecoder

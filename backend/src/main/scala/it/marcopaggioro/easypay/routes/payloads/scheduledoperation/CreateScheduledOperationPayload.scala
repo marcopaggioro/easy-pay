@@ -3,24 +3,27 @@ package it.marcopaggioro.easypay.routes.payloads.scheduledoperation
 import cats.data.ValidatedNel
 import cats.implicits.toTraverseOps
 import io.circe.Decoder
-import io.circe.generic.semiauto.deriveDecoder
-import it.marcopaggioro.easypay.domain.classes.Aliases.CustomerId
 import it.marcopaggioro.easypay.domain.classes.userdata.Email
 import it.marcopaggioro.easypay.domain.classes.{Money, Validable}
-import it.marcopaggioro.easypay.routes.payloads.CreateUserPayload
-import it.marcopaggioro.easypay.utilities.ValidationUtilities.{validateDateTimeInFuture, validateDescription, validateMinimumPeriod, validatePositiveAmount}
+import it.marcopaggioro.easypay.utilities.ValidationUtilities.{
+  validateDateTimeInFuture,
+  validateDescription,
+  validateMinimumPeriod,
+  validatePositiveAmount
+}
 
 import java.time.{LocalDateTime, Period}
 
 case class CreateScheduledOperationPayload(
-    toCustomerEmail: Email,
+    recipientEmail: Email,
     amount: Money,
     when: LocalDateTime,
     description: String,
     repeat: Option[Period]
 ) extends Validable[CreateScheduledOperationPayload] {
   override def validate(): ValidatedNel[String, CreateScheduledOperationPayload] =
-    toCustomerEmail.validate()
+    recipientEmail
+      .validate()
       .andThen(_ => validatePositiveAmount(amount))
       .andThen(_ => validateDateTimeInFuture(when))
       .andThen(_ => validateDescription(description))

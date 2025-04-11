@@ -6,12 +6,11 @@ import akka.pattern.StatusReply
 import cats.data.Validated.{Invalid, Valid, condNel, invalidNel, validNel}
 import cats.data.{NonEmptyList, Validated, ValidatedNel}
 import cats.implicits.toTraverseOps
-import it.marcopaggioro.easypay.AppConfig
 import it.marcopaggioro.easypay.domain.classes.Aliases.CustomerId
 import it.marcopaggioro.easypay.domain.classes.Domain.{DomainCommand, DomainEvent, DomainState}
 import it.marcopaggioro.easypay.domain.classes.userdata.{CustomerFirstName, CustomerLastName, Email, EncryptedPassword, UserData}
 
-import java.time.{Instant, ZonedDateTime}
+import java.time.Instant
 import java.util.UUID
 
 object UsersManager {
@@ -51,7 +50,7 @@ object UsersManager {
   }
 
   // -----
-  case class CreateUser(customerId: UUID, userData: UserData)(val replyTo: ActorRef[StatusReply[CustomerId]])
+  case class CreateUser(customerId: CustomerId, userData: UserData)(val replyTo: ActorRef[StatusReply[CustomerId]])
       extends UsersManagerCommand {
     override def validate(state: UsersManagerState): ValidatedNel[String, Unit] =
       userData
@@ -161,8 +160,9 @@ object UsersManager {
   }
 
   // -----
-  case class LoginUserWithEmail(email: Email, encryptedPassword: EncryptedPassword)(val replyTo: ActorRef[StatusReply[CustomerId]])
-      extends UsersManagerCommand {
+  case class LoginUserWithEmail(email: Email, encryptedPassword: EncryptedPassword)(
+      val replyTo: ActorRef[StatusReply[CustomerId]]
+  ) extends UsersManagerCommand {
     def validateAndGetCustomerId(state: UsersManagerState): ValidatedNel[String, CustomerId] =
       email
         .validate()
@@ -171,28 +171,6 @@ object UsersManager {
         .andThen { case (customerId, userData) =>
           condNel(userData.encryptedPassword == encryptedPassword, customerId, "Wrong credentials")
         }
-
-    override def validate(state: UsersManagerState): ValidatedNel[String, Unit] =
-      validateAndGetCustomerId(state).map(_ => ())
-  }
-
-  // -----
-  case class GetCustomerUserData(customerId: CustomerId)(val replyTo: ActorRef[StatusReply[UserData]])
-      extends UsersManagerCommand {
-    def validateAndGetUserData(state: UsersManagerState): ValidatedNel[String, UserData] =
-      customerIdExistsValidation(state, customerId)
-
-    override def validate(state: UsersManagerState): ValidatedNel[String, Unit] =
-      validateAndGetUserData(state).map(_ => ())
-  }
-
-  // -----
-  case class GetCustomerId(email: Email)(val replyTo: ActorRef[StatusReply[CustomerId]]) extends UsersManagerCommand {
-    def validateAndGetCustomerId(state: UsersManagerState): ValidatedNel[String, CustomerId] =
-      email
-        .validate()
-        .andThen(_ => customerEmailExistsValidation(state, email))
-        .map(_._1)
 
     override def validate(state: UsersManagerState): ValidatedNel[String, Unit] =
       validateAndGetCustomerId(state).map(_ => ())

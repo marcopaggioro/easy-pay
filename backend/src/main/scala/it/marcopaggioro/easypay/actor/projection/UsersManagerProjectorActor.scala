@@ -13,10 +13,10 @@ import akka.projection.{ProjectionBehavior, ProjectionId}
 import com.typesafe.scalalogging.LazyLogging
 import it.marcopaggioro.easypay.actor.UsersManagerActor
 import it.marcopaggioro.easypay.database.PlainJdbcSession
-import it.marcopaggioro.easypay.database.PostgresProfile.*
-import it.marcopaggioro.easypay.database.PostgresProfile.api.*
+import it.marcopaggioro.easypay.database.PostgresProfile._
+import it.marcopaggioro.easypay.database.PostgresProfile.api._
 import it.marcopaggioro.easypay.database.users.{UserRecord, UsersTable}
-import it.marcopaggioro.easypay.domain.UsersManager.*
+import it.marcopaggioro.easypay.domain.UsersManager._
 import slick.jdbc.JdbcBackend.Database
 
 import java.time.{Duration, Instant}

@@ -1,8 +1,8 @@
 package it.marcopaggioro.easypay.utilities
 
 import cats.data.Validated.condNel
-import cats.data.{NonEmptyList, Validated, ValidatedNel}
-import it.marcopaggioro.easypay.domain.classes.Aliases.{CustomerId}
+import cats.data.{Validated, ValidatedNel}
+import it.marcopaggioro.easypay.domain.classes.Aliases.CustomerId
 import it.marcopaggioro.easypay.domain.classes.Money
 
 import java.time.{LocalDate, LocalDateTime, Period}

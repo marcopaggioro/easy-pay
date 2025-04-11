@@ -1,8 +1,9 @@
 CREATE TABLE IF NOT EXISTS transactions_history
 (
     transaction_id        UUID PRIMARY KEY,
-    sender_customer_id    UUID NOT NULL,
+    sender_customer_id    UUID           NOT NULL,
     recipient_customer_id UUID           NOT NULL,
+    description           VARCHAR(500),
     instant               BIGINT         NOT NULL,
     amount                NUMERIC(20, 2) NOT NULL
 );

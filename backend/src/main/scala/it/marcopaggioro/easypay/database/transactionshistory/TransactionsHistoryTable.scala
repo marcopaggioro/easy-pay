@@ -20,11 +20,12 @@ class TransactionsHistoryTable(tag: Tag) extends Table[TransactionsHistoryRecord
   def transactionId: Rep[TransactionId] = column[TransactionId]("transaction_id")
   def senderCustomerId: Rep[CustomerId] = column[CustomerId]("sender_customer_id")
   def recipientCustomerId: Rep[CustomerId] = column[CustomerId]("recipient_customer_id")
+  def description: Rep[Option[String]] = column[Option[String]]("description")
   def instant: Rep[Instant] = column[Instant]("instant")(InstantMapper)
   def amount: Rep[Money] = column[Money]("amount")
 
   override def * : ProvenShape[TransactionsHistoryRecord] =
-    (transactionId, senderCustomerId, recipientCustomerId, instant, amount).mapTo[TransactionsHistoryRecord]
+    (transactionId, senderCustomerId, recipientCustomerId, description, instant,  amount).mapTo[TransactionsHistoryRecord]
 
   def pk = primaryKey("pk_transactions_history", transactionId)
 

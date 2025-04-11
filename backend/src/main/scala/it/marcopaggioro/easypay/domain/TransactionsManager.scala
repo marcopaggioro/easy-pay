@@ -10,7 +10,7 @@ import it.marcopaggioro.easypay.domain.UsersManager.{UsersManagerEvent, UsersMan
 import it.marcopaggioro.easypay.domain.classes.Aliases.{CustomerId, ScheduledOperationId, TransactionId}
 import it.marcopaggioro.easypay.domain.classes.Domain.{DomainCommand, DomainEvent, DomainState}
 import it.marcopaggioro.easypay.domain.classes.{Money, ScheduledOperation, Status}
-import it.marcopaggioro.easypay.utilities.ValidationUtilities.{differentCustomerIdsValidation, validatePositiveAmount}
+import it.marcopaggioro.easypay.utilities.ValidationUtilities.{differentCustomerIdsValidation, validateDescription, validatePositiveAmount}
 
 import java.time.{Instant, LocalDateTime, Period}
 import java.util.UUID
@@ -54,6 +54,7 @@ object TransactionsManager {
   case class TransferMoney(
       customerId: CustomerId,
       recipientCustomerId: CustomerId,
+      description: String,
       amount: Money
   )(val replyTo: ActorRef[StatusReply[Done]])
       extends TransactionsManagerCommand {
@@ -67,9 +68,10 @@ object TransactionsManager {
       validatePositiveAmount(amount)
         .andThen(_ => customerHasSufficientBalance(state))
         .andThen(_ => differentCustomerIdsValidation(customerId, recipientCustomerId))
+        .andThen(_ => validateDescription(description))
 
     override protected def generateEvents(state: TransactionsManagerState): List[TransactionsManagerEvent] = List(
-      MoneyTransferred(customerId, recipientCustomerId, UUID.randomUUID(), amount)
+      MoneyTransferred(customerId, recipientCustomerId, UUID.randomUUID(), description, amount)
     )
   }
 
@@ -77,6 +79,7 @@ object TransactionsManager {
       customerId: CustomerId,
       recipientCustomerId: CustomerId,
       transactionId: TransactionId,
+      description: String,
       amount: Money,
       override val instant: Instant = Instant.now()
   ) extends TransactionsManagerEvent {
@@ -185,7 +188,7 @@ object TransactionsManager {
           // Scheduled operation not exists: no generate events
           List.empty
 
-        case Some(ScheduledOperation(_, _, _, _, _, _: Status.Failed)) =>
+        case Some(ScheduledOperation(_, _, _, _, _, _, _: Status.Failed)) =>
           // Scheduled operation exists and already has failed status: do not generate other events
           List.empty
 

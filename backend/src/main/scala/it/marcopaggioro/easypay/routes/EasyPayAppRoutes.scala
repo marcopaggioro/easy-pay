@@ -317,7 +317,7 @@ class EasyPayAppRoutes(usersManagerActorRef: ActorRef[UsersManagerCommand], data
 
     lazy val transferMoney: CustomerId => Future[Done] = recipientCustomerId =>
       transactionsManagerActorRef.askWithStatus[Done](replyTo =>
-        TransactionsManager.TransferMoney(senderCustomerId, recipientCustomerId, payload.amount)(
+        TransactionsManager.TransferMoney(senderCustomerId, recipientCustomerId, payload.description, payload.amount)(
           replyTo
         )
       )
@@ -405,6 +405,7 @@ class EasyPayAppRoutes(usersManagerActorRef: ActorRef[UsersManagerCommand], data
             recipientCustomerId,
             payload.amount,
             payload.when,
+            payload.description,
             payload.repeat
           )
         )(

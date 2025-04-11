@@ -25,7 +25,8 @@ import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
-private class TransactionsProjectorActor(database: Database, system: ActorSystem[Nothing]) extends Handler[Seq[EventEnvelope[TransactionsManagerEvent]]]
+private class TransactionsProjectorActor(database: Database, system: ActorSystem[Nothing])
+    extends Handler[Seq[EventEnvelope[TransactionsManagerEvent]]]
     with LazyLogging {
 
   private implicit lazy val executionContext: ExecutionContext = system.executionContext
@@ -38,13 +39,21 @@ private class TransactionsProjectorActor(database: Database, system: ActorSystem
     val operations = envelope.toList.collect { eventEnvelope =>
       eventEnvelope.event match {
         case WalletRecharged(transactionId, customerId, amount, instant) =>
-          TransactionsHistoryTable.Table += TransactionsHistoryRecord(transactionId, customerId, customerId, instant, amount)
+          TransactionsHistoryTable.Table += TransactionsHistoryRecord(
+            transactionId,
+            customerId,
+            customerId,
+            None,
+            instant,
+            amount
+          )
 
-        case MoneyTransferred(customerId, recipientCustomerId, transactionId, amount, instant) =>
+        case MoneyTransferred(customerId, recipientCustomerId, transactionId, description, amount, instant) =>
           TransactionsHistoryTable.Table += TransactionsHistoryRecord(
             transactionId,
             customerId,
             recipientCustomerId,
+            Some(description),
             instant,
             amount
           )

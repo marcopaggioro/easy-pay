@@ -107,7 +107,8 @@ object TransactionsManagerActor
                 TransferMoney(
                   scheduledOperation.senderCustomerId,
                   scheduledOperation.recipientCustomerId,
-                  scheduledOperation.amount
+                  scheduledOperation.description,
+                  scheduledOperation.amount,
                 )(replyTo)
               )
               context.pipeToSelf(transfer) {

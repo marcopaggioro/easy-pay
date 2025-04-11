@@ -5,12 +5,7 @@ import cats.implicits.toTraverseOps
 import io.circe.Encoder
 import io.circe.generic.semiauto.deriveEncoder
 import it.marcopaggioro.easypay.domain.classes.Aliases.CustomerId
-import it.marcopaggioro.easypay.utilities.ValidationUtilities.{
-  differentCustomerIdsValidation,
-  validateDateTimeInFuture,
-  validateMinimumPeriod,
-  validatePositiveAmount
-}
+import it.marcopaggioro.easypay.utilities.ValidationUtilities.{differentCustomerIdsValidation, validateDateTimeInFuture, validateDescription, validateMinimumPeriod, validatePositiveAmount}
 
 import java.time.{LocalDateTime, Period}
 
@@ -19,6 +14,7 @@ case class ScheduledOperation(
     recipientCustomerId: CustomerId,
     amount: Money,
     when: LocalDateTime,
+    description: String,
     repeat: Option[Period],
     status: Status = Status.Pending()
 ) extends Validable[ScheduledOperation] {
@@ -26,6 +22,7 @@ case class ScheduledOperation(
     differentCustomerIdsValidation(senderCustomerId, recipientCustomerId)
       .andThen(_ => validatePositiveAmount(amount))
       .andThen(_ => validateDateTimeInFuture(when))
+      .andThen(_ => validateDescription(description))
       .andThen(_ => repeat.traverse(validateMinimumPeriod))
       .map(_ => this)
 

@@ -15,6 +15,7 @@ final case class TransactionsHistoryRecord(
                                             transactionId: TransactionId,
                                             senderCustomerId: CustomerId,
                                             recipientCustomerId: CustomerId,
+                                            description: Option[String],
                                             instant: Instant,
                                             amount: Money
 )
@@ -26,6 +27,7 @@ object TransactionsHistoryRecord {
       "transactionId" -> record.transactionId.asJson,
       "senderCustomerId" -> record.senderCustomerId.asJson,
       "recipientCustomerId" -> record.recipientCustomerId.asJson,
+      "description" -> record.description.asJson,
       "instant" -> record.instant.asJson,
       "amount" -> record.amount.asJson
     )

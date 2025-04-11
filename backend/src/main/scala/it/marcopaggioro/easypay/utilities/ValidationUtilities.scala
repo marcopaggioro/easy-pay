@@ -9,12 +9,23 @@ import java.time.{LocalDate, LocalDateTime, Period}
 
 object ValidationUtilities {
 
+  private lazy val maxDescriptionLength: Int = 500
+  def validateDescription(value: String): ValidatedNel[String, Unit] =
+    condNel(value.trim.nonEmpty, (), "Description can not be empty").andThen(_ =>
+      condNel(
+        value.trim.length <= maxDescriptionLength,
+        (),
+        s"Description must be a maximum of $maxDescriptionLength characters long"
+      )
+    )
+
   private lazy val minAge: Int = 16
   def validateBirthDate(date: LocalDate): ValidatedNel[String, Unit] =
     condNel(date.isBefore(LocalDate.now()), (), "Birth date can not be in future")
       .andThen(_ => condNel(Period.between(date, LocalDate.now()).getYears >= minAge, (), s"Required minimum of $minAge years"))
 
-  def validatePositiveAmount(amount: Money): ValidatedNel[String, Unit] = condNel(amount.value > 0, (), "Amount must be more than 0")
+  def validatePositiveAmount(amount: Money): ValidatedNel[String, Unit] =
+    condNel(amount.value > 0, (), "Amount must be more than 0")
 
   def validateDateTimeInFuture(dateTime: LocalDateTime): ValidatedNel[String, Unit] =
     condNel(dateTime.isAfter(LocalDateTime.now()), (), "Date must be in future")

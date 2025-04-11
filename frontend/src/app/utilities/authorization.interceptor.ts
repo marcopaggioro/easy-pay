@@ -2,6 +2,7 @@ import {HttpErrorResponse, HttpInterceptorFn} from '@angular/common/http';
 import {catchError, throwError} from 'rxjs';
 import {inject} from '@angular/core';
 import {Router} from '@angular/router';
+import {APP_CONSTANTS} from '../app.constants';
 
 export const authorizationInterceptor: HttpInterceptorFn = (request, next) => {
   const router = inject(Router);
@@ -9,9 +10,8 @@ export const authorizationInterceptor: HttpInterceptorFn = (request, next) => {
   //TODO test
   return next(request).pipe(
     catchError((error: HttpErrorResponse) => {
-      //TODO path parametrizzato
       if (error.status === 401 && !request.url.includes("login/check")) {
-        router.navigate(["/login"]);
+        router.navigate([APP_CONSTANTS.PATH_LOGIN]);
         return throwError(() => error);
       } else {
         return throwError(() => error);

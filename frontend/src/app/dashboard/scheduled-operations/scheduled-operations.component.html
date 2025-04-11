@@ -1,1 +1,85 @@
-<p>scheduled-operations works!</p>
+<app-spinner/>
+
+
+<div class="row">
+  <div class="col">
+    <form [formGroup]="scheduledOperationForm" (ngSubmit)="createScheduledOperation()">
+      <h1 class="h3 mb-3 fw-normal">Accesso</h1>
+
+      <!-- Recipient Email -->
+      <div class="form-floating my-3">
+        <input type="email" class="form-control" id="email" placeholder="mario.rossi@gmail.com"
+               formControlName="recipientEmail">
+        <label for="email">Email</label>
+        <div class="text-danger"
+             *ngIf="scheduledOperationForm.controls.recipientEmail.touched && scheduledOperationForm.controls.recipientEmail.invalid">
+          Campo obbligatorio
+        </div>
+      </div>
+      <!-- Amount -->
+      <div class="form-floating my-3">
+        <input type="number" class="form-control" id="amount" placeholder="amount" formControlName="amount">
+        <label for="amount">Quantità</label>
+        <div class="text-danger"
+             *ngIf="scheduledOperationForm.controls.amount.touched && scheduledOperationForm.controls.amount.invalid">
+          Campo obbligatorio
+        </div>
+      </div>
+      <!-- Date time -->
+      <div class="form-floating my-3">
+        <input type="datetime-local" class="form-control" id="dateTime" placeholder="dateTime"
+               formControlName="dateTime">
+        <label for="dateTime">Quando</label>
+        <div class="text-danger"
+             *ngIf="scheduledOperationForm.controls.dateTime.touched && scheduledOperationForm.controls.dateTime.invalid">
+          Campo obbligatorio
+        </div>
+      </div>
+
+      <button class="btn btn-primary w-100 py-2" type="submit" [disabled]="scheduledOperationForm.invalid">Crea</button>
+
+    </form>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col">
+    <table class="table table-striped table-hover align-middle">
+      <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">to customer</th>
+        <th scope="col">amount</th>
+        <th scope="col">when</th>
+        <th scope="col">repeat</th>
+        <th scope="col">Status</th>
+        <th scope="col">action</th>
+      </tr>
+      </thead>
+      <tbody class="table-group-divider">
+        @for (scheduledOperation of this.scheduledOperations; track scheduledOperation) {
+          <tr>
+            <td>{{ scheduledOperation.id }}</td>
+            <td>{{ scheduledOperation.recipientCustomerId }}</td>
+            <td>{{ scheduledOperation.amount }}</td>
+            <td>{{ scheduledOperation.when }}</td>
+            <td>{{ scheduledOperation.repeat }}</td>
+            <td>{{ scheduledOperation.status }}</td>
+            <td>
+              <button type="button" class="btn btn-outline-danger btn-sm mx-2" (click)="deleteScheduledOperation(scheduledOperation.id)">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="4" class="text-center">
+              <!--              TODO spinner? -->
+              Loading
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

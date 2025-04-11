@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
 import {NgIf} from '@angular/common';
+import {APP_CONSTANTS} from '../../app.constants';
 
 @Component({
   selector: 'app-recharge',
@@ -26,7 +27,7 @@ export class RechargeComponent {
     }
 
 
-    this.http.post("http://localhost:9000/wallet/recharge", this.rechargeForm.controls.amount.value || 0, {
+    this.http.post(APP_CONSTANTS.WALLET_RECHARGE_ENDPOINT, this.rechargeForm.controls.amount.value!, {
       withCredentials: true,
       responseType: 'text'
     }).subscribe(

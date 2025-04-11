@@ -3,6 +3,7 @@ import {catchError, map, Observable, of} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import CryptoJS from 'crypto-js';
 import {Router} from '@angular/router';
+import {APP_CONSTANTS} from '../app.constants';
 
 
 @Injectable({
@@ -10,29 +11,32 @@ import {Router} from '@angular/router';
 })
 export class AuthorizationService {
 
-  //TODO mettere da qualche parte l'endpoint di base
-  //TODO mettere da qualche parte gli endpoints
-
   constructor(private http: HttpClient, private router: Router) {
   }
 
   hashPassword(password: string): string {
-    return CryptoJS.SHA256(password).toString();
+    return CryptoJS.SHA512(password).toString();
   }
 
-  register(name: string, surname: string, birthDate: string, email: string, password: string): Observable<string> {
-    const body = {name, surname, birthDate, email, encryptedPassword: this.hashPassword(password)};
-    return this.http.post<string>("http://localhost:9000/user", body, {withCredentials: true});
+  register(firstName: string, lastName: string, birthDate: string, email: string, password: string): Observable<string> {
+    const body = {firstName, lastName, birthDate, email, encryptedPassword: this.hashPassword(password)};
+    return this.http.post<string>(APP_CONSTANTS.USER_REGISTER_ENDPOINT, body, {withCredentials: true});
   }
 
   login(email: string, password: string): Observable<void> {
-    return this.http.post<void>("http://localhost:9000/user/login", {email, encryptedPassword: this.hashPassword(password)}, {
+    return this.http.post<void>(APP_CONSTANTS.USER_LOGIN_ENDPOINT, {email, encryptedPassword: this.hashPassword(password)}, {
       withCredentials: true
     });
   }
 
+  logout(): void {
+    this.http.post(APP_CONSTANTS.USER_LOGOUT_ENDPOINT, {}, {withCredentials: true, responseType: 'text'}).subscribe(
+      () => this.router.navigate([APP_CONSTANTS.PATH_ROOT])
+    )
+  }
+
   isAlreadyLoggedIn(): Observable<boolean> {
-    return this.http.get("http://localhost:9000/user/login/check", {
+    return this.http.get(APP_CONSTANTS.USER_LOGIN_CHECK_ENDPOINT, {
       withCredentials: true,
       responseType: 'text'
     }).pipe(
@@ -45,7 +49,7 @@ export class AuthorizationService {
     this.isAlreadyLoggedIn().subscribe(
       isLogged => {
         if (isLogged) {
-          this.router.navigate(["dashboard"]);
+          this.router.navigate([APP_CONSTANTS.PATH_DASHBOARD]);
         } else {
           notLoggedCallback()
         }
@@ -57,7 +61,7 @@ export class AuthorizationService {
     this.isAlreadyLoggedIn().subscribe(
       isLogged => {
         if (!isLogged) {
-          this.router.navigate(["/login"]);
+          this.router.navigate([APP_CONSTANTS.PATH_LOGIN]);
         }
       }
     )

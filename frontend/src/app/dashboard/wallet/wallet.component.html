@@ -1,36 +1,143 @@
 <app-spinner/>
 
+<!--TODO grafico andamento conto-->
+
 <div class="row">
   <div class="col-8">
-    <h2>Saldo: {{ this.balance || 0 }}</h2>
-    <table class="table table-striped table-hover align-middle">
-      <thead>
-      <tr>
-        <th scope="col">#</th>
-        <th scope="col">to customer</th>
-        <th scope="col">date</th>
-        <th scope="col">amount</th>
-      </tr>
-      </thead>
-      <tbody class="table-group-divider">
-        @for (operation of this.operationsHistory; track operation.transactionId) {
-          <tr>
-            <td>{{ operation.transactionId }}</td>
-            <td>{{ operation.recipientCustomerId }}</td>
-            <td>{{ operation.instant }}</td>
-            <td>{{ operation.amount }}</td>
-          </tr>
-        } @empty {
-          <tr>
-            <td colspan="4" class="text-center">
-              <!--              TODO spinner? -->
-              Loading
-            </td>
-          </tr>
-        }
-      </tbody>
-    </table>
+    <div class="card">
+      <div class="card-body">
+        <!--    TODO https://getbootstrap.com/docs/5.3/components/placeholders/-->
+        <h2>Saldo: {{ Number(this.balance) | number:'1.2-2' }} &euro;</h2>
+        <button type="button" class="btn btn-success">Trasferisci denaro</button>
+      </div>
+    </div>
+
+    <div class="card mt-5">
+      <div class="card-body">
+        <h2>Operazioni recenti</h2>
+        <div ngbAccordion *ngIf="this.operationsHistory?.length || 0 > 0">
+          @for (operation of this.operationsHistory; track operation.transactionId) {
+            @if (operation.senderCustomerId != operation.recipientCustomerId) {
+              @if (this.userDataService.userData.id == operation.recipientCustomerId) {
+                <!-- Received -->
+                <div ngbAccordionItem>
+                  <h2 ngbAccordionHeader>
+                    <button ngbAccordionButton class="bg-success bg-opacity-10 p-2">
+                      <div class="container row">
+                        <div class="col-1 d-flex align-items-center justify-content-center">
+                          <img class="img-fluid"
+                               [src]="APP_CONSTANTS.AVATAR_ENDPOINT + operation.recipientCustomerId"
+                               alt="user-avatar"/>
+                        </div>
+                        <div class="col-8">
+                          <h5><b>{{ operation.interactedFirstName + " " + operation.interactedLastName }}</b></h5>
+                          <small class="m-0 ps-1">{{ operation.instant | date:'dd MMMM HH:mm' }}</small>
+                        </div>
+                        <div class="col-3 d-flex align-items-center justify-content-center">
+                          <h5>{{ Number(operation.amount) | number:'1.2-2' }} &euro;</h5>
+                        </div>
+                      </div>
+                    </button>
+                  </h2>
+                  <div ngbAccordionCollapse>
+                    <div ngbAccordionBody>
+                      <ng-template>
+                        <ul class="list-group list-group-flush">
+                          <li class="list-group-item">Transazione <code
+                            class="ps-2">{{ operation.transactionId }}</code></li>
+                          <li class="list-group-item">Destinatario <code
+                            class="ps-2">{{ operation.interactedFirstName + " " + operation.interactedLastName }}</code>
+                          </li>
+                          <li class="list-group-item">Email <code class="ps-2" placement="bottom"
+                                                                  ngbTooltip="{{operation.senderCustomerId}}">{{ operation.interactedEmail }}</code>
+                          </li>
+                          <li class="list-group-item">Data <code
+                            class="ps-2">{{ operation.instant | date:'dd/MM/YYYY HH:mm:ss' }}</code></li>
+                        </ul>
+                      </ng-template>
+                    </div>
+                  </div>
+                </div>
+              } @else {
+                <!-- Sent -->
+                <div ngbAccordionItem>
+                  <h2 ngbAccordionHeader>
+                    <button ngbAccordionButton class="bg-danger bg-opacity-10 p-2">
+                      <div class="container row">
+                        <div class="col-1 d-flex align-items-center justify-content-center">
+                          <img class="img-fluid"
+                               [src]="APP_CONSTANTS.AVATAR_ENDPOINT + operation.recipientCustomerId"
+                               alt="user-avatar"/>
+                        </div>
+                        <div class="col-8">
+                          <h5><b>{{ operation.interactedFirstName + " " + operation.interactedLastName }}</b></h5>
+                          <small class="m-0 ps-1">{{ operation.instant | date:'dd MMMM HH:mm' }}</small>
+                        </div>
+                        <div class="col-3 d-flex align-items-center justify-content-center">
+                          <h5>-{{ Number(operation.amount) | number:'1.2-2' }} &euro;</h5>
+                        </div>
+                      </div>
+                    </button>
+                  </h2>
+                  <div ngbAccordionCollapse>
+                    <div ngbAccordionBody>
+                      <ng-template>
+                        <ul class="list-group list-group-flush">
+                          <li class="list-group-item">Transazione <code
+                            class="ps-2">{{ operation.transactionId }}</code></li>
+                          <li class="list-group-item">Mittente <code
+                            class="ps-2">{{ operation.interactedFirstName + " " + operation.interactedLastName }}</code>
+                          </li>
+                          <li class="list-group-item">Email <code class="ps-2" placement="bottom"
+                                                                  ngbTooltip="{{operation.senderCustomerId}}">{{ operation.interactedEmail }}</code>
+                          </li>
+                          <li class="list-group-item">Data <code
+                            class="ps-2">{{ operation.instant | date:'dd/MM/YYYY HH:mm:ss' }}</code></li>                        </ul>
+                      </ng-template>
+                    </div>
+                  </div>
+                </div>
+              }
+            } @else {
+              <!-- Recharge -->
+              <div ngbAccordionItem>
+                <h2 ngbAccordionHeader>
+                  <button ngbAccordionButton class="bg-info bg-opacity-10 p-2">
+                    <div class="container row">
+                      <div class="col-1 d-flex align-items-center justify-content-center">
+                        <img class="img-fluid"
+                             [src]="APP_CONSTANTS.AVATAR_ENDPOINT + this.userDataService.userData.id"
+                             alt="user-avatar"/>
+                      </div>
+                      <div class="col-8 d-grid align-items-center">
+                        <h5><b>Ricarica wallet</b></h5>
+                        <small class="m-0 ps-1">{{ operation.instant | date:'dd MMMM HH:mm' }}</small>
+                      </div>
+                      <div class="col-3 d-flex align-items-center justify-content-center">
+                        <h5>{{ Number(operation.amount) | number:'1.2-2' }} &euro;</h5>
+                      </div>
+                    </div>
+                  </button>
+                </h2>
+                <div ngbAccordionCollapse>
+                  <div ngbAccordionBody>
+                    <ng-template>
+                      <ul class="list-group list-group-flush">
+                        <li class="list-group-item">Transazione <code class="ps-2">{{ operation.transactionId }}</code>
+                        </li>
+                        <li class="list-group-item">Data <code
+                          class="ps-2">{{ operation.instant | date:'dd/MM/YYYY HH:mm:ss' }}</code></li>                      </ul>
+                    </ng-template>
+                  </div>
+                </div>
+              </div>
+            }
+          }
+        </div>
+      </div>
+    </div>
   </div>
+
   <div class="col-4">
     Destra
   </div>

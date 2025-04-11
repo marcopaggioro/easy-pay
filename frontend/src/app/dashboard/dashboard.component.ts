@@ -1,6 +1,5 @@
 import {Component} from '@angular/core';
-import {Router, RouterLink, RouterLinkActive, RouterOutlet} from '@angular/router';
-import {HttpClient} from '@angular/common/http';
+import {RouterLink, RouterLinkActive, RouterOutlet} from '@angular/router';
 
 @Component({
   selector: 'app-dashboard',
@@ -13,13 +12,7 @@ import {HttpClient} from '@angular/common/http';
 })
 export class DashboardComponent {
 
-  constructor(private http: HttpClient, private router: Router) {
-  }
-
-  logout(): void {
-    this.http.post("http://localhost:9000/user/logout", {}, {withCredentials: true, responseType: 'text'}).subscribe(
-      () => this.router.navigate(["/"])
-    )
+  constructor() {
   }
 
 }

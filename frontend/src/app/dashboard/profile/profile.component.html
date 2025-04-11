@@ -1,5 +1,3 @@
-<app-spinner/>
-
 <main class="h-100">
   <div class="container-fluid h-100 w-100 align-items-center">
     <div class="row h-100 align-items-center">
@@ -7,19 +5,19 @@
         <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
           <h1 class="h3 mb-3 fw-normal">Anagrafica</h1>
 
-          <!-- Name -->
+          <!-- First name -->
           <div class="form-floating my-3">
-            <input type="text" class="form-control" id="name" placeholder="Mario" formControlName="name">
-            <label for="name">Nome</label>
-            <div class="text-danger" *ngIf="profileForm.controls.name.touched && profileForm.controls.name.invalid">
+            <input type="text" class="form-control" id="firstName" placeholder="Mario" formControlName="firstName">
+            <label for="firstName">Nome</label>
+            <div class="text-danger" *ngIf="profileForm.controls.firstName.touched && profileForm.controls.firstName.invalid">
               Campo obbligatorio
             </div>
           </div>
-          <!-- Surname -->
+          <!-- Last name -->
           <div class="form-floating my-3">
-            <input type="text" class="form-control" id="surname" placeholder="Rossi" formControlName="surname">
-            <label for="surname">Cognome</label>
-            <div class="text-danger" *ngIf="profileForm.controls.surname.touched && profileForm.controls.surname.invalid">
+            <input type="text" class="form-control" id="lastName" placeholder="Rossi" formControlName="lastName">
+            <label for="lastName">Cognome</label>
+            <div class="text-danger" *ngIf="profileForm.controls.lastName.touched && profileForm.controls.lastName.invalid">
               Campo obbligatorio
             </div>
           </div>
@@ -34,7 +32,7 @@
           </div>
           <!-- Email -->
           <div class="form-floating my-3">
-            <input type="email" class="form-control" id="email" placeholder="mario.rossi@mail.com" formControlName="email">
+            <input type="email" class="form-control" id="email" placeholder="mario.rossi@gmail.com" formControlName="email">
             <label for="email">Email</label>
             <div class="text-danger" *ngIf="profileForm.controls.email.touched && profileForm.controls.email.invalid">
               Campo obbligatorio
@@ -58,3 +56,5 @@
     </div>
   </div>
 </main>
+
+<!--TODO https://getbootstrap.com/docs/5.3/components/spinners/#buttons-->

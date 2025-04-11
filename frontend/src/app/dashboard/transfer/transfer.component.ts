@@ -2,6 +2,7 @@ import {Component} from '@angular/core';
 import {NgIf} from '@angular/common';
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
+import {APP_CONSTANTS} from '../../app.constants';
 
 @Component({
   selector: 'app-transfer',
@@ -31,7 +32,7 @@ export class TransferComponent {
       recipientEmail: this.transferForm.controls.recipientEmail.value || "",
       amount: this.transferForm.controls.amount.value || 0
     }
-    this.http.post("http://localhost:9000/wallet/transfer", body, {
+    this.http.post(APP_CONSTANTS.WALLET_TRANSFER_ENDPOINT, body, {
       withCredentials: true,
       responseType: 'text'
     }).subscribe(

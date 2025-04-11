@@ -4,6 +4,7 @@ import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} fr
 import {SpinnerComponent} from '../utilities/spinner.component';
 import {NgIf} from '@angular/common';
 import {Router} from '@angular/router';
+import {APP_CONSTANTS} from '../app.constants';
 
 @Component({
   selector: 'app-register',
@@ -22,8 +23,8 @@ export class RegisterComponent implements OnInit {
   }
 
   registerForm = new FormGroup({
-    name: new FormControl('', Validators.required),
-    surname: new FormControl('', Validators.required),
+    firstName: new FormControl('', Validators.required),
+    lastName: new FormControl('', Validators.required),
     birthDate: new FormControl('', Validators.required),
     email: new FormControl('', [Validators.required, Validators.email]), //TODO  validazione insufficiente
     password: new FormControl('', Validators.required),
@@ -41,13 +42,13 @@ export class RegisterComponent implements OnInit {
       return;
     }
 
-    this.authorizationService.register(this.registerForm.controls.name.value!,
-      this.registerForm.controls.surname.value!,
+    this.authorizationService.register(this.registerForm.controls.firstName.value!,
+      this.registerForm.controls.lastName.value!,
       this.registerForm.controls.birthDate.value!,
       this.registerForm.controls.email.value!,
       this.registerForm.controls.password.value!).subscribe(
       isLogged => {
-        this.router.navigate(["./dashboard"])
+        this.router.navigate([APP_CONSTANTS.PATH_DASHBOARD])
       }
     );
   }

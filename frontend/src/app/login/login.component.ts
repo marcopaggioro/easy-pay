@@ -4,6 +4,7 @@ import {NgIf} from "@angular/common";
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
 import {SpinnerComponent} from "../utilities/spinner.component";
 import {Router} from '@angular/router';
+import {APP_CONSTANTS} from '../app.constants';
 
 @Component({
   selector: 'app-login',
@@ -31,6 +32,7 @@ export class LoginComponent implements OnInit {
     )
   }
 
+  //TODO spinner ovunque
   onSubmit(): void {
     if (this.loginForm.invalid) {
       console.warn("Trying to submit with invalid data")
@@ -40,7 +42,7 @@ export class LoginComponent implements OnInit {
     //TODO popup errore login
     this.authorizationService.login(this.loginForm.controls.email.value!, this.loginForm.controls.password.value!).subscribe(
       () => {
-        this.router.navigate(["dashboard"]);
+        this.router.navigate([APP_CONSTANTS.PATH_DASHBOARD]);
       }
     );
   }

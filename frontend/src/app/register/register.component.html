@@ -7,19 +7,19 @@
         <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
           <h1 class="h3 mb-3 fw-normal">Registrazione</h1>
 
-          <!-- Name -->
+          <!-- First name -->
           <div class="form-floating my-3">
-            <input type="text" class="form-control" id="name" placeholder="Mario" formControlName="name">
-            <label for="name">Nome</label>
-            <div class="text-danger" *ngIf="registerForm.controls.name.touched && registerForm.controls.name.invalid">
+            <input type="text" class="form-control" id="firstName" placeholder="Mario" formControlName="firstName">
+            <label for="firstName">Nome</label>
+            <div class="text-danger" *ngIf="registerForm.controls.firstName.touched && registerForm.controls.firstName.invalid">
               Campo obbligatorio
             </div>
           </div>
-          <!-- Surname -->
+          <!-- Last name -->
           <div class="form-floating my-3">
-            <input type="text" class="form-control" id="surname" placeholder="Rossi" formControlName="surname">
-            <label for="surname">Cognome</label>
-            <div class="text-danger" *ngIf="registerForm.controls.surname.touched && registerForm.controls.surname.invalid">
+            <input type="text" class="form-control" id="lastName" placeholder="Rossi" formControlName="lastName">
+            <label for="lastName">Cognome</label>
+            <div class="text-danger" *ngIf="registerForm.controls.lastName.touched && registerForm.controls.lastName.invalid">
               Campo obbligatorio
             </div>
           </div>
@@ -34,7 +34,7 @@
           </div>
           <!-- Email -->
           <div class="form-floating my-3">
-            <input type="email" class="form-control" id="email" placeholder="mario.rossi@mail.com" formControlName="email">
+            <input type="email" class="form-control" id="email" placeholder="mario.rossi@gmail.com" formControlName="email">
             <label for="email">Email</label>
             <div class="text-danger" *ngIf="registerForm.controls.email.touched && registerForm.controls.email.invalid">
               Campo obbligatorio
@@ -57,3 +57,5 @@
     </div>
   </div>
 </main>
+
+<!--TODO https://getbootstrap.com/docs/5.3/components/spinners/#buttons-->

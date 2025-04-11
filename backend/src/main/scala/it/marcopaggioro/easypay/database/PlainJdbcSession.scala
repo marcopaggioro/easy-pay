@@ -6,7 +6,6 @@ import it.marcopaggioro.easypay.AppConfig
 
 import java.sql.{Connection, DriverManager}
 
-//TODO No DRI found for query
 class PlainJdbcSession extends JdbcSession {
 
   private lazy val connection = {
@@ -15,11 +14,15 @@ class PlainJdbcSession extends JdbcSession {
     connection
   }
 
+  /** withConnection */
   override def withConnection[Result](func: Function[Connection, Result]): Result = func(connection)
 
+  /** commit */
   override def commit(): Unit = connection.commit()
 
+  /** rollback */
   override def rollback(): Unit = connection.rollback()
 
+  /** close */
   override def close(): Unit = connection.close()
 }

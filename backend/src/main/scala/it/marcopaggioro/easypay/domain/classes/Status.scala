@@ -25,9 +25,9 @@ object Status {
   case class Failed(error: String, override val instant: Instant = Instant.now()) extends Status
 
   implicit val StatusEncoder: Encoder[Status] = Encoder.instance {
-    case _: Pending => Json.fromString("pending")
-    case _: Done    => Json.fromString("done")
-    case _: Failed  => Json.fromString("failed")
+    case _: Pending => Json.fromString("In attesa")
+    case _: Done    => Json.fromString("Completata")
+    case _: Failed  => Json.fromString("Fallita")
   }
 
 }

@@ -55,18 +55,21 @@ class EasyPayAppRoutes(usersManagerActorRef: ActorRef[UsersManagerCommand], data
     TransactionsManagerActor.Name
   )
 
-  private val generateJsonError: String => String = error => Json.obj("error" -> error.asJson).asJson.noSpaces
+  private val generateJsonError: String => Json = error => Json.obj("error" -> error.asJson)
+
+  private def completeWithJson(json: Json, statusCode: StatusCode = StatusCodes.OK): StandardRoute =
+    complete(statusCode, HttpEntity(ContentTypes.`application/json`, json.noSpaces))
 
   private def completeWithError(statusCode: StatusCode, error: String)(implicit uri: Uri): StandardRoute = {
     system.log.warn(s"Replying with error in uri (${uri.path.toString()}): [$error]")
-    complete(
-      statusCode,
-      HttpEntity(ContentTypes.`application/json`, generateJsonError(error))
-    )
+    completeWithJson(generateJsonError(error), statusCode)
   }
 
-  def completeWithJson(json: Json): StandardRoute =
-    complete(StatusCodes.OK, HttpEntity(ContentTypes.`application/json`, json.noSpaces))
+  private def completeWithOK(): StandardRoute = completeWithJson(Json.Null)
+
+  private def completeWithToken(customerId: CustomerId): Route = setCookie(JwtUtils.getSignedJwtCookie(customerId)) {
+    completeWithJson(customerId.asJson)
+  }
 
   private val exceptionHandler: Uri => ExceptionHandler = uri =>
     ExceptionHandler { case throwable =>
@@ -76,7 +79,7 @@ class EasyPayAppRoutes(usersManagerActorRef: ActorRef[UsersManagerCommand], data
   private val rejectionHandler: RejectionHandler = RejectionHandler.default.mapRejectionResponse(response =>
     response.transformEntityDataBytes(
       Flow[ByteString]
-        .map(rawError => ByteString(generateJsonError(rawError.utf8String)))
+        .map(rawError => ByteString(generateJsonError(rawError.utf8String).noSpaces))
     )
   )
 
@@ -92,7 +95,7 @@ class EasyPayAppRoutes(usersManagerActorRef: ActorRef[UsersManagerCommand], data
               pathEndOrSingleSlash {
                 get { // GET /user/login/check
                   JwtUtils.withCustomerIdFromToken(uri) { customerId =>
-                    complete(StatusCodes.OK)
+                    completeWithOK()
                   }
                 }
               }
@@ -112,7 +115,7 @@ class EasyPayAppRoutes(usersManagerActorRef: ActorRef[UsersManagerCommand], data
           pathEndOrSingleSlash {
             post { // POST /user/logout
               deleteCookie(JwtUtils.baseCookie) {
-                complete(StatusCodes.OK)
+                completeWithOK()
               }
             }
           }
@@ -146,7 +149,7 @@ class EasyPayAppRoutes(usersManagerActorRef: ActorRef[UsersManagerCommand], data
                         payload.maybeLastName,
                         payload.maybeEncryptedPassword
                       )(_),
-                      _ => complete(StatusCodes.OK)
+                      _ => completeWithOK()
                     )
                   }
                 }
@@ -167,7 +170,7 @@ class EasyPayAppRoutes(usersManagerActorRef: ActorRef[UsersManagerCommand], data
                 entity(as[Money]) { amount =>
                   askToTransactionsManagerActor[Done](
                     TransactionsManager.RechargeWallet(UUID.randomUUID(), customerId, amount)(_),
-                    _ => complete(StatusCodes.OK)
+                    _ => completeWithOK()
                   )
                 }
               }
@@ -182,7 +185,7 @@ class EasyPayAppRoutes(usersManagerActorRef: ActorRef[UsersManagerCommand], data
                       delete { // DELETE /wallet/transfer/schedule/123-456-678
                         askToTransactionsManagerActor[Done](
                           TransactionsManager.DeleteScheduledOperation(customerId, scheduledOperationId)(_),
-                          _ => complete(StatusCodes.OK)
+                          _ => completeWithOK()
                         )
                       }
                     }
@@ -277,10 +280,6 @@ class EasyPayAppRoutes(usersManagerActorRef: ActorRef[UsersManagerCommand], data
     }
   }
 
-  private def completeWithToken(customerId: CustomerId): Route = setCookie(JwtUtils.getSignedJwtCookie(customerId)) {
-    completeWithJson(customerId.asJson)
-  }
-
   def loginUser(payload: LoginPayload)(implicit system: ActorSystem[Nothing], uri: Uri): Route = {
     lazy val future: Future[CustomerId] = usersManagerActorRef
       .askWithStatus[CustomerId](replyTo => UsersManager.LoginUserWithEmail(payload.email, payload.encryptedPassword)(replyTo))
@@ -297,7 +296,11 @@ class EasyPayAppRoutes(usersManagerActorRef: ActorRef[UsersManagerCommand], data
   }
 
   def getCustomerId(email: Email): Future[CustomerId] =
-    database.run(UsersTable.Table.filter(_.email === email).map(_.customerId).result.head)
+    database
+      .run(UsersTable.Table.filter(_.email === email).map(_.customerId).result.head)
+      .recoverWith { case _: NoSuchElementException =>
+        Future.failed(new NoSuchElementException(s"Customer with email ${email.value} not found"))
+      }
 
   def transferMoney(senderCustomerId: CustomerId, payload: TransferMoneyPayload)(implicit
       system: ActorSystem[Nothing],
@@ -322,7 +325,7 @@ class EasyPayAppRoutes(usersManagerActorRef: ActorRef[UsersManagerCommand], data
         completeWithError(StatusCodes.InternalServerError, throwable.getMessage)
 
       case Success(_) =>
-        complete(StatusCodes.OK)
+        completeWithOK()
     }
   }
 
@@ -411,7 +414,7 @@ class EasyPayAppRoutes(usersManagerActorRef: ActorRef[UsersManagerCommand], data
         completeWithError(StatusCodes.InternalServerError, throwable.getMessage)
 
       case Success(_) =>
-        complete(StatusCodes.OK)
+        completeWithOK()
     }
   }
 

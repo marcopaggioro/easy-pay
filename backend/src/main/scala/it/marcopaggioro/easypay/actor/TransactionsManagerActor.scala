@@ -93,12 +93,10 @@ object TransactionsManagerActor
         Effect.reply(getScheduledOperations.replyTo)(StatusReply.success(getScheduledOperations.getOperations(state)))
 
       case scheduledOperationFeedback: ScheduledOperationFeedback =>
-        scheduledOperationFeedback.maybeError match {
-          case Some(error) =>
-            Effect.none.thenRun(_ => context.log.error(error))
+        scheduledOperationFeedback.validateAndGenerateEvents(state) match {
+          case Valid(events) => Effect.persist(events)
 
-          case None =>
-            Effect.persist(scheduledOperationFeedback.generateEvents(state))
+          case Invalid(errors) => Effect.none.thenRun(_ => context.log.error(errors.toList.mkString(", ")))
         }
 
       case executeOperations: ExecuteScheduledOperations =>
@@ -107,7 +105,7 @@ object TransactionsManagerActor
             case (scheduledOperationId, scheduledOperation) if scheduledOperation.when.isBefore(LocalDateTime.now()) =>
               val transfer: Future[Done] = context.self.askWithStatus[Done](replyTo =>
                 TransferMoney(
-                  scheduledOperation.recipientCustomerId,
+                  scheduledOperation.senderCustomerId,
                   scheduledOperation.recipientCustomerId,
                   scheduledOperation.amount
                 )(replyTo)
@@ -131,7 +129,7 @@ object TransactionsManagerActor
     timerScheduler.startTimerAtFixedRate(
       ExecuteScheduledOperations(),
       FiniteDuration.apply(10, TimeUnit.SECONDS),
-      FiniteDuration.apply(1, TimeUnit.HOURS)
+      FiniteDuration.apply(1, TimeUnit.MINUTES)
     )
 
     super.apply(Name, TransactionsManagerState(Map.empty, Map.empty), commandHandler, eventHandler, _ => Set(EventTag))

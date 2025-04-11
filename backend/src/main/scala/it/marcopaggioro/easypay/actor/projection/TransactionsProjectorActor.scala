@@ -2,7 +2,7 @@ package it.marcopaggioro.easypay.actor.projection
 
 import akka.Done
 import akka.actor.typed.scaladsl.Behaviors
-import akka.actor.typed.{ActorRef, ActorSystem, Behavior, SupervisorStrategy}
+import akka.actor.typed.{ActorRef, ActorSystem, Scheduler, SupervisorStrategy}
 import akka.persistence.jdbc.query.scaladsl.JdbcReadJournal
 import akka.persistence.query.Offset
 import akka.projection.eventsourced.EventEnvelope
@@ -11,49 +11,51 @@ import akka.projection.jdbc.scaladsl.JdbcProjection
 import akka.projection.scaladsl.{GroupedProjection, Handler, SourceProvider}
 import akka.projection.{ProjectionBehavior, ProjectionId}
 import com.typesafe.scalalogging.LazyLogging
-import it.marcopaggioro.easypay.AppConfig
 import it.marcopaggioro.easypay.actor.TransactionsManagerActor
 import it.marcopaggioro.easypay.database.PlainJdbcSession
-import it.marcopaggioro.easypay.database.transactionshistory.{TransactionsHistoryRecord, TransactionsHistoryTable}
-import slick.dbio.Effect
-import slick.jdbc.JdbcBackend.Database
 import it.marcopaggioro.easypay.database.PostgresProfile.api.*
+import it.marcopaggioro.easypay.database.transactionshistory.{TransactionsHistoryRecord, TransactionsHistoryTable}
 import it.marcopaggioro.easypay.domain.TransactionsManager
-import it.marcopaggioro.easypay.domain.TransactionsManager.{MoneyTransferred, TransactionsManagerEvent}
-import slick.sql.FixedSqlAction
+import it.marcopaggioro.easypay.domain.TransactionsManager.{MoneyTransferred, TransactionsManagerEvent, WalletRecharged}
+import it.marcopaggioro.easypay.domain.UsersManager.UsersManagerCommand
+import slick.jdbc.JdbcBackend.Database
 
 import java.time.{Duration, Instant}
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
-private class TransactionsProjectorActor(database: Database, system: ActorSystem[Nothing])
-    extends Handler[Seq[EventEnvelope[TransactionsManagerEvent]]]
+private class TransactionsProjectorActor(database: Database, system: ActorSystem[Nothing]) extends Handler[Seq[EventEnvelope[TransactionsManagerEvent]]]
     with LazyLogging {
 
   private implicit lazy val executionContext: ExecutionContext = system.executionContext
+  private implicit lazy val scheduler: Scheduler = system.scheduler
 
   override def process(envelope: Seq[EventEnvelope[TransactionsManagerEvent]]): Future[Done] = {
     val startTime: Instant = Instant.now()
-    logger.trace(s"Projecting ${envelope.size} events")
+    logger.debug(s"Projecting ${envelope.size} events")
 
-    val records: List[TransactionsHistoryRecord] = envelope.toList.flatMap { eventEnvelope =>
+    val operations = envelope.toList.collect { eventEnvelope =>
       eventEnvelope.event match {
-        case TransactionsManager.WalletRecharged(transactionId, customerId, amount, instant) =>
-          List(TransactionsHistoryRecord(transactionId, customerId, None, instant, amount))
+        case WalletRecharged(transactionId, customerId, amount, instant) =>
+          TransactionsHistoryTable.Table += TransactionsHistoryRecord(transactionId, customerId, customerId, instant, amount)
 
         case MoneyTransferred(customerId, recipientCustomerId, transactionId, amount, instant) =>
-          List(TransactionsHistoryRecord(transactionId, customerId, Some(recipientCustomerId), instant, amount))
-
-        case _ => List.empty
+          TransactionsHistoryTable.Table += TransactionsHistoryRecord(
+            transactionId,
+            customerId,
+            recipientCustomerId,
+            instant,
+            amount
+          )
       }
     }
 
     database
-      .run(TransactionsHistoryTable.Table.insertOrUpdateAll(records))
+      .run(DBIO.sequence(operations))
       .transform {
-        case Success(_) =>
-          logger.debug(s"Projected ${envelope.size} events in ${Duration.between(startTime, Instant.now()).toString}")
+        case Success(operationsCount) =>
+          logger.debug(s"Projected ${operationsCount.sum} events in ${Duration.between(startTime, Instant.now()).toString}")
           Success(Done)
 
         case Failure(throwable) =>
@@ -77,7 +79,7 @@ object TransactionsProjectorActor {
         () => new PlainJdbcSession,
         () => new TransactionsProjectorActor(database, system)
       )(system)
-      .withGroup(groupAfterEnvelopes = 500, groupAfterDuration = 1.second)
+      .withGroup(groupAfterEnvelopes = 100, groupAfterDuration = 100.milliseconds)
 
     system.systemActorOf(
       Behaviors.supervise(ProjectionBehavior(projection)).onFailure[Exception](SupervisorStrategy.restart),

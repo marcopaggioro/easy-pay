@@ -7,7 +7,9 @@ import akka.http.scaladsl.Http.ServerBinding
 import akka.projection.ProjectionBehavior
 import akka.serialization.jackson.CborSerializable
 import buildinfo.BuildInfo
-import it.marcopaggioro.easypay.actor.projection.TransactionsProjectorActor
+import it.marcopaggioro.easypay.actor.UsersManagerActor
+import it.marcopaggioro.easypay.actor.projection.{TransactionsProjectorActor, UsersManagerProjectorActor}
+import it.marcopaggioro.easypay.domain.UsersManager.UsersManagerCommand
 import it.marcopaggioro.easypay.routes.EasyPayAppRoutes
 import org.flywaydb.core.Flyway
 import slick.jdbc.JdbcBackend.Database
@@ -22,7 +24,8 @@ object EasyPayApp {
   private final case class ServerStarted(serverBinding: ServerBinding) extends AppCommand
   private final case class ServerStartupFailed(cause: Throwable) extends AppCommand
 
-  private def startProjectors(database: Database)(implicit system: ActorSystem[Nothing]): Unit = {
+  private def startProjectors(usersManagerActorRef: ActorRef[UsersManagerCommand], database: Database)(implicit system: ActorSystem[Nothing]): Unit = {
+    UsersManagerProjectorActor.startProjectorActor(database, system)
     TransactionsProjectorActor.startProjectorActor(database, system)
   }
 
@@ -52,11 +55,15 @@ object EasyPayApp {
     implicit val system: ActorSystem[Nothing] = context.system
 
     val database: Database = Database.forConfig("slick.db", AppConfig.config)
-    startProjectors(database)
+    val usersManagerActorRef: ActorRef[UsersManagerCommand] = system.systemActorOf(
+      Behaviors.supervise(UsersManagerActor()).onFailure[Exception](SupervisorStrategy.restart),
+      UsersManagerActor.Name
+    )
+    startProjectors(usersManagerActorRef, database)
 
     val webServerBinding: Future[ServerBinding] = Http()
       .newServerAt(AppConfig.httpAddress, AppConfig.httpPort)
-      .bind(new EasyPayAppRoutes(database).Routes)
+      .bind(new EasyPayAppRoutes(usersManagerActorRef, database).Routes)
 
     context.pipeToSelf(webServerBinding) {
       case Failure(exception)     => ServerStartupFailed(exception)
@@ -69,6 +76,7 @@ object EasyPayApp {
   // TODO commenti ovunque
   // TODO numero di telefono su utente? login etc
   // TODO la generazione di UUID dovrebbe controllare sia univoca? (userid, transactionid, scheduledoperationid)
+  // TODO inizializzare degli utenti di prova
   def main(args: Array[String]): Unit = {
     Flyway.configure().dataSource(AppConfig.dbUrl, AppConfig.dbUser, AppConfig.dbPassword).load().migrate()
 

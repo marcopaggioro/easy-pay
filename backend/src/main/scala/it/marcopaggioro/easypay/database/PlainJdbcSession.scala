@@ -6,6 +6,7 @@ import it.marcopaggioro.easypay.AppConfig
 
 import java.sql.{Connection, DriverManager}
 
+//TODO No DRI found for query
 class PlainJdbcSession extends JdbcSession {
 
   private lazy val connection = {

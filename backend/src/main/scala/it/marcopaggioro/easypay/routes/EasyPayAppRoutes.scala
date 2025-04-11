@@ -17,6 +17,7 @@ import akka.projection.ProjectionBehavior
 import akka.stream.scaladsl.Flow
 import akka.util.{ByteString, Timeout}
 import cats.data.Validated
+import io.circe.Encoder.encodeSeq
 import com.typesafe.scalalogging.LazyLogging
 import io.circe.Json
 import io.circe.jawn.decode
@@ -31,31 +32,34 @@ import it.marcopaggioro.easypay.routes.EasyPayAppRoutes.circeUnmarshaller
 import io.circe.syntax.EncoderOps
 import io.circe.Decoder
 import it.marcopaggioro.easypay.actor.{TransactionsManagerActor, UsersManagerActor}
+import it.marcopaggioro.easypay.database.transactionshistory.TransactionsHistoryRecord.TransactionUserJoinEncoder
 import it.marcopaggioro.easypay.database.transactionshistory.{TransactionsHistoryRecord, TransactionsHistoryTable}
+import it.marcopaggioro.easypay.database.users.{UserRecord, UsersTable}
+import it.marcopaggioro.easypay.database.users.UserRecord.UserRecordEncoder
 import it.marcopaggioro.easypay.domain.TransactionsManager.{RechargeWallet, TransactionsManagerCommand}
 import it.marcopaggioro.easypay.domain.classes.Aliases.{CustomerId, ScheduledOperationId, TransactionId}
 import it.marcopaggioro.easypay.domain.UsersManager.UsersManagerCommand
-import it.marcopaggioro.easypay.domain.classes.{Email, Money, ScheduledOperation, UserData, Validable}
+import it.marcopaggioro.easypay.domain.classes.userdata.{Email, UserData}
+import it.marcopaggioro.easypay.domain.classes.{Money, ScheduledOperation, Validable}
 import it.marcopaggioro.easypay.routes.payloads.scheduledoperation.CreateScheduledOperationPayload
 import it.marcopaggioro.easypay.utilities.JwtUtils
 import it.marcopaggioro.easypay.utilities.JwtUtils.withAuthCookie
 import pdi.jwt.Jwt
 import slick.jdbc.JdbcBackend.Database
 import slick.lifted.TableQuery.Extract
+import it.marcopaggioro.easypay.routes.EasyPayAppRoutes.ScheduledOperationTupleEncoder
+import slick.lifted.ShapedValue.Unconst
 
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
 import scala.util.{Failure, Success}
 
-class EasyPayAppRoutes(database: Database)(implicit system: ActorSystem[Nothing]) {
+class EasyPayAppRoutes(usersManagerActorRef: ActorRef[UsersManagerCommand], database: Database)(implicit
+    system: ActorSystem[Nothing]
+) {
 
   private implicit val scheduler: Scheduler = system.scheduler
   private implicit val executionContext: ExecutionContextExecutor = system.executionContext
-
-  private val usersManagerActorRef: ActorRef[UsersManagerCommand] = system.systemActorOf(
-    Behaviors.supervise(UsersManagerActor()).onFailure[Exception](SupervisorStrategy.restart),
-    UsersManagerActor.Name
-  )
 
   private val transactionsManagerActorRef: ActorRef[TransactionsManagerCommand] = system.systemActorOf(
     Behaviors.supervise(TransactionsManagerActor()).onFailure[Exception](SupervisorStrategy.restart),
@@ -96,63 +100,70 @@ class EasyPayAppRoutes(database: Database)(implicit system: ActorSystem[Nothing]
         pathPrefix("login") {
           concat(
             pathPrefix("check") {
-              get {
-                JwtUtils.withCustomerIdFromToken(uri) { customerId =>
-                  complete(StatusCodes.OK)
+              pathEndOrSingleSlash {
+                get { // GET /user/login/check
+                  JwtUtils.withCustomerIdFromToken(uri) { customerId =>
+                    complete(StatusCodes.OK)
+                  }
                 }
               }
             },
-            post { // POST /user/login
-              entity(as[LoginPayload]) { payload =>
-                checkPayloadIsValid(payload) {
-                  loginUser(payload)
+            pathEndOrSingleSlash {
+              post { // POST /user/login
+                entity(as[LoginPayload]) { payload =>
+                  checkPayloadIsValid(payload) {
+                    loginUser(payload)
+                  }
                 }
               }
             }
           )
         },
         pathPrefix("logout") {
-          post { // POST /user/logout
-            deleteCookie(JwtUtils.baseCookie) {
-              complete(StatusCodes.OK)
-            }
-          }
-        },
-        post { // POST /user
-          entity(as[UserData]) { userData =>
-            checkPayloadIsValid(userData) {
-              askToUsersManagerActor[CustomerId](
-                UsersManager.CreateUser(UUID.randomUUID(), userData)(_),
-                customerId => completeWithToken(customerId)
-              )
-            }
-          }
-        },
-        get { // GET /user
-          JwtUtils.withCustomerIdFromToken(uri) { customerId =>
-            askToUsersManagerActor[UserData](
-              UsersManager.GetCustomerUserData(customerId)(_),
-              userData => completeWithJson(userData.asJson)
-            )
-          }
-        },
-        patch { // PATCH /user
-          JwtUtils.withCustomerIdFromToken(uri) { customerId =>
-            entity(as[UpdateUserDataPayload]) { payload =>
-              checkPayloadIsValid(payload) {
-                askToUsersManagerActor[Done](
-                  UsersManager.UpdateUserData(
-                    customerId,
-                    payload.maybeEmail,
-                    payload.maybeName,
-                    payload.maybeSurname,
-                    payload.maybeEncryptedPassword
-                  )(_),
-                  _ => complete(StatusCodes.OK)
-                )
+          pathEndOrSingleSlash {
+            post { // POST /user/logout
+              deleteCookie(JwtUtils.baseCookie) {
+                complete(StatusCodes.OK)
               }
             }
           }
+        },
+        pathEndOrSingleSlash {
+          concat(
+            post { // POST /user
+              entity(as[UserData]) { userData =>
+                checkPayloadIsValid(userData) {
+                  askToUsersManagerActor[CustomerId](
+                    UsersManager.CreateUser(UUID.randomUUID(), userData)(_),
+                    customerId => completeWithToken(customerId)
+                  )
+                }
+              }
+            },
+            get { // GET /user
+              JwtUtils.withCustomerIdFromToken(uri) { customerId =>
+                getUser(customerId)
+              }
+            },
+            patch { // PATCH /user
+              JwtUtils.withCustomerIdFromToken(uri) { customerId =>
+                entity(as[UpdateUserDataPayload]) { payload =>
+                  checkPayloadIsValid(payload) {
+                    askToUsersManagerActor[Done](
+                      UsersManager.UpdateUserData(
+                        customerId,
+                        payload.maybeEmail,
+                        payload.maybeFirstName,
+                        payload.maybeLastName,
+                        payload.maybeEncryptedPassword
+                      )(_),
+                      _ => complete(StatusCodes.OK)
+                    )
+                  }
+                }
+              }
+            }
+          )
         }
       )
     }
@@ -162,53 +173,66 @@ class EasyPayAppRoutes(database: Database)(implicit system: ActorSystem[Nothing]
       JwtUtils.withCustomerIdFromToken(uri) { customerId =>
         concat(
           pathPrefix("recharge") {
-            post { // POST /wallet/recharge
-              entity(as[Money]) { amount =>
-                askToTransactionsManagerActor[Done](
-                  TransactionsManager.RechargeWallet(customerId, amount)(_),
-                  _ => complete(StatusCodes.OK)
-                )
+            pathEndOrSingleSlash {
+              post { // POST /wallet/recharge
+                entity(as[Money]) { amount =>
+                  askToTransactionsManagerActor[Done](
+                    TransactionsManager.RechargeWallet(customerId, amount)(_),
+                    _ => complete(StatusCodes.OK)
+                  )
+                }
               }
             }
           },
           pathPrefix("transfer") {
             concat(
-              pathPrefix("schedule") {
+              pathPrefix("scheduler") {
                 concat(
                   pathPrefix(JavaUUID) { scheduledOperationId =>
-                    delete { // DELETE /wallet/transfer/schedule/123-456-678
-                      askToTransactionsManagerActor[Done](
-                        TransactionsManager.DeleteScheduledOperation(customerId, scheduledOperationId)(_),
-                        _ => complete(StatusCodes.OK)
-                      )
-                    }
-                  },
-                  get { // GET /wallet/transfer/schedule
-                    askToTransactionsManagerActor[Map[ScheduledOperationId, ScheduledOperation]](
-                      TransactionsManager.GetScheduledOperations(customerId)(_),
-                      scheduledOperations => completeWithJson(scheduledOperations.asJson)
-                    )
-                  },
-                  put { // PUT /wallet/transfer/schedule
-                    entity(as[CreateScheduledOperationPayload]) { payload =>
-                      checkPayloadIsValid(payload) {
-                        createScheduledOperation(customerId, payload)
+                    pathEndOrSingleSlash {
+                      delete { // DELETE /wallet/transfer/schedule/123-456-678
+                        askToTransactionsManagerActor[Done](
+                          TransactionsManager.DeleteScheduledOperation(customerId, scheduledOperationId)(_),
+                          _ => complete(StatusCodes.OK)
+                        )
                       }
                     }
+                  },
+                  pathEndOrSingleSlash {
+                    concat(
+                      get { // GET /wallet/transfer/schedule
+                        askToTransactionsManagerActor[Map[ScheduledOperationId, ScheduledOperation]](
+                          TransactionsManager.GetScheduledOperations(customerId)(_),
+                          scheduledOperations => completeWithJson(scheduledOperations.toList.asJson)
+                        )
+                      },
+                      put { // PUT /wallet/transfer/schedule
+                        entity(as[CreateScheduledOperationPayload]) { payload =>
+                          checkPayloadIsValid(payload) {
+                            createScheduledOperation(customerId, payload)
+                          }
+                        }
+                      }
+                    )
                   }
                 )
               },
-              post { // POST /wallet/transfer
-                entity(as[TransferMoneyPayload]) { payload =>
-                  checkPayloadIsValid(payload) {
-                    transferMoney(customerId, payload)
+              pathEndOrSingleSlash {
+                post { // POST /wallet/transfer
+                  entity(as[TransferMoneyPayload]) { payload =>
+                    checkPayloadIsValid(payload) {
+                      transferMoney(customerId, payload)
+                    }
                   }
                 }
+
               }
             )
           },
-          get { // GET /wallet
-            getWallet(customerId)
+          pathEndOrSingleSlash {
+            get { // GET /wallet
+              getWallet(customerId)
+            }
           }
         )
       }
@@ -308,24 +332,50 @@ class EasyPayAppRoutes(database: Database)(implicit system: ActorSystem[Nothing]
     }
   }
 
+  def getUser(customerId: CustomerId)(implicit
+      system: ActorSystem[Nothing],
+      uri: Uri
+  ): Route = {
+    val getUser: Future[UserRecord] = database.run {
+      UsersTable.Table
+        .filter(record => record.customerId === customerId)
+        .result
+        .head
+    }
+
+    onComplete(getUser) {
+      case Failure(throwable) =>
+        system.log.error(s"Failure while transferring money", throwable)
+        completeWithError(StatusCodes.InternalServerError, throwable.getMessage)
+
+      case Success(userRecord) =>
+        completeWithJson(userRecord.asJson)
+    }
+  }
+
   def getWallet(customerId: CustomerId)(implicit
       system: ActorSystem[Nothing],
       uri: Uri
   ): Route = {
-    // TODO get user names from UUID
     val getBalance: Future[Money] = transactionsManagerActorRef
       .askWithStatus[Money](replyTo => TransactionsManager.GetBalance(customerId)(replyTo))
 
-    val getHistory: Future[Seq[TransactionsHistoryRecord]] = database.run(
+    val getHistory: Future[Seq[(TransactionsHistoryRecord, Option[UserRecord])]] = database.run {
       TransactionsHistoryTable.Table
-        .filter(record => record.customerId === customerId || record.recipientCustomerId === customerId)
+        .filter(record => record.senderCustomerId === customerId || record.recipientCustomerId === customerId)
+        .joinLeft(UsersTable.Table)
+        .on { case (transactionRecord, userRecord) =>
+          Case.If(transactionRecord.senderCustomerId === customerId)
+            .Then(transactionRecord.recipientCustomerId === userRecord.customerId)
+            .Else(transactionRecord.senderCustomerId === userRecord.customerId)
+        }
         .result
-    )
+    }
 
     val response: Future[Json] = for {
       balance <- getBalance
       history <- getHistory
-    } yield Json.obj("balance" -> balance.asJson, "history" -> history.asJson)
+    } yield Json.obj("balance" -> balance.asJson, "history" -> history.asJson(encodeSeq(TransactionUserJoinEncoder)))
 
     onComplete(response) {
       case Failure(throwable) =>
@@ -391,5 +441,10 @@ object EasyPayAppRoutes {
         case Left(error)    => throw IllegalArgumentException(error.getMessage)
       }
     }
+
+  implicit val ScheduledOperationTupleEncoder: Encoder[(ScheduledOperationId, ScheduledOperation)] = Encoder.instance {
+    case (scheduledOperationId, scheduledOperation) =>
+      scheduledOperation.asJson.deepMerge(Json.obj("id" -> scheduledOperationId.asJson))
+  }
 
 }

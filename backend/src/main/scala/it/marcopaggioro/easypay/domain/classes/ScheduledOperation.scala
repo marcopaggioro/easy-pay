@@ -19,7 +19,8 @@ case class ScheduledOperation(
     recipientCustomerId: CustomerId,
     amount: Money,
     when: LocalDateTime,
-    repeat: Option[Period]
+    repeat: Option[Period],
+    status: Status = Status.Pending()
 ) extends Validable[ScheduledOperation] {
   override def validate(): ValidatedNel[String, ScheduledOperation] =
     differentCustomerIdsValidation(senderCustomerId, recipientCustomerId)
@@ -27,6 +28,8 @@ case class ScheduledOperation(
       .andThen(_ => validateDateTimeInFuture(when))
       .andThen(_ => repeat.traverse(validateMinimumPeriod))
       .map(_ => this)
+
+  def resetSeconds(): ScheduledOperation = copy(when = when.withSecond(0))
 }
 
 object ScheduledOperation {

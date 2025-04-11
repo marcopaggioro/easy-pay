@@ -2,21 +2,12 @@ package it.marcopaggioro.easypay.utilities
 
 import cats.data.Validated.condNel
 import cats.data.{NonEmptyList, Validated, ValidatedNel}
-import it.marcopaggioro.easypay.domain.classes.Aliases.{CustomerId, CustomerName, CustomerSurname, EncryptedPassword}
+import it.marcopaggioro.easypay.domain.classes.Aliases.{CustomerId}
 import it.marcopaggioro.easypay.domain.classes.Money
 
 import java.time.{LocalDate, LocalDateTime, Period}
 
 object ValidationUtilities {
-
-  def validateCustomerName(name: CustomerName): ValidatedNel[String, Unit] =
-    condNel(name.nonEmpty, (), "Name can not be empty")
-
-  def validateCustomerSurname(surname: CustomerSurname): ValidatedNel[String, Unit] =
-    condNel(surname.nonEmpty, (), "Name can not be empty")
-
-  def validateEncryptedPassword(encryptedPassword: EncryptedPassword): ValidatedNel[String, Unit] =
-    condNel(encryptedPassword.nonEmpty, (), "Password can not be empty")
 
   private lazy val minAge: Int = 16
   def validateBirthDate(date: LocalDate): ValidatedNel[String, Unit] =

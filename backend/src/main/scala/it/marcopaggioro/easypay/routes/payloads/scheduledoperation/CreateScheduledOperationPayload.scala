@@ -5,7 +5,8 @@ import cats.implicits.toTraverseOps
 import io.circe.Decoder
 import io.circe.generic.semiauto.deriveDecoder
 import it.marcopaggioro.easypay.domain.classes.Aliases.CustomerId
-import it.marcopaggioro.easypay.domain.classes.{Email, Money, Validable}
+import it.marcopaggioro.easypay.domain.classes.userdata.Email
+import it.marcopaggioro.easypay.domain.classes.{Money, Validable}
 import it.marcopaggioro.easypay.routes.payloads.CreateUserPayload
 import it.marcopaggioro.easypay.utilities.ValidationUtilities.{validatePositiveAmount, validateDateTimeInFuture, validateMinimumPeriod}
 
@@ -27,7 +28,13 @@ case class CreateScheduledOperationPayload(
 
 object CreateScheduledOperationPayload {
 
-  implicit val CreateScheduledOperationPayloadDecoder: Decoder[CreateScheduledOperationPayload] =
-    deriveDecoder[CreateScheduledOperationPayload]
+  implicit val CreateScheduledOperationPayloadDecoder: Decoder[CreateScheduledOperationPayload] = Decoder.instance { cursor =>
+    for {
+      recipientEmail <- cursor.get[Email]("recipientEmail")
+      amount <- cursor.get[Money]("amount")
+      when <- cursor.get[LocalDateTime]("when")
+      repeat <- cursor.get[Option[Period]]("repeat")
+    } yield CreateScheduledOperationPayload(recipientEmail, amount, when, repeat)
+  }
 
 }

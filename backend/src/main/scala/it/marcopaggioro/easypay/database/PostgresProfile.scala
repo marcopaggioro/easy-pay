@@ -1,6 +1,12 @@
 package it.marcopaggioro.easypay.database
 
-import com.github.tminglei.slickpg._
+import com.github.tminglei.slickpg.*
+import it.marcopaggioro.easypay.domain.classes.Money
+import it.marcopaggioro.easypay.domain.classes.userdata.{CustomerFirstName, CustomerLastName, Email}
+import slick.ast.BaseTypedType
+import slick.jdbc.JdbcType
+
+import java.time.Instant
 
 trait PostgresProfile
     extends ExPostgresProfile
@@ -33,4 +39,32 @@ trait PostgresProfile
   }
 }
 
-object PostgresProfile extends PostgresProfile
+object PostgresProfile extends PostgresProfile {
+  import it.marcopaggioro.easypay.database.PostgresProfile.MyAPI.*
+
+  implicit val CustomerFirstNameMapper: JdbcType[CustomerFirstName] = MappedColumnType.base[CustomerFirstName, String](
+    firstName => firstName.value,
+    value => CustomerFirstName(value)
+  )
+
+  implicit val CustomerLastNameMapper: JdbcType[CustomerLastName] = MappedColumnType.base[CustomerLastName, String](
+    lastName => lastName.value,
+    value => CustomerLastName(value)
+  )
+
+  implicit val MoneyMapper: JdbcType[Money] = MappedColumnType.base[Money, BigDecimal](
+    money => money.value,
+    bigDecimal => Money(bigDecimal)
+  )
+
+  implicit val EmailMapper: JdbcType[Email] = MappedColumnType.base[Email, String](
+    email => email.value,
+    value => Email(value)
+  )
+
+  implicit val InstantMapper: JdbcType[Instant] & BaseTypedType[Instant] = MappedColumnType.base[Instant, Long](
+    instant => instant.toEpochMilli,
+    milliSeconds => Instant.ofEpochMilli(milliSeconds)
+  )
+
+}

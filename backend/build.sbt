@@ -35,7 +35,7 @@ lazy val root = (project in file("."))
     dockerSettings,
     // wartremover
     Compile / compile / wartremoverErrors ++= allowedWarts,
-    wartremoverExcluded += baseDirectory.value / "target",
+    wartremoverExcluded += baseDirectory.value / "target"
   )
 
 // ############### DEPENDENCIES ###############

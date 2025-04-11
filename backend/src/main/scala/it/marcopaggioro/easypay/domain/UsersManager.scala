@@ -9,12 +9,7 @@ import cats.implicits.toTraverseOps
 import it.marcopaggioro.easypay.AppConfig
 import it.marcopaggioro.easypay.domain.classes.Aliases.CustomerId
 import it.marcopaggioro.easypay.domain.classes.Domain.{DomainCommand, DomainEvent, DomainState}
-import it.marcopaggioro.easypay.domain.classes.{Email, UserData}
-import it.marcopaggioro.easypay.utilities.ValidationUtilities.{
-  validateCustomerName,
-  validateCustomerSurname,
-  validateEncryptedPassword
-}
+import it.marcopaggioro.easypay.domain.classes.userdata.{CustomerFirstName, CustomerLastName, Email, EncryptedPassword, UserData}
 
 import java.time.{Instant, ZonedDateTime}
 import java.util.UUID
@@ -82,17 +77,17 @@ object UsersManager {
   case class UpdateUserData(
       customerId: CustomerId,
       maybeEmail: Option[Email],
-      maybeName: Option[String],
-      maybeSurname: Option[String],
-      maybeEncryptedPassword: Option[String]
+      maybeFirstName: Option[CustomerFirstName],
+      maybeLastName: Option[CustomerLastName],
+      maybeEncryptedPassword: Option[EncryptedPassword]
   )(val replyTo: ActorRef[StatusReply[Done]])
       extends UsersManagerCommand {
     override def validate(state: UsersManagerState): ValidatedNel[String, Unit] =
       customerIdExistsValidation(state, customerId)
         .andThen(_ => maybeEmail.traverse(email => email.validate().andThen(_ => emailNotAlreadyExistsValidation(state, email))))
-        .andThen(_ => maybeName.traverse(validateCustomerName))
-        .andThen(_ => maybeSurname.traverse(validateCustomerSurname))
-        .andThen(_ => maybeEncryptedPassword.traverse(validateEncryptedPassword))
+        .andThen(_ => maybeFirstName.traverse(_.validate()))
+        .andThen(_ => maybeLastName.traverse(_.validate()))
+        .andThen(_ => maybeEncryptedPassword.traverse(_.validate()))
         .map(_ => ())
 
     override protected def generateEvents(state: UsersManagerState): List[UsersManagerEvent] =
@@ -101,36 +96,43 @@ object UsersManager {
           List.empty
 
         case Some(userData) =>
-          val emailChanged: Option[EmailChanged] =
+          val emailEvent: Option[EmailChanged] =
             maybeEmail.flatMap(email => Option.when(userData.email != email)(EmailChanged(customerId, email)))
-          val nameChanged: Option[NameChanged] =
-            maybeName.flatMap(name => Option.when(userData.name != name)(NameChanged(customerId, name)))
-          val surnameChanged: Option[SurnameChanged] =
-            maybeSurname.flatMap(surname => Option.when(userData.surname != surname)(SurnameChanged(customerId, surname)))
-          val passwordChanged: Option[PasswordChanged] =
+          val firstNameEvent: Option[FirstChanged] =
+            maybeFirstName.flatMap(firstName => Option.when(userData.firstName != firstName)(FirstChanged(customerId, firstName)))
+          val lastNameEvent: Option[LastNameChanged] =
+            maybeLastName.flatMap(lastName => Option.when(userData.lastName != lastName)(LastNameChanged(customerId, lastName)))
+          val passwordEvent: Option[PasswordChanged] =
             maybeEncryptedPassword.flatMap(encryptedPassword =>
               Option.when(userData.encryptedPassword != encryptedPassword)(
                 PasswordChanged(customerId, encryptedPassword)
               )
             )
 
-          List(emailChanged, nameChanged, surnameChanged, passwordChanged).flatten
+          List(emailEvent, firstNameEvent, lastNameEvent, passwordEvent).flatten
       }
   }
 
-  case class NameChanged(override val customerId: CustomerId, name: String, override val instant: Instant = Instant.now())
-      extends UsersManagerEvent {
+  case class FirstChanged(
+      override val customerId: CustomerId,
+      firstName: CustomerFirstName,
+      override val instant: Instant = Instant.now()
+  ) extends UsersManagerEvent {
     override def applyTo(state: UsersManagerState): UsersManagerState = state.users.get(customerId) match {
-      case Some(currentUserData) => state.copy(users = state.users.updated(customerId, currentUserData.withName(name)))
-      case None                  => state
+      case Some(currentUserData) =>
+        state.copy(users = state.users.updated(customerId, currentUserData.copy(firstName = firstName)))
+      case None => state
     }
 
   }
 
-  case class SurnameChanged(override val customerId: CustomerId, surname: String, override val instant: Instant = Instant.now())
-      extends UsersManagerEvent {
+  case class LastNameChanged(
+      override val customerId: CustomerId,
+      lastName: CustomerLastName,
+      override val instant: Instant = Instant.now()
+  ) extends UsersManagerEvent {
     override def applyTo(state: UsersManagerState): UsersManagerState = state.users.get(customerId) match {
-      case Some(currentUserData) => state.copy(users = state.users.updated(customerId, currentUserData.withSurname(surname)))
+      case Some(currentUserData) => state.copy(users = state.users.updated(customerId, currentUserData.copy(lastName = lastName)))
       case None                  => state
     }
 
@@ -139,7 +141,7 @@ object UsersManager {
   case class EmailChanged(override val customerId: CustomerId, email: Email, override val instant: Instant = Instant.now())
       extends UsersManagerEvent {
     override def applyTo(state: UsersManagerState): UsersManagerState = state.users.get(customerId) match {
-      case Some(currentUserData) => state.copy(users = state.users.updated(customerId, currentUserData.withEmail(email)))
+      case Some(currentUserData) => state.copy(users = state.users.updated(customerId, currentUserData.copy(email = email)))
       case None                  => state
     }
 
@@ -147,24 +149,24 @@ object UsersManager {
 
   case class PasswordChanged(
       override val customerId: CustomerId,
-      encryptedPassword: String,
+      encryptedPassword: EncryptedPassword,
       override val instant: Instant = Instant.now()
   ) extends UsersManagerEvent {
     override def applyTo(state: UsersManagerState): UsersManagerState = state.users.get(customerId) match {
       case Some(currentUserData) =>
-        state.copy(users = state.users.updated(customerId, currentUserData.withEncryptedPassword(encryptedPassword)))
+        state.copy(users = state.users.updated(customerId, currentUserData.copy(encryptedPassword = encryptedPassword)))
       case None => state
     }
 
   }
 
   // -----
-  case class LoginUserWithEmail(email: Email, encryptedPassword: String)(val replyTo: ActorRef[StatusReply[CustomerId]])
+  case class LoginUserWithEmail(email: Email, encryptedPassword: EncryptedPassword)(val replyTo: ActorRef[StatusReply[CustomerId]])
       extends UsersManagerCommand {
     def validateAndGetCustomerId(state: UsersManagerState): ValidatedNel[String, CustomerId] =
       email
         .validate()
-        .andThen(_ => validateEncryptedPassword(encryptedPassword))
+        .andThen(_ => encryptedPassword.validate())
         .andThen(_ => customerEmailExistsValidation(state, email))
         .andThen { case (customerId, userData) =>
           condNel(userData.encryptedPassword == encryptedPassword, customerId, "Wrong credentials")

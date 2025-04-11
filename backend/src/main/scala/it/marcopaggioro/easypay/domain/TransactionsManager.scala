@@ -9,7 +9,7 @@ import it.marcopaggioro.easypay.domain.TransactionsManager.TransactionsManagerEv
 import it.marcopaggioro.easypay.domain.UsersManager.{UsersManagerEvent, UsersManagerState}
 import it.marcopaggioro.easypay.domain.classes.Aliases.{CustomerId, ScheduledOperationId, TransactionId}
 import it.marcopaggioro.easypay.domain.classes.Domain.{DomainCommand, DomainEvent, DomainState}
-import it.marcopaggioro.easypay.domain.classes.{Money, ScheduledOperation}
+import it.marcopaggioro.easypay.domain.classes.{Money, ScheduledOperation, Status}
 import it.marcopaggioro.easypay.utilities.ValidationUtilities.{differentCustomerIdsValidation, validatePositiveAmount}
 
 import java.time.{Instant, LocalDateTime, Period}
@@ -98,11 +98,12 @@ object TransactionsManager {
   // -----
   case class CreateScheduledOperation(scheduledOperation: ScheduledOperation)(val replyTo: ActorRef[StatusReply[Done]])
       extends TransactionsManagerCommand {
+
     override def validate(state: TransactionsManagerState): ValidatedNel[String, Unit] =
-      scheduledOperation.validate().map(_ => ())
+      scheduledOperation.resetSeconds().validate().map(_ => ())
 
     override protected def generateEvents(state: TransactionsManagerState): List[TransactionsManagerEvent] = List(
-      ScheduledOperationCreated(UUID.randomUUID(), scheduledOperation)
+      ScheduledOperationCreated(UUID.randomUUID(), scheduledOperation.resetSeconds())
     )
   }
 
@@ -173,31 +174,58 @@ object TransactionsManager {
       extends TransactionsManagerCommand {
     override def validate(state: TransactionsManagerState): ValidatedNel[String, Unit] = validNel(())
 
-    override def generateEvents(state: TransactionsManagerState): List[TransactionsManagerEvent] = if (maybeError.isEmpty) {
-      List(
-        ScheduledOperationExecuted(scheduledOperationId)
-      )
-    } else {
-      List.empty
+    override def generateEvents(state: TransactionsManagerState): List[TransactionsManagerEvent] = {
+      val status: Status = maybeError match {
+        case Some(error) => Status.Failed(error)
+        case None        => Status.Done()
+      }
+
+      state.scheduledOperations.get(scheduledOperationId) match {
+        case None =>
+          // Scheduled operation not exists: no generate events
+          List.empty
+
+        case Some(ScheduledOperation(_, _, _, _, _, _: Status.Failed)) =>
+          // Scheduled operation exists and already has failed status: do not generate other events
+          List.empty
+
+        case _ =>
+          List(
+            ScheduledOperationExecuted(scheduledOperationId, status)
+          )
+      }
     }
   }
 
   case class ScheduledOperationExecuted(
       scheduledOperationId: ScheduledOperationId,
+      status: Status,
       override val instant: Instant = Instant.now()
   ) extends TransactionsManagerEvent {
 
     override def applyTo(state: TransactionsManagerState): TransactionsManagerState =
       state.scheduledOperations.get(scheduledOperationId) match {
         case Some(scheduledOperation) =>
-          scheduledOperation.repeat match {
-            case Some(repeatPeriod) =>
-              state.copy(scheduledOperations =
-                state.scheduledOperations
-                  .updated(scheduledOperationId, scheduledOperation.copy(when = scheduledOperation.when.plus(repeatPeriod)))
-              )
+          status match {
+            case _: Status.Pending =>
+              state
 
-            case None => state.copy(scheduledOperations = state.scheduledOperations.removed(scheduledOperationId))
+            case _: Status.Done =>
+              scheduledOperation.repeat match {
+                case Some(repeatPeriod) =>
+                  state.copy(scheduledOperations =
+                    state.scheduledOperations
+                      .updated(scheduledOperationId, scheduledOperation.copy(when = scheduledOperation.when.plus(repeatPeriod)))
+                  )
+
+                case None =>
+                  state.copy(scheduledOperations = state.scheduledOperations.removed(scheduledOperationId))
+              }
+
+            case failed: Status.Failed =>
+              state.copy(scheduledOperations =
+                state.scheduledOperations.updated(scheduledOperationId, scheduledOperation.copy(status = status))
+              )
           }
 
         case None =>

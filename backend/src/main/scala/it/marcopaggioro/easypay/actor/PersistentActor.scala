@@ -5,7 +5,13 @@ import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import akka.actor.typed.{ActorRef, BackoffSupervisorStrategy, Behavior, SupervisorStrategy}
 import akka.pattern.StatusReply
 import akka.persistence.typed.PersistenceId
-import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria, SnapshotCountRetentionCriteria}
+import akka.persistence.typed.scaladsl.{
+  Effect,
+  EventSourcedBehavior,
+  ReplyEffect,
+  RetentionCriteria,
+  SnapshotCountRetentionCriteria
+}
 import cats.data.NonEmptyList
 import cats.data.Validated.{Invalid, Valid}
 import it.marcopaggioro.easypay.domain.classes.Domain.{DomainCommand, DomainEvent, DomainState}
@@ -39,7 +45,9 @@ trait PersistentActor[Command <: DomainCommand[State, Event], Event <: DomainEve
       onFailure: NonEmptyList[String] => Effect[Event, State]
   ): Effect[Event, State] = command.validateAndGenerateEvents(state) match {
     case Valid(events) =>
-      context.log.info(s"Generated ${events.size} events from command ${command.toString}")
+      if (events.nonEmpty) {
+        context.log.info(s"Generated ${events.size} events from command ${command.toString}")
+      }
       onSuccess(events)
 
     case Invalid(errors) =>

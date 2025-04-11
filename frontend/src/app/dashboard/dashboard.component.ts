@@ -1,5 +1,6 @@
 import {Component} from '@angular/core';
 import {RouterLink, RouterLinkActive, RouterOutlet} from '@angular/router';
+import {AuthorizationService} from '../utilities/authorization.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -12,7 +13,7 @@ import {RouterLink, RouterLinkActive, RouterOutlet} from '@angular/router';
 })
 export class DashboardComponent {
 
-  constructor() {
+  constructor(protected authorizationService: AuthorizationService) {
   }
 
 }

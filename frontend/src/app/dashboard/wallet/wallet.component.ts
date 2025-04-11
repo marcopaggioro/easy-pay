@@ -2,19 +2,21 @@ import {Component, OnInit, ViewChild} from '@angular/core';
 import {SpinnerComponent} from "../../utilities/spinner.component";
 import Decimal from 'decimal.js';
 import {Operation} from '../../classes/Operation';
-import {AuthorizationService} from '../../utilities/authorization.service';
 import {HttpClient} from '@angular/common/http';
 import {Wallet} from '../../classes/Wallet';
 import {APP_CONSTANTS} from '../../app.constants';
-import {DatePipe, DecimalPipe, NgIf, NgOptimizedImage} from '@angular/common';
+import {DatePipe, DecimalPipe, NgIf} from '@angular/common';
 import {
   NgbAccordionBody,
-  NgbAccordionButton, NgbAccordionCollapse,
+  NgbAccordionButton,
+  NgbAccordionCollapse,
   NgbAccordionDirective,
   NgbAccordionHeader,
-  NgbAccordionItem, NgbTooltip
+  NgbAccordionItem,
+  NgbTooltip
 } from '@ng-bootstrap/ng-bootstrap';
 import {UserdataService} from '../../utilities/userdata.service';
+import {RouterLink} from '@angular/router';
 
 @Component({
   selector: 'app-wallet',
@@ -30,7 +32,7 @@ import {UserdataService} from '../../utilities/userdata.service';
     DatePipe,
     DecimalPipe,
     NgbTooltip,
-    NgOptimizedImage
+    RouterLink
   ],
   templateUrl: './wallet.component.html'
 })

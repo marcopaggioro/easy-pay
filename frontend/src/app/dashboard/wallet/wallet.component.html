@@ -7,14 +7,15 @@
     <div class="card">
       <div class="card-body">
         <!--    TODO https://getbootstrap.com/docs/5.3/components/placeholders/-->
-        <h2>Saldo: {{ Number(this.balance) | number:'1.2-2' }} &euro;</h2>
-        <button type="button" class="btn btn-success">Trasferisci denaro</button>
+        <h2 class="card-title">Saldo: {{ Number(this.balance) | number:'1.2-2' }} &euro;</h2>
+        <button type="button" class="btn btn-success" routerLink="../transfer">Trasferisci denaro</button>
+        <button type="button" class="btn btn-info ms-3" routerLink="../recharge">Ricarica wallet</button>
       </div>
     </div>
 
     <div class="card mt-5">
       <div class="card-body">
-        <h2>Operazioni recenti</h2>
+        <h2 class="card-title">Operazioni recenti</h2>
         <div ngbAccordion *ngIf="this.operationsHistory?.length || 0 > 0">
           @for (operation of this.operationsHistory; track operation.transactionId) {
             @if (operation.senderCustomerId != operation.recipientCustomerId) {
@@ -47,6 +48,9 @@
                             class="ps-2">{{ operation.transactionId }}</code></li>
                           <li class="list-group-item">Destinatario <code
                             class="ps-2">{{ operation.interactedFirstName + " " + operation.interactedLastName }}</code>
+                          </li>
+                          <li class="list-group-item">Descrizione <code
+                            class="ps-2">{{ operation.description }}</code>
                           </li>
                           <li class="list-group-item">Email <code class="ps-2" placement="bottom"
                                                                   ngbTooltip="{{operation.senderCustomerId}}">{{ operation.interactedEmail }}</code>
@@ -88,11 +92,15 @@
                           <li class="list-group-item">Mittente <code
                             class="ps-2">{{ operation.interactedFirstName + " " + operation.interactedLastName }}</code>
                           </li>
+                          <li class="list-group-item">Descrizione <code
+                            class="ps-2">{{ operation.description }}</code>
+                          </li>
                           <li class="list-group-item">Email <code class="ps-2" placement="bottom"
                                                                   ngbTooltip="{{operation.senderCustomerId}}">{{ operation.interactedEmail }}</code>
                           </li>
                           <li class="list-group-item">Data <code
-                            class="ps-2">{{ operation.instant | date:'dd/MM/YYYY HH:mm:ss' }}</code></li>                        </ul>
+                            class="ps-2">{{ operation.instant | date:'dd/MM/YYYY HH:mm:ss' }}</code></li>
+                        </ul>
                       </ng-template>
                     </div>
                   </div>
@@ -126,7 +134,8 @@
                         <li class="list-group-item">Transazione <code class="ps-2">{{ operation.transactionId }}</code>
                         </li>
                         <li class="list-group-item">Data <code
-                          class="ps-2">{{ operation.instant | date:'dd/MM/YYYY HH:mm:ss' }}</code></li>                      </ul>
+                          class="ps-2">{{ operation.instant | date:'dd/MM/YYYY HH:mm:ss' }}</code></li>
+                      </ul>
                     </ng-template>
                   </div>
                 </div>
@@ -139,6 +148,13 @@
   </div>
 
   <div class="col-4">
-    Destra
+    <div class="card">
+      <div class="card-body">
+        <h2 class="card-title">Invia di nuovo</h2>
+        <button type="button" class="btn btn-success">Trasferisci denaro</button>
+<!--        TODO righe tipo lista con faccine-->
+      </div>
+    </div>
+
   </div>
 </div>

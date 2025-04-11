@@ -15,6 +15,7 @@ import {APP_CONSTANTS} from '../../app.constants';
 export class TransferComponent {
   transferForm = new FormGroup({
     recipientEmail: new FormControl('', [Validators.required, Validators.email]), //TODO  validazione insufficiente: usare la regex del BE
+    description: new FormControl('', Validators.required),
     amount: new FormControl(0, Validators.required),
   });
 
@@ -29,8 +30,9 @@ export class TransferComponent {
 
 
     const body = {
-      recipientEmail: this.transferForm.controls.recipientEmail.value || "",
-      amount: this.transferForm.controls.amount.value || 0
+      recipientEmail: this.transferForm.controls.recipientEmail.value!,
+      description: this.transferForm.controls.description.value!,
+      amount: this.transferForm.controls.amount.value!
     }
     this.http.post(APP_CONSTANTS.WALLET_TRANSFER_ENDPOINT, body, {
       withCredentials: true,

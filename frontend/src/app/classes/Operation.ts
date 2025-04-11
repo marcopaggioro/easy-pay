@@ -4,6 +4,7 @@ export interface Operation {
   transactionId: string;
   senderCustomerId: string;
   recipientCustomerId: string;
+  description: string;
   interactedFirstName: string;
   interactedLastName: string;
   interactedEmail: string;

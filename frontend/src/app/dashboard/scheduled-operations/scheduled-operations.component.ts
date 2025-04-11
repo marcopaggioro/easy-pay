@@ -1,12 +1,9 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
 import {SpinnerComponent} from '../../utilities/spinner.component';
-import Decimal from 'decimal.js';
-import {Operation} from '../../classes/Operation';
 import {HttpClient} from '@angular/common/http';
-import {Wallet} from '../../classes/Wallet';
 import {ScheduledOperation} from '../../classes/ScheduledOperation';
 import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
-import {NgIf} from '@angular/common';
+import {DatePipe, DecimalPipe, NgIf} from '@angular/common';
 import {APP_CONSTANTS} from '../../app.constants';
 
 @Component({
@@ -15,7 +12,9 @@ import {APP_CONSTANTS} from '../../app.constants';
     SpinnerComponent,
     FormsModule,
     NgIf,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    DatePipe,
+    DecimalPipe
   ],
   templateUrl: './scheduled-operations.component.html'
 })
@@ -25,6 +24,7 @@ export class ScheduledOperationsComponent implements OnInit {
 
   scheduledOperationForm = new FormGroup({
     recipientEmail: new FormControl('', [Validators.required, Validators.email]), //TODO  validazione insufficiente: usare la regex del BE
+    description: new FormControl('', Validators.required),
     amount: new FormControl(0, Validators.required),
     dateTime: new FormControl('', Validators.required),
   });
@@ -58,6 +58,7 @@ export class ScheduledOperationsComponent implements OnInit {
     //TODO popup errore login
     const body = {
       recipientEmail: this.scheduledOperationForm.controls.recipientEmail.value!,
+      description: this.scheduledOperationForm.controls.description.value!,
       amount: this.scheduledOperationForm.controls.amount.value!,
       when: this.scheduledOperationForm.controls.dateTime.value!
     }
@@ -83,4 +84,6 @@ export class ScheduledOperationsComponent implements OnInit {
       }
     );
   }
+
+  protected readonly Number = Number;
 }

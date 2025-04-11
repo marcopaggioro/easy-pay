@@ -1,60 +1,58 @@
-<main class="h-100">
-  <div class="container-fluid h-100 w-100 align-items-center">
-    <div class="row h-100 align-items-center">
-      <div class="col-10 col-sm-8 col-md-6 col-lg-4 col-xxl-2 mx-auto">
-        <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
-          <h1 class="h3 mb-3 fw-normal">Anagrafica</h1>
-
-          <!-- First name -->
-          <div class="form-floating my-3">
-            <input type="text" class="form-control" id="firstName" placeholder="Mario" formControlName="firstName">
-            <label for="firstName">Nome</label>
-            <div class="text-danger" *ngIf="profileForm.controls.firstName.touched && profileForm.controls.firstName.invalid">
-              Campo obbligatorio
-            </div>
-          </div>
-          <!-- Last name -->
-          <div class="form-floating my-3">
-            <input type="text" class="form-control" id="lastName" placeholder="Rossi" formControlName="lastName">
-            <label for="lastName">Cognome</label>
-            <div class="text-danger" *ngIf="profileForm.controls.lastName.touched && profileForm.controls.lastName.invalid">
-              Campo obbligatorio
-            </div>
-          </div>
-          <!-- Birth date -->
-          <div class="form-floating my-3">
-            <!--            TODO ngdatepicker -->
-            <input type="date" class="form-control" id="birthDate" formControlName="birthDate">
-            <label for="birthDate">Data di nascita</label>
-            <div class="text-danger" *ngIf="profileForm.controls.birthDate.touched && profileForm.controls.birthDate.invalid">
-              Campo obbligatorio
-            </div>
-          </div>
-          <!-- Email -->
-          <div class="form-floating my-3">
-            <input type="email" class="form-control" id="email" placeholder="mario.rossi@gmail.com" formControlName="email">
-            <label for="email">Email</label>
-            <div class="text-danger" *ngIf="profileForm.controls.email.touched && profileForm.controls.email.invalid">
-              Campo obbligatorio
-            </div>
-          </div>
-<!--          TODO confim password -->
-          <!-- Password -->
-          <div class="form-floating my-3">
-            <input type="password" class="form-control" id="password" placeholder="password" formControlName="password">
-            <label for="password">Password</label>
-            <div class="text-danger" *ngIf="profileForm.controls.password.touched && profileForm.controls.password.invalid">
-              Campo obbligatorio
-            </div>
-          </div>
-
-          <button class="btn btn-primary w-100 py-2" type="submit" [disabled]="profileForm.invalid">Modifica</button>
-
-          <p class="mt-5 mb-3 text-center text-body-secondary">&copy; EasyPay - 2025</p>
-        </form>
+<div class="card">
+  <div class="card-body">
+    <h2 class="card-title">Gestione anagrafica</h2>
+    <small>E' possibile visualizzare e modificare i propri dati</small>
+    <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+      <!-- First name -->
+      <div class="form-floating my-3">
+        <input type="text" class="form-control" id="firstName" placeholder="Mario" formControlName="firstName">
+        <label for="firstName">Nome</label>
+        <div class="text-danger"
+             *ngIf="profileForm.controls.firstName.touched && profileForm.controls.firstName.invalid">
+          Campo obbligatorio
+        </div>
       </div>
-    </div>
+      <!-- Last name -->
+      <div class="form-floating my-3">
+        <input type="text" class="form-control" id="lastName" placeholder="Rossi" formControlName="lastName">
+        <label for="lastName">Cognome</label>
+        <div class="text-danger" *ngIf="profileForm.controls.lastName.touched && profileForm.controls.lastName.invalid">
+          Campo obbligatorio
+        </div>
+      </div>
+      <!-- Birth date -->
+      <div class="form-floating my-3">
+        <!--            TODO ngdatepicker -->
+        <input type="date" class="form-control" id="birthDate" formControlName="birthDate">
+        <label for="birthDate">Data di nascita</label>
+        <div class="text-danger"
+             *ngIf="profileForm.controls.birthDate.touched && profileForm.controls.birthDate.invalid">
+          Campo obbligatorio
+        </div>
+      </div>
+      <!-- Email -->
+      <div class="form-floating my-3">
+        <input type="email" class="form-control" id="email" placeholder="mario.rossi@gmail.com" formControlName="email">
+        <label for="email">Email</label>
+        <div class="text-danger" *ngIf="profileForm.controls.email.touched && profileForm.controls.email.invalid">
+          Campo obbligatorio
+        </div>
+      </div>
+      <!--          TODO confim password -->
+      <!-- Password -->
+      <div class="form-floating my-3">
+        <input type="password" class="form-control" id="password" placeholder="password" formControlName="password">
+        <label for="password">Password</label>
+        <div class="text-danger" *ngIf="profileForm.controls.password.touched && profileForm.controls.password.invalid">
+          Campo obbligatorio
+        </div>
+      </div>
+
+      <button class="btn btn-primary w-100 py-2" type="submit" [disabled]="profileForm.invalid">Modifica</button>
+
+      <p class="mt-5 mb-3 text-center text-body-secondary">&copy; EasyPay - 2025</p>
+    </form>
   </div>
-</main>
+</div>
 
 <!--TODO https://getbootstrap.com/docs/5.3/components/spinners/#buttons-->

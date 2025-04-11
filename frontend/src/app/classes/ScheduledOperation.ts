@@ -5,6 +5,7 @@ export interface ScheduledOperation {
   recipientCustomerId: string;
   amount: Decimal;
   when: Date;
+  description: string;
   repeat?: string;
   status: string;
 }

@@ -1,10 +1,17 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
 import {SpinnerComponent} from '../../utilities/spinner.component';
-import {HttpClient} from '@angular/common/http';
+import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {ScheduledOperation} from '../../classes/ScheduledOperation';
 import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {DatePipe, DecimalPipe, NgIf} from '@angular/common';
 import {APP_CONSTANTS} from '../../app.constants';
+import {AlertComponent} from '../../utilities/alert.component';
+import {
+  NgbAccordionBody,
+  NgbAccordionButton,
+  NgbAccordionCollapse,
+  NgbAccordionDirective, NgbAccordionHeader, NgbAccordionItem, NgbTooltip
+} from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-scheduled-operations',
@@ -14,12 +21,23 @@ import {APP_CONSTANTS} from '../../app.constants';
     NgIf,
     ReactiveFormsModule,
     DatePipe,
-    DecimalPipe
+    DecimalPipe,
+    AlertComponent,
+    NgbAccordionBody,
+    NgbAccordionButton,
+    NgbAccordionCollapse,
+    NgbAccordionDirective,
+    NgbAccordionHeader,
+    NgbAccordionItem,
+    NgbTooltip
   ],
   templateUrl: './scheduled-operations.component.html'
 })
 export class ScheduledOperationsComponent implements OnInit {
   @ViewChild(SpinnerComponent) spinner!: SpinnerComponent;
+  @ViewChild(AlertComponent) alert!: AlertComponent;
+  loading: boolean = false;
+
   scheduledOperations: ScheduledOperation[] = [];
 
   scheduledOperationForm = new FormGroup({
@@ -48,14 +66,12 @@ export class ScheduledOperationsComponent implements OnInit {
   }
 
   createScheduledOperation(): void {
-    this.spinner.show();
-
+    this.loading = true;
     if (this.scheduledOperationForm.invalid) {
       console.warn("Trying to submit with invalid data")
       return;
     }
 
-    //TODO popup errore login
     const body = {
       recipientEmail: this.scheduledOperationForm.controls.recipientEmail.value!,
       description: this.scheduledOperationForm.controls.description.value!,
@@ -64,17 +80,22 @@ export class ScheduledOperationsComponent implements OnInit {
     }
     this.http.put(APP_CONSTANTS.WALLET_CREATE_SCHEDULE_ENDPOINT, body, {
       withCredentials: true,
-      responseType: 'text'
-    }).subscribe(
-      () => {
-        this.getScheduledOperations();
+      responseType: 'json'
+    }).subscribe({
+      next: () => {
+        this.scheduledOperationForm.reset();
+
+        this.alert.success("Operazione andata a buon fine");
+        this.loading = false;
+      },
+      error: (httpErrorResponse: HttpErrorResponse) => {
+        this.alert.error(httpErrorResponse?.error?.error || "Errore generico");
+        this.loading = false;
       }
-    );
+    });
   }
 
   deleteScheduledOperation(id: string): void {
-    this.spinner.show();
-
     this.http.delete(APP_CONSTANTS.WALLET_DELETE_SCHEDULE_ENDPOINT + "/" + id, {
       withCredentials: true,
       responseType: 'text'
@@ -86,4 +107,5 @@ export class ScheduledOperationsComponent implements OnInit {
   }
 
   protected readonly Number = Number;
+  protected readonly APP_CONSTANTS = APP_CONSTANTS;
 }

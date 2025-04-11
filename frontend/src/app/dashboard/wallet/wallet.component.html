@@ -7,7 +7,7 @@
     <div class="card">
       <div class="card-body">
         <!--    TODO https://getbootstrap.com/docs/5.3/components/placeholders/-->
-        <h2 class="card-title">Saldo: {{ Number(this.balance) | number:'1.2-2' }} &euro;</h2>
+        <h2 class="card-title">Saldo: {{ Number(this.balance) | number:'1.2-2' }}&euro;</h2>
         <button type="button" class="btn btn-success" routerLink="../transfer">Trasferisci denaro</button>
         <button type="button" class="btn btn-info ms-3" routerLink="../recharge">Ricarica wallet</button>
       </div>
@@ -17,7 +17,7 @@
       <div class="card-body">
         <h2 class="card-title">Operazioni recenti</h2>
         <div ngbAccordion *ngIf="this.operationsHistory?.length || 0 > 0">
-          @for (operation of this.operationsHistory; track operation.transactionId) {
+          @for (operation of this.operationsHistory; track operation) {
             @if (operation.senderCustomerId != operation.recipientCustomerId) {
               @if (this.userDataService.userData.id == operation.recipientCustomerId) {
                 <!-- Received -->
@@ -35,7 +35,7 @@
                           <small class="m-0 ps-1">{{ operation.instant | date:'dd MMMM HH:mm' }}</small>
                         </div>
                         <div class="col-3 d-flex align-items-center justify-content-center">
-                          <h5>{{ Number(operation.amount) | number:'1.2-2' }} &euro;</h5>
+                          <h5>{{ Number(operation.amount) | number:'1.2-2' }}&euro;</h5>
                         </div>
                       </div>
                     </button>
@@ -45,7 +45,11 @@
                       <ng-template>
                         <ul class="list-group list-group-flush">
                           <li class="list-group-item">Transazione <code
-                            class="ps-2">{{ operation.transactionId }}</code></li>
+                            class="ps-2">{{ operation.transactionId }}</code>
+                          </li>
+                          <li class="list-group-item">Importo <code
+                            class="ps-2">{{ Number(operation.amount) | number:'1.2-2' }}&euro;</code>
+                          </li>
                           <li class="list-group-item">Destinatario <code
                             class="ps-2">{{ operation.interactedFirstName + " " + operation.interactedLastName }}</code>
                           </li>
@@ -56,7 +60,8 @@
                                                                   ngbTooltip="{{operation.senderCustomerId}}">{{ operation.interactedEmail }}</code>
                           </li>
                           <li class="list-group-item">Data <code
-                            class="ps-2">{{ operation.instant | date:'dd/MM/YYYY HH:mm:ss' }}</code></li>
+                            class="ps-2">{{ operation.instant | date:'dd/MM/YYYY HH:mm:ss' }}</code>
+                          </li>
                         </ul>
                       </ng-template>
                     </div>
@@ -78,7 +83,7 @@
                           <small class="m-0 ps-1">{{ operation.instant | date:'dd MMMM HH:mm' }}</small>
                         </div>
                         <div class="col-3 d-flex align-items-center justify-content-center">
-                          <h5>-{{ Number(operation.amount) | number:'1.2-2' }} &euro;</h5>
+                          <h5>-{{ Number(operation.amount) | number:'1.2-2' }}&euro;</h5>
                         </div>
                       </div>
                     </button>
@@ -88,7 +93,11 @@
                       <ng-template>
                         <ul class="list-group list-group-flush">
                           <li class="list-group-item">Transazione <code
-                            class="ps-2">{{ operation.transactionId }}</code></li>
+                            class="ps-2">{{ operation.transactionId }}</code>
+                          </li>
+                          <li class="list-group-item">Importo <code
+                            class="ps-2">{{ Number(operation.amount) | number:'1.2-2' }}&euro;</code>
+                          </li>
                           <li class="list-group-item">Mittente <code
                             class="ps-2">{{ operation.interactedFirstName + " " + operation.interactedLastName }}</code>
                           </li>
@@ -99,7 +108,8 @@
                                                                   ngbTooltip="{{operation.senderCustomerId}}">{{ operation.interactedEmail }}</code>
                           </li>
                           <li class="list-group-item">Data <code
-                            class="ps-2">{{ operation.instant | date:'dd/MM/YYYY HH:mm:ss' }}</code></li>
+                            class="ps-2">{{ operation.instant | date:'dd/MM/YYYY HH:mm:ss' }}</code>
+                          </li>
                         </ul>
                       </ng-template>
                     </div>
@@ -122,7 +132,7 @@
                         <small class="m-0 ps-1">{{ operation.instant | date:'dd MMMM HH:mm' }}</small>
                       </div>
                       <div class="col-3 d-flex align-items-center justify-content-center">
-                        <h5>{{ Number(operation.amount) | number:'1.2-2' }} &euro;</h5>
+                        <h5>{{ Number(operation.amount) | number:'1.2-2' }}&euro;</h5>
                       </div>
                     </div>
                   </button>
@@ -131,10 +141,15 @@
                   <div ngbAccordionBody>
                     <ng-template>
                       <ul class="list-group list-group-flush">
-                        <li class="list-group-item">Transazione <code class="ps-2">{{ operation.transactionId }}</code>
+                        <li class="list-group-item">
+                          Transazione <code class="ps-2">{{ operation.transactionId }}</code>
+                        </li>
+                        <li class="list-group-item">Importo <code
+                          class="ps-2">{{ Number(operation.amount) | number:'1.2-2' }}&euro;</code>
                         </li>
                         <li class="list-group-item">Data <code
-                          class="ps-2">{{ operation.instant | date:'dd/MM/YYYY HH:mm:ss' }}</code></li>
+                          class="ps-2">{{ operation.instant | date:'dd/MM/YYYY HH:mm:ss' }}</code>
+                        </li>
                       </ul>
                     </ng-template>
                   </div>

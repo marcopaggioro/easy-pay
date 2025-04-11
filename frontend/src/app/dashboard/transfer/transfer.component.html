@@ -1,37 +1,45 @@
-<main class="h-100">
-  <div class="container-fluid h-100 w-100 align-items-center">
-    <div class="row h-100 align-items-center">
-      <div class="col-10 col-sm-8 col-md-6 col-lg-4 mx-auto">
-        <form [formGroup]="transferForm" (ngSubmit)="onSubmit()">
-          <!-- Email -->
-          <div class="form-floating my-3">
-            <input type="email" class="form-control" id="email" placeholder="mario.rossi@gmail.com"
-                   formControlName="recipientEmail"/>
-            <label for="email">Email</label>
-            <div class="text-danger" *ngIf="transferForm.controls.recipientEmail.touched && transferForm.controls.recipientEmail.invalid">
-              Campo obbligatorio
-            </div>
-          </div>
-          <!-- Description -->
-          <div class="form-floating my-3">
-            <textarea class="form-control" id="description" placeholder="Descrizione" formControlName="description"></textarea>
-            <label for="description">Descrizione</label>
-            <div class="text-danger" *ngIf="transferForm.controls.description.touched && transferForm.controls.description.invalid">
-              Campo obbligatorio
-            </div>
-          </div>
-          <!-- Amount -->
-          <div class="form-floating my-3">
-            <input type="number" class="form-control" id="amount" placeholder="100.00" formControlName="amount"/>
-            <label for="amount">Quantità</label>
-            <div class="text-danger" *ngIf="transferForm.controls.amount.touched && transferForm.controls.amount.invalid">
-              Campo obbligatorio
-            </div>
-          </div>
+<div class="card">
+  <div class="card-body">
+    <app-alert/>
 
-          <button class="btn btn-primary w-100 py-2" type="submit" [disabled]="transferForm.invalid">Invia</button>
-        </form>
+    <h2 class="card-title">Trasferimento denaro</h2>
+    <small>E' possibile trasferire denaro ad un altro utente specificando l'email</small>
+
+    <form [formGroup]="transferForm" (ngSubmit)="onSubmit()">
+      <!-- Email -->
+      <div class="form-floating my-3">
+        <input type="email" class="form-control" id="email" placeholder="mario.rossi@gmail.com"
+               formControlName="recipientEmail"/>
+        <label for="email">Email</label>
+        <div class="text-danger"
+             *ngIf="transferForm.controls.recipientEmail.touched && transferForm.controls.recipientEmail.invalid">
+          Campo obbligatorio
+        </div>
       </div>
-    </div>
+      <!-- Description -->
+      <div class="form-floating my-3">
+          <textarea class="form-control" id="description" placeholder="Descrizione"
+                    formControlName="description"></textarea>
+        <label for="description">Descrizione</label>
+        <div class="text-danger"
+             *ngIf="transferForm.controls.description.touched && transferForm.controls.description.invalid">
+          Campo obbligatorio
+        </div>
+      </div>
+      <!-- Amount -->
+      <div class="form-floating my-3">
+        <input type="number" class="form-control" id="amount" placeholder="100.00" formControlName="amount"/>
+        <label for="amount">Importo</label>
+        <div class="text-danger" *ngIf="transferForm.controls.amount.touched && transferForm.controls.amount.invalid">
+          Campo obbligatorio
+        </div>
+      </div>
+
+      <button class="btn btn-primary w-100 py-2" type="submit" id="submit"
+              [disabled]="transferForm.invalid || this.loading">
+        <span class="spinner-border spinner-border-sm me-1" aria-hidden="true" *ngIf="this.loading"></span>
+        <span role="status">Trasferisci</span>
+      </button>
+    </form>
   </div>
-</main>
+</div>

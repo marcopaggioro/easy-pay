@@ -1,5 +1,3 @@
-<app-spinner/>
-
 <div class="row">
   <div class="col">
     <div class="card">
@@ -50,18 +48,19 @@
   </div>
 </div>
 
-<!--TODO togliere spinner generale e metterlo nel body-->
 <div class="row mt-5">
   <div class="col">
     <div class="card">
       <div class="card-body">
         <h2 class="card-title">Operazioni pianificate</h2>
+        <app-spinner></app-spinner>
+
         <div ngbAccordion *ngIf="this.scheduledOperations?.length || 0 > 0">
           @for (scheduledOperation of this.scheduledOperations; track scheduledOperation.id) {
             <div ngbAccordionItem>
               <h2 ngbAccordionHeader>
-                <!--                TODO classe fallimento operazione schedulata -->
-                <button ngbAccordionButton>
+                <button ngbAccordionButton
+                        [ngClass]="scheduledOperation.status == 'Fallita' ? 'bg-danger bg-opacity-10 p-2' : ''">
                   <div class="container row">
                     <div class="col-1 d-flex align-items-center justify-content-center">
                       <img class="img-fluid"

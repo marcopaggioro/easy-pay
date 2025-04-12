@@ -1,15 +1,19 @@
-<app-spinner/>
-
 <!--TODO grafico andamento conto-->
 <!--TODO togliere spinner generale e metterlo nel body - placeholder nel conto-->
-
 
 <div class="row">
   <div class="col-8">
     <div class="card">
       <div class="card-body">
-        <!--    TODO https://getbootstrap.com/docs/5.3/components/placeholders/ -->
-        <h2 class="card-title">Saldo: {{ Number(this.wallet?.balance) | number:'1.2-2' }}&euro;</h2>
+        <h4 class="mb-0">Saldo del wallet</h4>
+        <h1 class="placeholder-glow mb-3">
+          @if(wallet?.balance) {
+            {{ Number(this.wallet?.balance) | number:'1.2-2' }}&euro;
+          } @else {
+            <span class="placeholder rounded">10000000,00</span>
+          }
+        </h1>
+
         <button type="button" class="btn btn-success" routerLink="../transfer">Trasferisci denaro</button>
         <button type="button" class="btn btn-info ms-3" routerLink="../recharge">Ricarica wallet</button>
       </div>
@@ -18,11 +22,14 @@
     <div class="card mt-5">
       <div class="card-body">
         <h2 class="card-title">Operazioni recenti</h2>
+        <app-spinner/>
+
         <div ngbAccordion *ngIf="this.wallet?.history">
-          @for (operation of this.wallet?.history; track operation) {
+          @for (operation of this.wallet?.history; track operation.transactionId) {
             @if (operation.senderCustomerId != operation.recipientCustomerId) {
               @if (this.customerId == operation.recipientCustomerId) {
-                <!-- Received -->
+                <!--                TODO componente per i vari tipi?-->
+                  <!-- Received -->
                 <div ngbAccordionItem>
                   <h2 ngbAccordionHeader>
                     <button ngbAccordionButton class="bg-success bg-opacity-10 p-2">

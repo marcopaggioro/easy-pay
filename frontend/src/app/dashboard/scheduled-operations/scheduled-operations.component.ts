@@ -3,7 +3,7 @@ import {SpinnerComponent} from '../../utilities/spinner.component';
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {ScheduledOperation} from '../../classes/ScheduledOperation';
 import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
-import {DatePipe, DecimalPipe, NgIf} from '@angular/common';
+import {DatePipe, DecimalPipe, NgClass, NgIf} from '@angular/common';
 import {APP_CONSTANTS} from '../../app.constants';
 import {AlertComponent} from '../../utilities/alert.component';
 import {
@@ -33,7 +33,8 @@ import {emailValidator} from '../../utilities/email.validator';
     NgbAccordionDirective,
     NgbAccordionHeader,
     NgbAccordionItem,
-    NgbTooltip
+    NgbTooltip,
+    NgClass
   ],
   templateUrl: './scheduled-operations.component.html'
 })

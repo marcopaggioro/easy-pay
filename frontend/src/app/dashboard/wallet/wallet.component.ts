@@ -1,4 +1,4 @@
-import {Component, OnInit, ViewChild} from '@angular/core';
+import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {SpinnerComponent} from "../../utilities/spinner.component";
 import {HttpClient} from '@angular/common/http';
 import {APP_CONSTANTS} from '../../app.constants';
@@ -36,6 +36,7 @@ import {Wallet} from '../../classes/Wallet';
 })
 export class WalletComponent implements OnInit {
   @ViewChild(SpinnerComponent) spinner!: SpinnerComponent;
+  @ViewChild('balancePlaceholder') balancePlaceholder!: ElementRef;
   customerId!: string;
   wallet?: Wallet;
 

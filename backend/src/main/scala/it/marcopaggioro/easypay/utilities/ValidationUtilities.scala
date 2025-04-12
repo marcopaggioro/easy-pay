@@ -5,7 +5,7 @@ import cats.data.{Validated, ValidatedNel}
 import it.marcopaggioro.easypay.domain.classes.Aliases.CustomerId
 import it.marcopaggioro.easypay.domain.classes.Money
 
-import java.time.{Instant, LocalDate, LocalDateTime, Period}
+import java.time.{Instant, LocalDate, Period}
 
 object ValidationUtilities {
 

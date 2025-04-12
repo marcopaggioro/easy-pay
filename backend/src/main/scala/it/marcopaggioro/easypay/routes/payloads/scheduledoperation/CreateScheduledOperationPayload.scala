@@ -5,9 +5,14 @@ import cats.implicits.toTraverseOps
 import io.circe.Decoder
 import it.marcopaggioro.easypay.domain.classes.userdata.Email
 import it.marcopaggioro.easypay.domain.classes.{Money, Validable}
-import it.marcopaggioro.easypay.utilities.ValidationUtilities.{validateDescription, validateInstantInFuture, validateMinimumPeriod, validatePositiveAmount}
+import it.marcopaggioro.easypay.utilities.ValidationUtilities.{
+  validateDescription,
+  validateInstantInFuture,
+  validateMinimumPeriod,
+  validatePositiveAmount
+}
 
-import java.time.{Instant, LocalDateTime, Period}
+import java.time.{Instant, Period}
 
 case class CreateScheduledOperationPayload(
     recipientEmail: Email,

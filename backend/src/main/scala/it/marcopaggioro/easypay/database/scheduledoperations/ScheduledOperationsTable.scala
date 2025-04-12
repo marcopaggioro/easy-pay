@@ -1,12 +1,12 @@
 package it.marcopaggioro.easypay.database.scheduledoperations
 
-import it.marcopaggioro.easypay.database.PostgresProfile.api.*
 import it.marcopaggioro.easypay.database.PostgresProfile.MyAPI.date2PeriodTypeMapper
+import it.marcopaggioro.easypay.database.PostgresProfile.api._
 import it.marcopaggioro.easypay.database.PostgresProfile.{InstantMapper, MoneyMapper}
-import it.marcopaggioro.easypay.domain.classes.Aliases.{CustomerId, ScheduledOperationId, TransactionId}
-import it.marcopaggioro.easypay.domain.classes.{Money, Status}
+import it.marcopaggioro.easypay.domain.classes.Aliases.{CustomerId, ScheduledOperationId}
+import it.marcopaggioro.easypay.domain.classes.Money
 import slick.jdbc.H2Profile.Table
-import slick.lifted.{Rep, TableQuery, Tag, *}
+import slick.lifted.{Rep, TableQuery, Tag, _}
 
 import java.time.{Instant, Period}
 

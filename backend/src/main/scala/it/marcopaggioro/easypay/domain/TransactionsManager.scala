@@ -14,7 +14,7 @@ import it.marcopaggioro.easypay.utilities.ValidationUtilities.{
   validatePositiveAmount
 }
 
-import java.time.{Instant, LocalDateTime, Period}
+import java.time.{Instant, Period}
 
 object TransactionsManager {
   case class TransactionsManagerState(
@@ -190,10 +190,10 @@ object TransactionsManager {
   }
 
   case class ScheduledOperationExecuted(
-                                         scheduledOperationId: ScheduledOperationId,
-                                         scheduledOperation: ScheduledOperation,
-                                         nextStatus: Status,
-                                         override val instant: Instant = Instant.now()
+      scheduledOperationId: ScheduledOperationId,
+      scheduledOperation: ScheduledOperation,
+      nextStatus: Status,
+      override val instant: Instant = Instant.now()
   ) extends TransactionsManagerEvent {
 
     override def applyTo(state: TransactionsManagerState): TransactionsManagerState =

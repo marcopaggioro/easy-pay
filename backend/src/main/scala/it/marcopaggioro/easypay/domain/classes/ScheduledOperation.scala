@@ -5,10 +5,16 @@ import cats.implicits.toTraverseOps
 import io.circe.Encoder
 import io.circe.generic.semiauto.deriveEncoder
 import it.marcopaggioro.easypay.domain.classes.Aliases.CustomerId
-import it.marcopaggioro.easypay.utilities.ValidationUtilities.{differentCustomerIdsValidation, validateDescription, validateInstantInFuture, validateMinimumPeriod, validatePositiveAmount}
+import it.marcopaggioro.easypay.utilities.ValidationUtilities.{
+  differentCustomerIdsValidation,
+  validateDescription,
+  validateInstantInFuture,
+  validateMinimumPeriod,
+  validatePositiveAmount
+}
 
 import java.time.temporal.ChronoUnit
-import java.time.{Instant, LocalDateTime, Period}
+import java.time.{Instant, Period}
 
 case class ScheduledOperation(
     senderCustomerId: CustomerId,

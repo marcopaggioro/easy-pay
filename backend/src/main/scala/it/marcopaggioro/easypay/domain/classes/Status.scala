@@ -1,8 +1,8 @@
 package it.marcopaggioro.easypay.domain.classes
 
 import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
+import io.circe.Encoder
 import io.circe.syntax.EncoderOps
-import io.circe.{Encoder, Json}
 import it.marcopaggioro.easypay.domain.classes.Status.{Done, Failed, Pending}
 
 import java.time.Instant
@@ -32,8 +32,8 @@ object Status {
     override val code: String = "Fallita"
   }
 
-  implicit val StatusEncoder: Encoder[Status] = Encoder.instance {
-    status => status.code.asJson
+  implicit val StatusEncoder: Encoder[Status] = Encoder.instance { status =>
+    status.code.asJson
   }
 
 }

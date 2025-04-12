@@ -1,13 +1,13 @@
 package it.marcopaggioro.easypay.routes
 
 import akka.Done
-import akka.actor.typed.scaladsl.AskPattern.*
+import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, ActorSystem, Scheduler, SupervisorStrategy}
-import akka.http.scaladsl.model.*
+import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.HttpCookie
-import akka.http.scaladsl.server.Directives.*
-import akka.http.scaladsl.server.*
+import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server._
 import akka.http.scaladsl.server.directives.BasicDirectives.extractRequest
 import akka.http.scaladsl.unmarshalling.{FromEntityUnmarshaller, Unmarshaller}
 import akka.pattern.StatusReply
@@ -15,33 +15,32 @@ import akka.stream.scaladsl.Flow
 import akka.util.ByteString
 import cats.data.Validated
 import io.circe.Encoder.encodeSeq
-import io.circe.*
+import io.circe._
 import io.circe.jawn.decode
 import io.circe.syntax.EncoderOps
 import it.marcopaggioro.easypay.AppConfig.askTimeout
 import it.marcopaggioro.easypay.actor.TransactionsManagerActor
-import it.marcopaggioro.easypay.database.PostgresProfile.*
-import it.marcopaggioro.easypay.database.PostgresProfile.api.*
-import it.marcopaggioro.easypay.database.scheduledoperations.{ScheduledOperationRecord, ScheduledOperationsTable}
+import it.marcopaggioro.easypay.database.PostgresProfile._
+import it.marcopaggioro.easypay.database.PostgresProfile.api._
 import it.marcopaggioro.easypay.database.scheduledoperations.ScheduledOperationRecord.ScheduledOperationUserJoinEncoder
+import it.marcopaggioro.easypay.database.scheduledoperations.{ScheduledOperationRecord, ScheduledOperationsTable}
 import it.marcopaggioro.easypay.database.transactionshistory.TransactionsHistoryRecord.TransactionUserJoinEncoder
 import it.marcopaggioro.easypay.database.transactionshistory.{TransactionsHistoryRecord, TransactionsHistoryTable}
 import it.marcopaggioro.easypay.database.users.UserRecord.UserRecordEncoder
 import it.marcopaggioro.easypay.database.users.{UserRecord, UsersTable}
-import it.marcopaggioro.easypay.database.usersbalance.{UserBalanceRecord, UsersBalanceTable}
+import it.marcopaggioro.easypay.database.usersbalance.UsersBalanceTable
 import it.marcopaggioro.easypay.domain.TransactionsManager.TransactionsManagerCommand
 import it.marcopaggioro.easypay.domain.UsersManager.UsersManagerCommand
 import it.marcopaggioro.easypay.domain.classes.Aliases.{CustomerId, ScheduledOperationId}
 import it.marcopaggioro.easypay.domain.classes.userdata.{Email, UserData}
 import it.marcopaggioro.easypay.domain.classes.{Money, ScheduledOperation, Validable}
 import it.marcopaggioro.easypay.domain.{TransactionsManager, UsersManager}
-import it.marcopaggioro.easypay.routes.EasyPayAppRoutes.{ScheduledOperationTupleEncoder, circeUnmarshaller}
+import it.marcopaggioro.easypay.routes.EasyPayAppRoutes.circeUnmarshaller
 import it.marcopaggioro.easypay.routes.payloads.LoginPayload.LoginPayloadDecoder
 import it.marcopaggioro.easypay.routes.payloads.scheduledoperation.CreateScheduledOperationPayload
 import it.marcopaggioro.easypay.routes.payloads.{LoginPayload, TransferMoneyPayload, UpdateUserDataPayload}
 import it.marcopaggioro.easypay.utilities.JwtUtils
 import slick.jdbc.JdbcBackend.Database
-import slick.lifted.TableQuery.Extract
 
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}

@@ -13,12 +13,12 @@ import akka.projection.{ProjectionBehavior, ProjectionId}
 import com.typesafe.scalalogging.LazyLogging
 import it.marcopaggioro.easypay.actor.TransactionsManagerActor
 import it.marcopaggioro.easypay.database.PlainJdbcSession
-import it.marcopaggioro.easypay.database.PostgresProfile.*
-import it.marcopaggioro.easypay.database.PostgresProfile.api.*
+import it.marcopaggioro.easypay.database.PostgresProfile._
+import it.marcopaggioro.easypay.database.PostgresProfile.api._
 import it.marcopaggioro.easypay.database.scheduledoperations.{ScheduledOperationRecord, ScheduledOperationsTable}
 import it.marcopaggioro.easypay.database.transactionshistory.{TransactionsHistoryRecord, TransactionsHistoryTable}
 import it.marcopaggioro.easypay.database.usersbalance.{UserBalanceRecord, UsersBalanceTable}
-import it.marcopaggioro.easypay.domain.TransactionsManager.*
+import it.marcopaggioro.easypay.domain.TransactionsManager._
 import it.marcopaggioro.easypay.domain.classes.Aliases.{CustomerId, TransactionId}
 import it.marcopaggioro.easypay.domain.classes.{Money, Status}
 import slick.jdbc.JdbcBackend.Database

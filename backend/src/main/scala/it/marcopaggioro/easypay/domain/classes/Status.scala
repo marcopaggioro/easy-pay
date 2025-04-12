@@ -1,6 +1,7 @@
 package it.marcopaggioro.easypay.domain.classes
 
 import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
+import io.circe.syntax.EncoderOps
 import io.circe.{Encoder, Json}
 import it.marcopaggioro.easypay.domain.classes.Status.{Done, Failed, Pending}
 
@@ -15,19 +16,24 @@ import java.time.Instant
   )
 )
 sealed trait Status {
+  val code: String
   val instant: Instant
 }
 
 object Status {
 
-  case class Pending(override val instant: Instant = Instant.now()) extends Status
-  case class Done(override val instant: Instant = Instant.now()) extends Status
-  case class Failed(error: String, override val instant: Instant = Instant.now()) extends Status
+  case class Pending(override val instant: Instant = Instant.now()) extends Status {
+    override val code: String = "In attesa"
+  }
+  case class Done(override val instant: Instant = Instant.now()) extends Status {
+    override val code: String = "Completata"
+  }
+  case class Failed(error: String, override val instant: Instant = Instant.now()) extends Status {
+    override val code: String = "Fallita"
+  }
 
   implicit val StatusEncoder: Encoder[Status] = Encoder.instance {
-    case _: Pending => Json.fromString("In attesa")
-    case _: Done    => Json.fromString("Completata")
-    case _: Failed  => Json.fromString("Fallita")
+    status => status.code.asJson
   }
 
 }

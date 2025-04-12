@@ -5,19 +5,14 @@ import cats.implicits.toTraverseOps
 import io.circe.Decoder
 import it.marcopaggioro.easypay.domain.classes.userdata.Email
 import it.marcopaggioro.easypay.domain.classes.{Money, Validable}
-import it.marcopaggioro.easypay.utilities.ValidationUtilities.{
-  validateDateTimeInFuture,
-  validateDescription,
-  validateMinimumPeriod,
-  validatePositiveAmount
-}
+import it.marcopaggioro.easypay.utilities.ValidationUtilities.{validateDescription, validateInstantInFuture, validateMinimumPeriod, validatePositiveAmount}
 
-import java.time.{LocalDateTime, Period}
+import java.time.{Instant, LocalDateTime, Period}
 
 case class CreateScheduledOperationPayload(
     recipientEmail: Email,
     amount: Money,
-    when: LocalDateTime,
+    when: Instant,
     description: String,
     repeat: Option[Period]
 ) extends Validable[CreateScheduledOperationPayload] {
@@ -25,7 +20,7 @@ case class CreateScheduledOperationPayload(
     recipientEmail
       .validate()
       .andThen(_ => validatePositiveAmount(amount))
-      .andThen(_ => validateDateTimeInFuture(when))
+      .andThen(_ => validateInstantInFuture(when))
       .andThen(_ => validateDescription(description))
       .andThen(_ => repeat.traverse(validateMinimumPeriod))
       .map(_ => this)
@@ -37,7 +32,7 @@ object CreateScheduledOperationPayload {
     for {
       recipientEmail <- cursor.get[Email]("recipientEmail")
       amount <- cursor.get[Money]("amount")
-      when <- cursor.get[LocalDateTime]("when")
+      when <- cursor.get[Instant]("when")
       description <- cursor.get[String]("description")
       repeat <- cursor.get[Option[Period]]("repeat")
     } yield CreateScheduledOperationPayload(recipientEmail, amount, when, description, repeat)

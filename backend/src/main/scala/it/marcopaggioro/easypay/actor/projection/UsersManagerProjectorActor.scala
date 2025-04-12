@@ -13,10 +13,11 @@ import akka.projection.{ProjectionBehavior, ProjectionId}
 import com.typesafe.scalalogging.LazyLogging
 import it.marcopaggioro.easypay.actor.UsersManagerActor
 import it.marcopaggioro.easypay.database.PlainJdbcSession
-import it.marcopaggioro.easypay.database.PostgresProfile._
-import it.marcopaggioro.easypay.database.PostgresProfile.api._
+import it.marcopaggioro.easypay.database.PostgresProfile.*
+import it.marcopaggioro.easypay.database.PostgresProfile.api.*
 import it.marcopaggioro.easypay.database.users.{UserRecord, UsersTable}
-import it.marcopaggioro.easypay.domain.UsersManager._
+import it.marcopaggioro.easypay.domain.UsersManager.*
+import it.marcopaggioro.easypay.domain.classes.Money
 import slick.jdbc.JdbcBackend.Database
 
 import java.time.{Duration, Instant}
@@ -39,7 +40,9 @@ private class UsersManagerProjectorActor(
     val operations = envelope.toList.collect { eventEnvelope =>
       eventEnvelope.event match
         case UserCreated(customerId, userData, _) =>
-          UsersTable.Table += UserRecord(customerId, userData.firstName, userData.lastName, userData.birthDate, userData.email)
+          UsersTable.Table.insertOrUpdate(
+            UserRecord(customerId, userData.firstName, userData.lastName, userData.birthDate, userData.email)
+          )
 
         case FirstChanged(customerId, firstName, _) =>
           UsersTable.Table.filter(_.customerId == customerId).map(_.firstName).update(firstName)

@@ -1,13 +1,13 @@
 package it.marcopaggioro.easypay.routes
 
 import akka.Done
-import akka.actor.typed.scaladsl.AskPattern._
+import akka.actor.typed.scaladsl.AskPattern.*
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, ActorSystem, Scheduler, SupervisorStrategy}
-import akka.http.scaladsl.model._
+import akka.http.scaladsl.model.*
 import akka.http.scaladsl.model.headers.HttpCookie
-import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server._
+import akka.http.scaladsl.server.Directives.*
+import akka.http.scaladsl.server.*
 import akka.http.scaladsl.server.directives.BasicDirectives.extractRequest
 import akka.http.scaladsl.unmarshalling.{FromEntityUnmarshaller, Unmarshaller}
 import akka.pattern.StatusReply
@@ -15,17 +15,20 @@ import akka.stream.scaladsl.Flow
 import akka.util.ByteString
 import cats.data.Validated
 import io.circe.Encoder.encodeSeq
-import io.circe._
+import io.circe.*
 import io.circe.jawn.decode
 import io.circe.syntax.EncoderOps
 import it.marcopaggioro.easypay.AppConfig.askTimeout
 import it.marcopaggioro.easypay.actor.TransactionsManagerActor
-import it.marcopaggioro.easypay.database.PostgresProfile._
-import it.marcopaggioro.easypay.database.PostgresProfile.api._
+import it.marcopaggioro.easypay.database.PostgresProfile.*
+import it.marcopaggioro.easypay.database.PostgresProfile.api.*
+import it.marcopaggioro.easypay.database.scheduledoperations.{ScheduledOperationRecord, ScheduledOperationsTable}
+import it.marcopaggioro.easypay.database.scheduledoperations.ScheduledOperationRecord.ScheduledOperationUserJoinEncoder
 import it.marcopaggioro.easypay.database.transactionshistory.TransactionsHistoryRecord.TransactionUserJoinEncoder
 import it.marcopaggioro.easypay.database.transactionshistory.{TransactionsHistoryRecord, TransactionsHistoryTable}
 import it.marcopaggioro.easypay.database.users.UserRecord.UserRecordEncoder
 import it.marcopaggioro.easypay.database.users.{UserRecord, UsersTable}
+import it.marcopaggioro.easypay.database.usersbalance.{UserBalanceRecord, UsersBalanceTable}
 import it.marcopaggioro.easypay.domain.TransactionsManager.TransactionsManagerCommand
 import it.marcopaggioro.easypay.domain.UsersManager.UsersManagerCommand
 import it.marcopaggioro.easypay.domain.classes.Aliases.{CustomerId, ScheduledOperationId}
@@ -38,6 +41,7 @@ import it.marcopaggioro.easypay.routes.payloads.scheduledoperation.CreateSchedul
 import it.marcopaggioro.easypay.routes.payloads.{LoginPayload, TransferMoneyPayload, UpdateUserDataPayload}
 import it.marcopaggioro.easypay.utilities.JwtUtils
 import slick.jdbc.JdbcBackend.Database
+import slick.lifted.TableQuery.Extract
 
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
@@ -193,10 +197,7 @@ class EasyPayAppRoutes(usersManagerActorRef: ActorRef[UsersManagerCommand], data
                   pathEndOrSingleSlash {
                     concat(
                       get { // GET /wallet/transfer/schedule
-                        askToTransactionsManagerActor[Map[ScheduledOperationId, ScheduledOperation]](
-                          TransactionsManager.GetScheduledOperations(customerId)(_),
-                          scheduledOperations => completeWithJson(scheduledOperations.toList.asJson)
-                        )
+                        getScheduledOperations(customerId)
                       },
                       put { // PUT /wallet/transfer/schedule
                         entity(as[CreateScheduledOperationPayload]) { payload =>
@@ -342,7 +343,7 @@ class EasyPayAppRoutes(usersManagerActorRef: ActorRef[UsersManagerCommand], data
 
     onComplete(getUser) {
       case Failure(throwable) =>
-        system.log.error(s"Failure while transferring money", throwable)
+        system.log.error(s"Failure while getting user", throwable)
         completeWithError(StatusCodes.InternalServerError, throwable.getMessage)
 
       case Success(userRecord) =>
@@ -354,8 +355,14 @@ class EasyPayAppRoutes(usersManagerActorRef: ActorRef[UsersManagerCommand], data
       system: ActorSystem[Nothing],
       uri: Uri
   ): Route = {
-    val getBalance: Future[Money] = transactionsManagerActorRef
-      .askWithStatus[Money](replyTo => TransactionsManager.GetBalance(customerId)(replyTo))
+    val getBalance = database.run {
+      UsersBalanceTable.Table
+        .filter(record => record.customerId === customerId)
+        .map(_.balance)
+        .result
+        .headOption
+        .map(_.getOrElse(Money(0)))
+    }
 
     val getHistory: Future[Seq[(TransactionsHistoryRecord, Option[UserRecord])]] = database.run {
       TransactionsHistoryTable.Table
@@ -370,12 +377,36 @@ class EasyPayAppRoutes(usersManagerActorRef: ActorRef[UsersManagerCommand], data
         .result
     }
 
-    val response: Future[Json] = for {
+    val result: Future[Json] = for {
       balance <- getBalance
       history <- getHistory
     } yield Json.obj("balance" -> balance.asJson, "history" -> history.asJson(encodeSeq(TransactionUserJoinEncoder)))
 
-    onComplete(response) {
+    onComplete(result) {
+      case Failure(throwable) =>
+        system.log.error(s"Failure while transferring money", throwable)
+        completeWithError(StatusCodes.InternalServerError, throwable.getMessage)
+
+      case Success(json) =>
+        completeWithJson(json)
+    }
+  }
+
+  def getScheduledOperations(customerId: CustomerId)(implicit
+      system: ActorSystem[Nothing],
+      uri: Uri
+  ): Route = {
+    val getScheduledOperations: Future[Seq[(ScheduledOperationRecord, UserRecord)]] = database.run {
+      ScheduledOperationsTable.Table
+        .filter(record => record.senderCustomerId === customerId)
+        .join(UsersTable.Table)
+        .on { case (scheduledRecord, userRecord) =>
+          scheduledRecord.recipientCustomerId === userRecord.customerId
+        }
+        .result
+    }
+
+    onComplete(getScheduledOperations.map(_.asJson(encodeSeq(ScheduledOperationUserJoinEncoder)))) {
       case Failure(throwable) =>
         system.log.error(s"Failure while transferring money", throwable)
         completeWithError(StatusCodes.InternalServerError, throwable.getMessage)

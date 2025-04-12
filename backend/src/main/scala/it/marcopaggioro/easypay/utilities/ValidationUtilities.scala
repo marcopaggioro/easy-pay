@@ -5,7 +5,7 @@ import cats.data.{Validated, ValidatedNel}
 import it.marcopaggioro.easypay.domain.classes.Aliases.CustomerId
 import it.marcopaggioro.easypay.domain.classes.Money
 
-import java.time.{LocalDate, LocalDateTime, Period}
+import java.time.{Instant, LocalDate, LocalDateTime, Period}
 
 object ValidationUtilities {
 
@@ -27,8 +27,8 @@ object ValidationUtilities {
   def validatePositiveAmount(amount: Money): ValidatedNel[String, Unit] =
     condNel(amount.value > 0, (), "Amount must be more than 0")
 
-  def validateDateTimeInFuture(dateTime: LocalDateTime): ValidatedNel[String, Unit] =
-    condNel(dateTime.isAfter(LocalDateTime.now()), (), "Date must be in future")
+  def validateInstantInFuture(instant: Instant): ValidatedNel[String, Unit] =
+    condNel(instant.isAfter(Instant.now()), (), "Date time must be in future")
 
   private lazy val minPeriod: Period = Period.ofDays(1)
   def validateMinimumPeriod(period: Period): ValidatedNel[String, Unit] =

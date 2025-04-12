@@ -7,6 +7,8 @@ case class Money private (value: BigDecimal) {
   def plus(money: Money): Money = copy(value + money.value)
   def less(money: Money): Money = copy(value - money.value)
 
+  def unary_- : Money = Money(-value)
+
 }
 
 object Money {

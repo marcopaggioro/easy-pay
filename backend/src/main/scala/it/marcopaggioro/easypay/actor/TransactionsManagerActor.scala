@@ -1,7 +1,7 @@
 package it.marcopaggioro.easypay.actor
 
 import akka.Done
-import akka.actor.typed.scaladsl.AskPattern._
+import akka.actor.typed.scaladsl.AskPattern.*
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import akka.actor.typed.{Behavior, Scheduler}
 import akka.pattern.StatusReply
@@ -10,22 +10,10 @@ import cats.data.Validated.{Invalid, Valid}
 import it.marcopaggioro.easypay.AppConfig.askTimeout
 import it.marcopaggioro.easypay.actor.UsersManagerActor.standardCommandHandler
 import it.marcopaggioro.easypay.domain.TransactionsManager
-import it.marcopaggioro.easypay.domain.TransactionsManager.{
-  CreateScheduledOperation,
-  DeleteScheduledOperation,
-  ExecuteScheduledOperations,
-  GetBalance,
-  GetScheduledOperations,
-  RechargeWallet,
-  ScheduledOperationFeedback,
-  TransactionsManagerCommand,
-  TransactionsManagerEvent,
-  TransactionsManagerState,
-  TransferMoney
-}
+import it.marcopaggioro.easypay.domain.TransactionsManager.{CreateScheduledOperation, DeleteScheduledOperation, ExecuteScheduledOperations, RechargeWallet, ScheduledOperationFeedback, TransactionsManagerCommand, TransactionsManagerEvent, TransactionsManagerState, TransferMoney}
 import it.marcopaggioro.easypay.domain.classes.Money
 
-import java.time.LocalDateTime
+import java.time.{Instant, LocalDateTime}
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.FiniteDuration
@@ -62,15 +50,6 @@ object TransactionsManagerActor
           transferMoney.replyTo
         )
 
-      case getBalance: GetBalance =>
-        standardCommandHandler(
-          context,
-          state,
-          command,
-          _ => Effect.reply(getBalance.replyTo)(StatusReply.Success(state.balances.getOrElse(getBalance.customerId, Money(0)))),
-          errors => defaultInvalidHandler(context, command, errors, getBalance.replyTo)
-        )
-
       case create: CreateScheduledOperation =>
         handleWithPersistenceAndACK(
           context,
@@ -87,9 +66,6 @@ object TransactionsManagerActor
           delete.replyTo
         )
 
-      case getScheduledOperations: GetScheduledOperations =>
-        Effect.reply(getScheduledOperations.replyTo)(StatusReply.success(getScheduledOperations.getOperations(state)))
-
       case scheduledOperationFeedback: ScheduledOperationFeedback =>
         scheduledOperationFeedback.validateAndGenerateEvents(state) match {
           case Valid(events) => Effect.persist(events)
@@ -100,7 +76,7 @@ object TransactionsManagerActor
       case executeOperations: ExecuteScheduledOperations =>
         Effect.none.thenRun { _ =>
           state.scheduledOperations.foreach {
-            case (scheduledOperationId, scheduledOperation) if scheduledOperation.when.isBefore(LocalDateTime.now()) =>
+            case (scheduledOperationId, scheduledOperation) if scheduledOperation.when.isBefore(Instant.now()) =>
               val transfer: Future[Done] = context.self.askWithStatus[Done](replyTo =>
                 TransferMoney(
                   scheduledOperation.senderCustomerId,

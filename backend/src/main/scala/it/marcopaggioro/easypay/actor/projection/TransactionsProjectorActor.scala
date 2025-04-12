@@ -13,10 +13,14 @@ import akka.projection.{ProjectionBehavior, ProjectionId}
 import com.typesafe.scalalogging.LazyLogging
 import it.marcopaggioro.easypay.actor.TransactionsManagerActor
 import it.marcopaggioro.easypay.database.PlainJdbcSession
-import it.marcopaggioro.easypay.database.PostgresProfile.api._
+import it.marcopaggioro.easypay.database.PostgresProfile.*
+import it.marcopaggioro.easypay.database.PostgresProfile.api.*
+import it.marcopaggioro.easypay.database.scheduledoperations.{ScheduledOperationRecord, ScheduledOperationsTable}
 import it.marcopaggioro.easypay.database.transactionshistory.{TransactionsHistoryRecord, TransactionsHistoryTable}
-import it.marcopaggioro.easypay.domain.TransactionsManager
-import it.marcopaggioro.easypay.domain.TransactionsManager.{MoneyTransferred, TransactionsManagerEvent, WalletRecharged}
+import it.marcopaggioro.easypay.database.usersbalance.{UserBalanceRecord, UsersBalanceTable}
+import it.marcopaggioro.easypay.domain.TransactionsManager.*
+import it.marcopaggioro.easypay.domain.classes.Aliases.{CustomerId, TransactionId}
+import it.marcopaggioro.easypay.domain.classes.{Money, Status}
 import slick.jdbc.JdbcBackend.Database
 
 import java.time.{Duration, Instant}
@@ -31,31 +35,95 @@ private class TransactionsProjectorActor(database: Database, system: ActorSystem
   private implicit lazy val executionContext: ExecutionContext = system.executionContext
   private implicit lazy val scheduler: Scheduler = system.scheduler
 
+  private def getCurrentBalance(customerId: CustomerId) = UsersBalanceTable.Table
+    .filter(_.customerId === customerId)
+    .map(_.balance)
+    .result
+    .headOption
+    .map(_.getOrElse(Money(0)))
+
+  private def updateBalance(customerId: CustomerId, amount: Money) = for {
+    currentBalance <- getCurrentBalance(customerId)
+    updateBalance <- UsersBalanceTable.Table.insertOrUpdate(UserBalanceRecord(customerId, currentBalance.plus(amount)))
+  } yield updateBalance
+
+  private def moneyOperations(
+      senderCustomerId: CustomerId,
+      recipientCustomerId: CustomerId,
+      transactionId: TransactionId,
+      amount: Money,
+      instant: Instant,
+      description: Option[String]
+  ) = {
+    val updateBalances = if (senderCustomerId != recipientCustomerId) {
+      val senderBalanceUpdate = updateBalance(senderCustomerId, -amount)
+      val recipientBalanceUpdate = updateBalance(recipientCustomerId, amount)
+      DBIO.sequence(List(senderBalanceUpdate, recipientBalanceUpdate)).map(_.sum)
+    } else {
+      updateBalance(recipientCustomerId, amount)
+    }
+    val updateHistory = TransactionsHistoryTable.Table.insertOrUpdate(
+      TransactionsHistoryRecord(
+        transactionId,
+        senderCustomerId,
+        recipientCustomerId,
+        description,
+        instant,
+        amount
+      )
+    )
+    DBIO.sequence(List(updateBalances, updateHistory)).map(_.sum)
+  }
+
   override def process(envelope: Seq[EventEnvelope[TransactionsManagerEvent]]): Future[Done] = {
     val startTime: Instant = Instant.now()
     logger.debug(s"Projecting ${envelope.size} events")
 
-    val operations = envelope.toList.collect { eventEnvelope =>
+    val operations = envelope.toList.map { eventEnvelope =>
       eventEnvelope.event match {
         case WalletRecharged(transactionId, customerId, amount, instant) =>
-          TransactionsHistoryTable.Table += TransactionsHistoryRecord(
-            transactionId,
-            customerId,
-            customerId,
-            None,
-            instant,
-            amount
-          )
+          moneyOperations(customerId, customerId, transactionId, amount, instant, None)
 
         case MoneyTransferred(customerId, recipientCustomerId, transactionId, description, amount, instant) =>
-          TransactionsHistoryTable.Table += TransactionsHistoryRecord(
-            transactionId,
-            customerId,
-            recipientCustomerId,
-            Some(description),
-            instant,
-            amount
+          moneyOperations(customerId, recipientCustomerId, transactionId, amount, instant, Some(description))
+
+        case ScheduledOperationCreated(scheduledOperationId, scheduledOperation, _) =>
+          ScheduledOperationsTable.Table.insertOrUpdate(
+            ScheduledOperationRecord(
+              scheduledOperationId,
+              scheduledOperation.senderCustomerId,
+              scheduledOperation.recipientCustomerId,
+              scheduledOperation.description,
+              scheduledOperation.when,
+              scheduledOperation.amount,
+              scheduledOperation.repeat,
+              scheduledOperation.status.code
+            )
           )
+
+        case ScheduledOperationDeleted(scheduledOperationId, instant) =>
+          ScheduledOperationsTable.Table.filter(_.scheduledOperationId === scheduledOperationId).delete
+
+        case ScheduledOperationExecuted(scheduledOperationId, scheduledOperation, nextStatus, instant) =>
+          nextStatus match {
+            case failed: Status.Failed =>
+              ScheduledOperationsTable.Table
+                .filter(_.scheduledOperationId === scheduledOperationId)
+                .map(_.status)
+                .update(failed.code)
+
+            case _ =>
+              scheduledOperation.repeat match {
+                case Some(repeat) =>
+                  ScheduledOperationsTable.Table
+                    .filter(_.scheduledOperationId === scheduledOperationId)
+                    .map(_.when)
+                    .update(scheduledOperation.when.plus(repeat))
+
+                case None =>
+                  ScheduledOperationsTable.Table.filter(_.scheduledOperationId === scheduledOperationId).delete
+              }
+          }
       }
     }
 
@@ -63,7 +131,7 @@ private class TransactionsProjectorActor(database: Database, system: ActorSystem
       .run(DBIO.sequence(operations))
       .transform {
         case Success(operationsCount) =>
-          logger.debug(s"Projected ${operationsCount.sum} events in ${Duration.between(startTime, Instant.now()).toString}")
+          logger.debug(s"Executed ${operationsCount.sum} operations in ${Duration.between(startTime, Instant.now()).toString}")
           Success(Done)
 
         case Failure(throwable) =>

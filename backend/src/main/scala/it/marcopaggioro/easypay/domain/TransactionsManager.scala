@@ -97,10 +97,6 @@ object TransactionsManager {
     }
   }
 
-  case class GetBalance(customerId: CustomerId)(val replyTo: ActorRef[StatusReply[Money]]) extends TransactionsManagerCommand {
-    override def validate(state: TransactionsManagerState): ValidatedNel[String, Unit] = validNel(())
-  }
-
   // -----
   case class CreateScheduledOperation(scheduledOperationId: ScheduledOperationId, scheduledOperation: ScheduledOperation)(
       val replyTo: ActorRef[StatusReply[Done]]
@@ -161,18 +157,6 @@ object TransactionsManager {
   }
 
   // -----
-  case class GetScheduledOperations(customerId: CustomerId)(
-      val replyTo: ActorRef[StatusReply[Map[ScheduledOperationId, ScheduledOperation]]]
-  ) extends TransactionsManagerCommand {
-    def getOperations(state: TransactionsManagerState): Map[ScheduledOperationId, ScheduledOperation] =
-      state.scheduledOperations.filter { case (scheduledOperationId, scheduledOperation) =>
-        scheduledOperation.senderCustomerId == customerId
-      }
-
-    override def validate(state: TransactionsManagerState): ValidatedNel[String, Unit] = validNel(())
-  }
-
-  // -----
   case class ExecuteScheduledOperations() extends TransactionsManagerCommand {
     override def validate(state: TransactionsManagerState): ValidatedNel[String, Unit] = validNel(())
   }
@@ -197,24 +181,25 @@ object TransactionsManager {
           // Scheduled operation exists and already has failed status: do not generate other events
           List.empty
 
-        case _ =>
+        case Some(scheduledOperation) =>
           List(
-            ScheduledOperationExecuted(scheduledOperationId, status)
+            ScheduledOperationExecuted(scheduledOperationId, scheduledOperation, status)
           )
       }
     }
   }
 
   case class ScheduledOperationExecuted(
-      scheduledOperationId: ScheduledOperationId,
-      status: Status,
-      override val instant: Instant = Instant.now()
+                                         scheduledOperationId: ScheduledOperationId,
+                                         scheduledOperation: ScheduledOperation,
+                                         nextStatus: Status,
+                                         override val instant: Instant = Instant.now()
   ) extends TransactionsManagerEvent {
 
     override def applyTo(state: TransactionsManagerState): TransactionsManagerState =
       state.scheduledOperations.get(scheduledOperationId) match {
         case Some(scheduledOperation) =>
-          status match {
+          nextStatus match {
             case _: Status.Pending =>
               state
 
@@ -232,7 +217,7 @@ object TransactionsManager {
 
             case failed: Status.Failed =>
               state.copy(scheduledOperations =
-                state.scheduledOperations.updated(scheduledOperationId, scheduledOperation.copy(status = status))
+                state.scheduledOperations.updated(scheduledOperationId, scheduledOperation.copy(status = nextStatus))
               )
           }
 

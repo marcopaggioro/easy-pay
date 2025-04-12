@@ -1,8 +1,8 @@
-<app-spinner/>
-
 <div class="container col-6">
   <div class="card">
     <div class="card-body">
+      <app-alert/>
+
       <h2 class="card-title">Login</h2>
       <small>Email e password</small>
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
@@ -24,12 +24,13 @@
           </div>
         </div>
 
-        <button class="btn btn-primary w-100 py-2" type="submit" [disabled]="loginForm.invalid">Login</button>
-
+        <button class="btn btn-primary w-100 py-2" type="submit" id="submit"
+                [disabled]="loginForm.invalid || this.loading">
+          <span class="spinner-border spinner-border-sm me-1" aria-hidden="true" *ngIf="this.loading"></span>
+          <span role="status">Accedi</span>
+        </button>
         <p class="mt-5 mb-3 text-center text-body-secondary">&copy; EasyPay - 2025</p>
       </form>
     </div>
   </div>
 </div>
-
-<!--TODO https://getbootstrap.com/docs/5.3/components/spinners/#buttons-->

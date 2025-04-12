@@ -1,24 +1,25 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
 import {AuthorizationService} from '../utilities/authorization.service';
 import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
-import {SpinnerComponent} from '../utilities/spinner.component';
 import {NgIf} from '@angular/common';
 import {Router} from '@angular/router';
-import {APP_CONSTANTS} from '../app.constants';
 import {emailValidator} from '../utilities/email.validator';
+import {AlertComponent} from '../utilities/alert.component';
+import {HttpErrorResponse} from '@angular/common/http';
 
 @Component({
   selector: 'app-register',
   imports: [
     FormsModule,
     ReactiveFormsModule,
-    SpinnerComponent,
-    NgIf
+    NgIf,
+    AlertComponent
   ],
   templateUrl: './register.component.html'
 })
 export class RegisterComponent implements OnInit {
-  @ViewChild(SpinnerComponent) spinner!: SpinnerComponent;
+  @ViewChild(AlertComponent) alert!: AlertComponent;
+  loading: boolean = false;
 
   constructor(private authorizationService: AuthorizationService, private router: Router) {
   }
@@ -32,12 +33,12 @@ export class RegisterComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.authorizationService.redirectIfAlreadyLoggedIn(
-      () => this.spinner.hide()
-    );
+    this.authorizationService.redirectIfAlreadyLoggedIn(() => {
+    });
   }
 
   onSubmit(): void {
+    this.loading = true;
     if (this.registerForm.invalid) {
       console.warn("Trying to submit with invalid data")
       return;
@@ -47,12 +48,16 @@ export class RegisterComponent implements OnInit {
       this.registerForm.controls.lastName.value!,
       this.registerForm.controls.birthDate.value!,
       this.registerForm.controls.email.value!,
-      this.registerForm.controls.password.value!).subscribe(
-      isLogged => {
+      this.registerForm.controls.password.value!).subscribe({
+      next: () => {
         //TODO deve aspettare notifica ws per la fine della proiezione
-        this.router.navigate([APP_CONSTANTS.PATH_DASHBOARD])
+        // this.router.navigate([APP_CONSTANTS.PATH_DASHBOARD]);
+      },
+      error: (httpErrorResponse: HttpErrorResponse) => {
+        this.alert.error(httpErrorResponse?.error?.error || "Errore generico");
+        this.loading = false;
       }
-    );
+    });
   }
 
 }

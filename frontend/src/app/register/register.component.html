@@ -1,8 +1,8 @@
-<app-spinner/>
-
 <div class="container col-6">
   <div class="card">
     <div class="card-body">
+      <app-alert/>
+
       <h2 class="card-title">Registrazione</h2>
       <small>Dati personali</small>
       <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
@@ -53,7 +53,11 @@
           </div>
         </div>
 
-        <button class="btn btn-primary w-100 py-2" type="submit" [disabled]="registerForm.invalid">Registrati</button>
+        <button class="btn btn-primary w-100 py-2" type="submit" id="submit"
+                [disabled]="registerForm.invalid || this.loading">
+          <span class="spinner-border spinner-border-sm me-1" aria-hidden="true" *ngIf="this.loading"></span>
+          <span role="status">Registrati</span>
+        </button>
 
         <p class="mt-5 mb-3 text-center text-body-secondary">&copy; EasyPay - 2025</p>
       </form>

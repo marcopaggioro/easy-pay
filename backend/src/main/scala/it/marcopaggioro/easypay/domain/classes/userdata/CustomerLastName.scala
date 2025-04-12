@@ -10,7 +10,7 @@ case class CustomerLastName private (value: String) extends Validable[CustomerLa
   private lazy val maxLength: Int = 50
 
   override def validate(): ValidatedNel[String, CustomerLastName] =
-    condNel(value.nonEmpty, this, "Last name must not be empty")
+    condNel(value.nonEmpty, this, "Last name can not be empty")
       .andThen(_ => condNel(value.length <= maxLength, this, s"Last name must be a maximum of $maxLength characters long"))
 
 }

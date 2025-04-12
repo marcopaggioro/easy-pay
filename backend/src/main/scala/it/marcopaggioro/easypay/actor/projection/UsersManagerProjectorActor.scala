@@ -50,17 +50,20 @@ private class UsersManagerProjectorActor(
             .update((firstName, instant))
 
         case LastNameChanged(customerId, lastName, instant) =>
-          UsersTable.Table.filter(_.customerId === customerId)
+          UsersTable.Table
+            .filter(_.customerId === customerId)
             .map(record => (record.lastName, record.lastEdit))
             .update((lastName, instant))
 
         case BirthDateChanged(customerId, birthDate, instant) =>
-          UsersTable.Table.filter(_.customerId === customerId)
+          UsersTable.Table
+            .filter(_.customerId === customerId)
             .map(record => (record.birtDate, record.lastEdit))
             .update((birthDate, instant))
 
         case EmailChanged(customerId, email, instant) =>
-          UsersTable.Table.filter(_.customerId === customerId)
+          UsersTable.Table
+            .filter(_.customerId === customerId)
             .map(record => (record.email, record.lastEdit))
             .update((email, instant))
     }

@@ -105,7 +105,9 @@ object UsersManager {
           val lastNameEvent: Option[LastNameChanged] =
             maybeLastName.flatMap(lastName => Option.when(userData.lastName != lastName)(LastNameChanged(customerId, lastName)))
           val birthDateEvent: Option[BirthDateChanged] =
-            maybeBirthDate.flatMap(birthDate => Option.when(userData.birthDate != birthDate)(BirthDateChanged(customerId, birthDate)))
+            maybeBirthDate.flatMap(birthDate =>
+              Option.when(userData.birthDate != birthDate)(BirthDateChanged(customerId, birthDate))
+            )
           val emailEvent: Option[EmailChanged] =
             maybeEmail.flatMap(email => Option.when(userData.email != email)(EmailChanged(customerId, email)))
           val passwordEvent: Option[PasswordChanged] =

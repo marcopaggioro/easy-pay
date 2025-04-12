@@ -2,9 +2,8 @@ package it.marcopaggioro.easypay.routes.payloads
 
 import cats.data.{Validated, ValidatedNel}
 import cats.implicits.toTraverseOps
-import cats.syntax.validated.*
+import cats.syntax.validated._
 import io.circe.Decoder
-import io.circe.generic.auto.deriveDecoder
 import it.marcopaggioro.easypay.domain.classes.Validable
 import it.marcopaggioro.easypay.domain.classes.userdata.{CustomerFirstName, CustomerLastName, Email, EncryptedPassword}
 import it.marcopaggioro.easypay.utilities.ValidationUtilities.validateBirthDate

@@ -37,7 +37,7 @@ import {Wallet} from '../../classes/Wallet';
 export class WalletComponent implements OnInit {
   @ViewChild(SpinnerComponent) spinner!: SpinnerComponent;
   customerId!: string;
-  wallet!: Wallet;
+  wallet?: Wallet;
 
   constructor(protected userDataService: UserdataService, private http: HttpClient) {
   }

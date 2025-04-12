@@ -14,7 +14,8 @@ CREATE TABLE IF NOT EXISTS users
     first_name  VARCHAR(50),
     last_name   VARCHAR(50),
     birth_date  DATE,
-    email       VARCHAR(254)
+    email       VARCHAR(254),
+    last_edit   BIGINT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS users_balance

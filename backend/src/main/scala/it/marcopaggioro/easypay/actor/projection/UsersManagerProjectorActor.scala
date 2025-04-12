@@ -38,19 +38,31 @@ private class UsersManagerProjectorActor(
 
     val operations = envelope.toList.collect { eventEnvelope =>
       eventEnvelope.event match
-        case UserCreated(customerId, userData, _) =>
+        case UserCreated(customerId, userData, lastEdit) =>
           UsersTable.Table.insertOrUpdate(
-            UserRecord(customerId, userData.firstName, userData.lastName, userData.birthDate, userData.email)
+            UserRecord(customerId, userData.firstName, userData.lastName, userData.birthDate, userData.email, lastEdit)
           )
 
-        case FirstChanged(customerId, firstName, _) =>
-          UsersTable.Table.filter(_.customerId == customerId).map(_.firstName).update(firstName)
+        case FirstNameChanged(customerId, firstName, instant) =>
+          UsersTable.Table
+            .filter(_.customerId === customerId)
+            .map(record => (record.firstName, record.lastEdit))
+            .update((firstName, instant))
 
-        case LastNameChanged(customerId, lastName, _) =>
-          UsersTable.Table.filter(_.customerId == customerId).map(_.lastName).update(lastName)
+        case LastNameChanged(customerId, lastName, instant) =>
+          UsersTable.Table.filter(_.customerId === customerId)
+            .map(record => (record.lastName, record.lastEdit))
+            .update((lastName, instant))
 
-        case EmailChanged(customerId, email, _) =>
-          UsersTable.Table.filter(_.customerId == customerId).map(_.email).update(email)
+        case BirthDateChanged(customerId, birthDate, instant) =>
+          UsersTable.Table.filter(_.customerId === customerId)
+            .map(record => (record.birtDate, record.lastEdit))
+            .update((birthDate, instant))
+
+        case EmailChanged(customerId, email, instant) =>
+          UsersTable.Table.filter(_.customerId === customerId)
+            .map(record => (record.email, record.lastEdit))
+            .update((email, instant))
     }
 
     database.run(DBIO.sequence(operations)).transform {

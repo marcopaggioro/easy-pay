@@ -9,8 +9,9 @@ import cats.implicits.toTraverseOps
 import it.marcopaggioro.easypay.domain.classes.Aliases.CustomerId
 import it.marcopaggioro.easypay.domain.classes.Domain.{DomainCommand, DomainEvent, DomainState}
 import it.marcopaggioro.easypay.domain.classes.userdata.{CustomerFirstName, CustomerLastName, Email, EncryptedPassword, UserData}
+import it.marcopaggioro.easypay.utilities.ValidationUtilities.validateBirthDate
 
-import java.time.Instant
+import java.time.{Instant, LocalDate}
 import java.util.UUID
 
 object UsersManager {
@@ -75,17 +76,19 @@ object UsersManager {
   // -----
   case class UpdateUserData(
       customerId: CustomerId,
-      maybeEmail: Option[Email],
       maybeFirstName: Option[CustomerFirstName],
       maybeLastName: Option[CustomerLastName],
+      maybeBirthDate: Option[LocalDate],
+      maybeEmail: Option[Email],
       maybeEncryptedPassword: Option[EncryptedPassword]
   )(val replyTo: ActorRef[StatusReply[Done]])
       extends UsersManagerCommand {
     override def validate(state: UsersManagerState): ValidatedNel[String, Unit] =
       customerIdExistsValidation(state, customerId)
-        .andThen(_ => maybeEmail.traverse(email => email.validate().andThen(_ => emailNotAlreadyExistsValidation(state, email))))
         .andThen(_ => maybeFirstName.traverse(_.validate()))
         .andThen(_ => maybeLastName.traverse(_.validate()))
+        .andThen(_ => maybeBirthDate.traverse(validateBirthDate))
+        .andThen(_ => maybeEmail.traverse(email => email.validate().andThen(_ => emailNotAlreadyExistsValidation(state, email))))
         .andThen(_ => maybeEncryptedPassword.traverse(_.validate()))
         .map(_ => ())
 
@@ -95,12 +98,16 @@ object UsersManager {
           List.empty
 
         case Some(userData) =>
-          val emailEvent: Option[EmailChanged] =
-            maybeEmail.flatMap(email => Option.when(userData.email != email)(EmailChanged(customerId, email)))
-          val firstNameEvent: Option[FirstChanged] =
-            maybeFirstName.flatMap(firstName => Option.when(userData.firstName != firstName)(FirstChanged(customerId, firstName)))
+          val firstNameEvent: Option[FirstNameChanged] =
+            maybeFirstName.flatMap(firstName =>
+              Option.when(userData.firstName != firstName)(FirstNameChanged(customerId, firstName))
+            )
           val lastNameEvent: Option[LastNameChanged] =
             maybeLastName.flatMap(lastName => Option.when(userData.lastName != lastName)(LastNameChanged(customerId, lastName)))
+          val birthDateEvent: Option[BirthDateChanged] =
+            maybeBirthDate.flatMap(birthDate => Option.when(userData.birthDate != birthDate)(BirthDateChanged(customerId, birthDate)))
+          val emailEvent: Option[EmailChanged] =
+            maybeEmail.flatMap(email => Option.when(userData.email != email)(EmailChanged(customerId, email)))
           val passwordEvent: Option[PasswordChanged] =
             maybeEncryptedPassword.flatMap(encryptedPassword =>
               Option.when(userData.encryptedPassword != encryptedPassword)(
@@ -108,11 +115,11 @@ object UsersManager {
               )
             )
 
-          List(emailEvent, firstNameEvent, lastNameEvent, passwordEvent).flatten
+          List(firstNameEvent, lastNameEvent, birthDateEvent, emailEvent, passwordEvent).flatten
       }
   }
 
-  case class FirstChanged(
+  case class FirstNameChanged(
       override val customerId: CustomerId,
       firstName: CustomerFirstName,
       override val instant: Instant = Instant.now()
@@ -122,7 +129,6 @@ object UsersManager {
         state.copy(users = state.users.updated(customerId, currentUserData.copy(firstName = firstName)))
       case None => state
     }
-
   }
 
   case class LastNameChanged(
@@ -134,7 +140,18 @@ object UsersManager {
       case Some(currentUserData) => state.copy(users = state.users.updated(customerId, currentUserData.copy(lastName = lastName)))
       case None                  => state
     }
+  }
 
+  case class BirthDateChanged(
+      override val customerId: CustomerId,
+      birthDate: LocalDate,
+      override val instant: Instant = Instant.now()
+  ) extends UsersManagerEvent {
+    override def applyTo(state: UsersManagerState): UsersManagerState = state.users.get(customerId) match {
+      case Some(currentUserData) =>
+        state.copy(users = state.users.updated(customerId, currentUserData.copy(birthDate = birthDate)))
+      case None => state
+    }
   }
 
   case class EmailChanged(override val customerId: CustomerId, email: Email, override val instant: Instant = Instant.now())

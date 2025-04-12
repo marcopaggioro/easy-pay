@@ -147,9 +147,10 @@ class EasyPayAppRoutes(usersManagerActorRef: ActorRef[UsersManagerCommand], data
                     askToUsersManagerActor[Done](
                       UsersManager.UpdateUserData(
                         customerId,
-                        payload.maybeEmail,
                         payload.maybeFirstName,
                         payload.maybeLastName,
+                        payload.maybeBirthDate,
+                        payload.maybeEmail,
                         payload.maybeEncryptedPassword
                       )(_),
                       _ => completeWithOK()

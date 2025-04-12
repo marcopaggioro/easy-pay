@@ -15,5 +15,4 @@ export class DashboardComponent {
 
   constructor(protected authorizationService: AuthorizationService) {
   }
-
 }

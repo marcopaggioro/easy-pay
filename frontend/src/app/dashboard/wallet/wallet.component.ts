@@ -2,7 +2,7 @@ import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {SpinnerComponent} from "../../utilities/spinner.component";
 import {HttpClient} from '@angular/common/http';
 import {APP_CONSTANTS} from '../../app.constants';
-import {DatePipe, DecimalPipe, NgIf} from '@angular/common';
+import {DatePipe, DecimalPipe, KeyValuePipe, NgForOf, NgIf} from '@angular/common';
 import {
   NgbAccordionBody,
   NgbAccordionButton,
@@ -13,8 +13,9 @@ import {
   NgbTooltip
 } from '@ng-bootstrap/ng-bootstrap';
 import {UserdataService} from '../../utilities/userdata.service';
-import {RouterLink} from '@angular/router';
+import {Router, RouterLink} from '@angular/router';
 import {Wallet} from '../../classes/Wallet';
+import {WebSocketService} from '../../utilities/web-socket.service';
 
 @Component({
   selector: 'app-wallet',
@@ -30,17 +31,23 @@ import {Wallet} from '../../classes/Wallet';
     DatePipe,
     DecimalPipe,
     NgbTooltip,
-    RouterLink
+    RouterLink,
+    KeyValuePipe,
+    NgForOf
   ],
   templateUrl: './wallet.component.html'
 })
 export class WalletComponent implements OnInit {
-  @ViewChild(SpinnerComponent) spinner!: SpinnerComponent;
+  @ViewChild('historySpinner') historySpinner!: SpinnerComponent;
+  @ViewChild('interactedUsersSpinner') interactedUsersSpinner!: SpinnerComponent;
+
   @ViewChild('balancePlaceholder') balancePlaceholder!: ElementRef;
+  //TODO perchè customer id?
   customerId!: string;
   wallet?: Wallet;
+  interactedCustomers: Map<string, [string, string]> = new Map<string, [string, string]>();
 
-  constructor(protected userDataService: UserdataService, private http: HttpClient) {
+  constructor(protected userDataService: UserdataService, private http: HttpClient, private router: Router, private webSocketService: WebSocketService) {
   }
 
   ngOnInit(): void {
@@ -51,17 +58,42 @@ export class WalletComponent implements OnInit {
         this.customerId = userData.id;
       }
     });
+
+    this.webSocketService.getWebSocketMessages().subscribe(
+      (message) => {
+        if (message.event == APP_CONSTANTS.WS_WALLET_UPDATED) {
+          this.getWallet();
+        }
+      }
+    );
   }
 
   getWallet(): void {
-    this.http.get<Wallet>(APP_CONSTANTS.WALLET_GET_ENDPOINT, {withCredentials: true}).subscribe(wallet => {
+    //TODO deve mettere gli spinner o comunque di default non devono essere visibili
+    this.http.get<Wallet>(APP_CONSTANTS.ENDPOINT_WALLET_GET, {withCredentials: true}).subscribe(wallet => {
       this.wallet = wallet;
       this.wallet.history = this.wallet.history.sort((a, b) =>
         new Date(b.instant).getTime() - new Date(a.instant).getTime()
       );
 
-      this.spinner.hide();
+      this.wallet!.history
+        .filter(op => op.senderCustomerId !== op.recipientCustomerId)
+        .forEach(op => {
+          const fullName = `${op.interactedFirstName} ${op.interactedLastName}`;
+          if (op.senderCustomerId == this.customerId) {
+            this.interactedCustomers.set(op.recipientCustomerId, [op.interactedEmail, fullName]);
+          } else {
+            this.interactedCustomers.set(op.senderCustomerId, [op.interactedEmail, fullName]);
+          }
+        });
+
+      this.historySpinner.hide();
+      this.interactedUsersSpinner.hide();
     });
+  }
+
+  goToTransfer(email: string): void {
+    this.router.navigate([APP_CONSTANTS.PATH_TRANSFER], {queryParams: {email}});
   }
 
   protected readonly Number = Number;

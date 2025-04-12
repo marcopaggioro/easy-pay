@@ -16,6 +16,7 @@ import {
   NgbTooltip
 } from '@ng-bootstrap/ng-bootstrap';
 import {emailValidator} from '../../utilities/email.validator';
+import {WebSocketService} from '../../utilities/web-socket.service';
 
 @Component({
   selector: 'app-scheduled-operations',
@@ -53,15 +54,23 @@ export class ScheduledOperationsComponent implements OnInit {
   });
 
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private webSocketService: WebSocketService) {
   }
 
   ngOnInit(): void {
     this.getScheduledOperations();
+
+    this.webSocketService.getWebSocketMessages().subscribe(
+      (message) => {
+        if (message.event == APP_CONSTANTS.WS_SCHEDULED_OPERATIONS_UPDATED) {
+          this.getScheduledOperations();
+        }
+      }
+    );
   }
 
   getScheduledOperations(): void {
-    this.http.get<ScheduledOperation[]>(APP_CONSTANTS.WALLET_GET_SCHEDULE_ENDPOINT, {
+    this.http.get<ScheduledOperation[]>(APP_CONSTANTS.ENDPOINT_WALLET_GET_SCHEDULE, {
       withCredentials: true,
       responseType: 'json'
     }).subscribe(scheduledOperations => {
@@ -83,7 +92,7 @@ export class ScheduledOperationsComponent implements OnInit {
       amount: this.scheduledOperationForm.controls.amount.value!,
       when: new Date(this.scheduledOperationForm.controls.dateTime.value!).toISOString()
     }
-    this.http.put(APP_CONSTANTS.WALLET_CREATE_SCHEDULE_ENDPOINT, body, {
+    this.http.put(APP_CONSTANTS.ENDPOINT_WALLET_CREATE_SCHEDULE, body, {
       withCredentials: true,
       responseType: 'json'
     }).subscribe({
@@ -101,7 +110,7 @@ export class ScheduledOperationsComponent implements OnInit {
   }
 
   deleteScheduledOperation(id: string): void {
-    this.http.delete(APP_CONSTANTS.WALLET_DELETE_SCHEDULE_ENDPOINT + "/" + id, {
+    this.http.delete(APP_CONSTANTS.ENDPOINT_WALLET_DELETE_SCHEDULE + "/" + id, {
       withCredentials: true,
       responseType: 'text'
     }).subscribe(

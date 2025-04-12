@@ -33,7 +33,7 @@ export class RechargeComponent {
     }
 
 
-    this.http.post(APP_CONSTANTS.WALLET_RECHARGE_ENDPOINT, this.rechargeForm.controls.amount.value!, {
+    this.http.post(APP_CONSTANTS.ENDPOINT_WALLET_RECHARGE, this.rechargeForm.controls.amount.value!, {
       withCredentials: true,
       responseType: 'json'
     }).subscribe({

@@ -2,7 +2,6 @@ import {Component, OnInit, ViewChild} from '@angular/core';
 import {AuthorizationService} from '../utilities/authorization.service';
 import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {NgIf} from '@angular/common';
-import {Router} from '@angular/router';
 import {emailValidator} from '../utilities/email.validator';
 import {AlertComponent} from '../utilities/alert.component';
 import {HttpErrorResponse} from '@angular/common/http';
@@ -22,7 +21,7 @@ export class RegisterComponent implements OnInit {
   @ViewChild(AlertComponent) alert!: AlertComponent;
   loading: boolean = false;
 
-  constructor(private authorizationService: AuthorizationService, private router: Router) {
+  constructor(private authorizationService: AuthorizationService) {
   }
 
   registerForm = new FormGroup({
@@ -34,8 +33,7 @@ export class RegisterComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.authorizationService.redirectIfAlreadyLoggedIn(() => {
-    });
+    this.authorizationService.redirectIfAlreadyLoggedIn();
   }
 
   onSubmit(): void {

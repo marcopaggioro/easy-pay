@@ -1,10 +1,11 @@
-import {Component, ViewChild} from '@angular/core';
+import {Component, OnInit, ViewChild} from '@angular/core';
 import {NgIf} from '@angular/common';
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {APP_CONSTANTS} from '../../app.constants';
 import {AlertComponent} from '../../utilities/alert.component';
 import {emailValidator} from '../../utilities/email.validator';
+import {ActivatedRoute} from '@angular/router';
 
 @Component({
   selector: 'app-transfer',
@@ -15,7 +16,7 @@ import {emailValidator} from '../../utilities/email.validator';
   ],
   templateUrl: './transfer.component.html'
 })
-export class TransferComponent {
+export class TransferComponent implements OnInit {
   @ViewChild(AlertComponent) alert!: AlertComponent;
   loading: boolean = false;
 
@@ -25,7 +26,12 @@ export class TransferComponent {
     amount: new FormControl('', Validators.required),
   });
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private route: ActivatedRoute) {
+  }
+
+  ngOnInit() {
+    const emailFromQuery = this.route.snapshot.queryParams['email'];
+    this.transferForm.patchValue({recipientEmail: emailFromQuery})
   }
 
   onSubmit(): void {
@@ -40,7 +46,7 @@ export class TransferComponent {
       description: this.transferForm.controls.description.value!,
       amount: this.transferForm.controls.amount.value!
     }
-    this.http.post(APP_CONSTANTS.WALLET_TRANSFER_ENDPOINT, body, {
+    this.http.post(APP_CONSTANTS.ENDPOINT_WALLET_TRANSFER, body, {
       withCredentials: true,
       responseType: 'json'
     }).subscribe({

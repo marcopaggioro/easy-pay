@@ -4,6 +4,8 @@ import {HttpClient} from '@angular/common/http';
 import CryptoJS from 'crypto-js';
 import {Router} from '@angular/router';
 import {APP_CONSTANTS} from '../app.constants';
+import {CookieService} from 'ngx-cookie-service';
+import {WebSocketService} from './web-socket.service';
 
 
 @Injectable({
@@ -11,7 +13,7 @@ import {APP_CONSTANTS} from '../app.constants';
 })
 export class AuthorizationService {
 
-  constructor(private http: HttpClient, private router: Router) {
+  constructor(private http: HttpClient, private router: Router, private cookieService: CookieService, private webSocketService: WebSocketService) {
   }
 
   hashPassword(password: string): string {
@@ -20,23 +22,31 @@ export class AuthorizationService {
 
   register(firstName: string, lastName: string, birthDate: string, email: string, password: string): Observable<string> {
     const body = {firstName, lastName, birthDate, email, encryptedPassword: this.hashPassword(password)};
-    return this.http.post<string>(APP_CONSTANTS.USER_REGISTER_ENDPOINT, body, {withCredentials: true});
+    return this.http.post<string>(APP_CONSTANTS.ENDPOINT_USER_REGISTER, body, {withCredentials: true});
   }
 
-  login(email: string, password: string): Observable<void> {
-    return this.http.post<void>(APP_CONSTANTS.USER_LOGIN_ENDPOINT, {email, encryptedPassword: this.hashPassword(password)}, {
-      withCredentials: true
+  login(email: string, password: string): Observable<string> {
+    return this.http.post<string>(APP_CONSTANTS.ENDPOINT_USER_LOGIN, {
+      email,
+      encryptedPassword: this.hashPassword(password)
+    }, {
+      withCredentials: true,
+      responseType: 'json'
     });
   }
 
   logout(): void {
-    this.http.post(APP_CONSTANTS.USER_LOGOUT_ENDPOINT, {}, {withCredentials: true, responseType: 'text'}).subscribe(
-      () => this.router.navigate([APP_CONSTANTS.PATH_ROOT])
+    this.http.post(APP_CONSTANTS.ENDPOINT_USER_LOGOUT, {}, {withCredentials: true, responseType: 'text'}).subscribe(
+      () => {
+        this.cookieService.delete(APP_CONSTANTS.CUSTOMER_ID_COOKIE_NAME);
+        this.webSocketService.close();
+        this.router.navigate([APP_CONSTANTS.PATH_ROOT]);
+      }
     )
   }
 
   isAlreadyLoggedIn(): Observable<boolean> {
-    return this.http.get(APP_CONSTANTS.USER_LOGIN_CHECK_ENDPOINT, {
+    return this.http.get(APP_CONSTANTS.ENDPOINT_USER_LOGIN_CHECK, {
       withCredentials: true,
       responseType: 'text'
     }).pipe(
@@ -45,13 +55,11 @@ export class AuthorizationService {
     );
   }
 
-  redirectIfAlreadyLoggedIn(notLoggedCallback: () => void): void {
+  redirectIfAlreadyLoggedIn(): void {
     this.isAlreadyLoggedIn().subscribe(
       isLogged => {
         if (isLogged) {
           this.router.navigate([APP_CONSTANTS.PATH_DASHBOARD]);
-        } else {
-          notLoggedCallback()
         }
       }
     )

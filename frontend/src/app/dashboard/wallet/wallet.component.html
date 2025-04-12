@@ -1,5 +1,4 @@
 <!--TODO grafico andamento conto-->
-<!--TODO togliere spinner generale e metterlo nel body - placeholder nel conto-->
 
 <div class="row">
   <div class="col-8">
@@ -7,8 +6,8 @@
       <div class="card-body">
         <h4 class="mb-0">Saldo del wallet</h4>
         <h1 class="placeholder-glow mb-3">
-          @if(wallet?.balance) {
-            {{ Number(this.wallet?.balance) | number:'1.2-2' }}&euro;
+          @if (wallet) {
+            {{ Number(this.wallet!.balance) | number:'1.2-2' }}&euro;
           } @else {
             <span class="placeholder rounded">10000000,00</span>
           }
@@ -19,10 +18,11 @@
       </div>
     </div>
 
+<!--    TODO lista operazioni paginata -->
     <div class="card mt-5">
       <div class="card-body">
         <h2 class="card-title">Operazioni recenti</h2>
-        <app-spinner/>
+        <app-spinner #historySpinner/>
 
         <div ngbAccordion *ngIf="this.wallet?.history">
           @for (operation of this.wallet?.history; track operation.transactionId) {
@@ -36,7 +36,7 @@
                       <div class="container row">
                         <div class="col-1 d-flex align-items-center justify-content-center">
                           <img class="img-fluid"
-                               [src]="APP_CONSTANTS.AVATAR_ENDPOINT + operation.recipientCustomerId"
+                               [src]="APP_CONSTANTS.ENDPOINT_AVATAR + operation.recipientCustomerId"
                                alt="user-avatar"/>
                         </div>
                         <div class="col-8">
@@ -84,7 +84,7 @@
                       <div class="container row">
                         <div class="col-1 d-flex align-items-center justify-content-center">
                           <img class="img-fluid"
-                               [src]="APP_CONSTANTS.AVATAR_ENDPOINT + operation.recipientCustomerId"
+                               [src]="APP_CONSTANTS.ENDPOINT_AVATAR + operation.recipientCustomerId"
                                alt="user-avatar"/>
                         </div>
                         <div class="col-8">
@@ -133,7 +133,7 @@
                     <div class="container row">
                       <div class="col-1 d-flex align-items-center justify-content-center">
                         <img class="img-fluid"
-                             [src]="APP_CONSTANTS.AVATAR_ENDPOINT + this.customerId"
+                             [src]="APP_CONSTANTS.ENDPOINT_AVATAR + this.customerId"
                              alt="user-avatar"/>
                       </div>
                       <div class="col-8 d-grid align-items-center">
@@ -174,11 +174,24 @@
   <div class="col-4">
     <div class="card">
       <div class="card-body">
-        <h2 class="card-title">Invia di nuovo</h2>
-        <button type="button" class="btn btn-success">Trasferisci denaro</button>
-        <!--        TODO righe tipo lista con faccine-->
-      </div>
-    </div>
+        <h3 class="card-title">Interagisci nuovamente</h3>
 
+        <app-spinner #interactedUsersSpinner/>
+
+        <div class="list-group">
+          <button href="#" class="list-group-item list-group-item-action"
+             *ngFor="let customerTuple of this.interactedCustomers | keyvalue"
+             (click)="goToTransfer(customerTuple.value[0])">
+            <div class="d-flex align-items-center">
+              <img class="img-fluid rounded-circle me-3" style="width: 40px; height: 40px;"
+                   [src]="APP_CONSTANTS.ENDPOINT_AVATAR + customerTuple.key"
+                   alt="user-avatar"/>
+              <h5 class="mb-1"> {{ customerTuple.value[1] }}</h5>
+            </div>
+          </button>
+        </div>
+      </div>
+
+    </div>
   </div>
 </div>

@@ -31,6 +31,7 @@ export class ProfileFieldComponent implements OnInit {
   }
 
   ngOnInit() {
+    //TODO a volte inzializza i field, a volte no: cambio pagina si. reload pagina no
     this.formField = new FormControl(this.fieldValue, [Validators.required, ...this.additionalValidators]);
   }
 
@@ -42,7 +43,7 @@ export class ProfileFieldComponent implements OnInit {
     this.waitingResponse = true;
 
     const body = {[this.httpFieldName]: this.formField.value!}
-    this.http.patch(APP_CONSTANTS.USER_UPDATE_ENDPOINT, body, {withCredentials: true, responseType: 'json'}).subscribe({
+    this.http.patch(APP_CONSTANTS.ENDPOINT_USER_UPDATE, body, {withCredentials: true, responseType: 'json'}).subscribe({
       next: () => {
         this.editResult.emit(null);
         this.editing = false;

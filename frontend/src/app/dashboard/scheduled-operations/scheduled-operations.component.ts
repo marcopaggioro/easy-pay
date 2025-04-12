@@ -10,7 +10,10 @@ import {
   NgbAccordionBody,
   NgbAccordionButton,
   NgbAccordionCollapse,
-  NgbAccordionDirective, NgbAccordionHeader, NgbAccordionItem, NgbTooltip
+  NgbAccordionDirective,
+  NgbAccordionHeader,
+  NgbAccordionItem,
+  NgbTooltip
 } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
@@ -44,7 +47,7 @@ export class ScheduledOperationsComponent implements OnInit {
     recipientEmail: new FormControl('', [Validators.required, Validators.email]), //TODO  validazione insufficiente: usare la regex del BE
     description: new FormControl('', Validators.required),
     amount: new FormControl(0, Validators.required),
-    dateTime: new FormControl('', Validators.required),
+    dateTime: new FormControl<Date | null>(null, Validators.required)
   });
 
 
@@ -76,7 +79,7 @@ export class ScheduledOperationsComponent implements OnInit {
       recipientEmail: this.scheduledOperationForm.controls.recipientEmail.value!,
       description: this.scheduledOperationForm.controls.description.value!,
       amount: this.scheduledOperationForm.controls.amount.value!,
-      when: this.scheduledOperationForm.controls.dateTime.value!
+      when: new Date(this.scheduledOperationForm.controls.dateTime.value!).toISOString()
     }
     this.http.put(APP_CONSTANTS.WALLET_CREATE_SCHEDULE_ENDPOINT, body, {
       withCredentials: true,

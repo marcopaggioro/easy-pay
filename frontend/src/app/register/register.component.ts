@@ -48,6 +48,7 @@ export class RegisterComponent implements OnInit {
       this.registerForm.controls.email.value!,
       this.registerForm.controls.password.value!).subscribe(
       isLogged => {
+        //TODO deve aspettare notifica ws per la fine della proiezione
         this.router.navigate([APP_CONSTANTS.PATH_DASHBOARD])
       }
     );

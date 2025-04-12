@@ -1,9 +1,6 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
 import {SpinnerComponent} from "../../utilities/spinner.component";
-import Decimal from 'decimal.js';
-import {Operation} from '../../classes/Operation';
 import {HttpClient} from '@angular/common/http';
-import {Wallet} from '../../classes/Wallet';
 import {APP_CONSTANTS} from '../../app.constants';
 import {DatePipe, DecimalPipe, NgIf} from '@angular/common';
 import {
@@ -17,6 +14,7 @@ import {
 } from '@ng-bootstrap/ng-bootstrap';
 import {UserdataService} from '../../utilities/userdata.service';
 import {RouterLink} from '@angular/router';
+import {Wallet} from '../../classes/Wallet';
 
 @Component({
   selector: 'app-wallet',
@@ -38,22 +36,29 @@ import {RouterLink} from '@angular/router';
 })
 export class WalletComponent implements OnInit {
   @ViewChild(SpinnerComponent) spinner!: SpinnerComponent;
-  balance!: Decimal;
-  operationsHistory: Operation[] = [];
+  customerId!: string;
+  wallet!: Wallet;
 
   constructor(protected userDataService: UserdataService, private http: HttpClient) {
   }
 
   ngOnInit(): void {
     this.getWallet();
+
+    this.userDataService.userData$.subscribe(userData => {
+      if (userData) {
+        this.customerId = userData.id;
+      }
+    });
   }
 
   getWallet(): void {
     this.http.get<Wallet>(APP_CONSTANTS.WALLET_GET_ENDPOINT, {withCredentials: true}).subscribe(wallet => {
-      this.balance = wallet.balance;
-      this.operationsHistory = wallet.history.sort((a, b) =>
+      this.wallet = wallet;
+      this.wallet.history = this.wallet.history.sort((a, b) =>
         new Date(b.instant).getTime() - new Date(a.instant).getTime()
       );
+
       this.spinner.hide();
     });
   }

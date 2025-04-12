@@ -4,7 +4,6 @@ import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/
 import {SpinnerComponent} from '../../utilities/spinner.component';
 import {AuthorizationService} from '../../utilities/authorization.service';
 import {HttpClient} from '@angular/common/http';
-import {UserData} from '../../classes/UserData';
 import {APP_CONSTANTS} from '../../app.constants';
 import {UserdataService} from '../../utilities/userdata.service';
 
@@ -12,40 +11,38 @@ import {UserdataService} from '../../utilities/userdata.service';
   selector: 'app-profile',
   imports: [
     NgIf,
-    ReactiveFormsModule,
-    SpinnerComponent
+    ReactiveFormsModule
   ],
   templateUrl: './profile.component.html'
 })
-export class ProfileComponent {
+export class ProfileComponent implements OnInit {
+  //TODO modifica parziale dei dati
+
   @ViewChild(SpinnerComponent) spinner!: SpinnerComponent;
 
-  constructor(private authorizationService: AuthorizationService, private userDataService: UserdataService, private http: HttpClient) {
+  constructor(private authorizationService: AuthorizationService, protected userDataService: UserdataService, private http: HttpClient) {
   }
 
-  //TODO modifica parziale dei dati
-  /*
-  *     firstName: new FormControl(this.userDataService?.userData!.firstName, Validators.required),
-    lastName: new FormControl(this.userData?.lastName, Validators.required),
-    birthDate: new FormControl(this.userData?.birthDate, Validators.required),
-    email: new FormControl(this.userData?.email, [Validators.required, Validators.email]), //TODO  validazione insufficiente
-    password: new FormControl('', Validators.required),
-  * */
   profileForm = new FormGroup({
     firstName: new FormControl('', Validators.required),
     lastName: new FormControl('', Validators.required),
-    birthDate: new FormControl('', Validators.required),
+    birthDate: new FormControl<Date | null>(null, Validators.required),
     email: new FormControl('', [Validators.required, Validators.email]), //TODO  validazione insufficiente
-    password: new FormControl('', Validators.required),
+    password: new FormControl('', Validators.required)
   });
 
-  //TODO
-  // this.profileForm.patchValue({
-  //                               firstName: this.userData.firstName,
-  //                               lastName: this.userData.lastName,
-  //                               birthDate: this.userData.birthDate,
-  //                               email: this.userData.email
-  //                             });
+  ngOnInit(): void {
+    this.userDataService.userData$.subscribe(userData => {
+      if (userData) {
+        this.profileForm.patchValue({
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          birthDate: userData.birthDate,
+          email: userData.email
+        });
+      }
+    });
+  }
 
   onSubmit(): void {
     if (this.profileForm.invalid) {

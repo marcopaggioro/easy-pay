@@ -25,7 +25,7 @@ export const APP_CONSTANTS = {
   PATH_TRANSFER: "/dashboard/transfer",
 
   // Messages
-  MESSAGE_SUCCESSFUL: "Operazione andata a buon fine",
+  MESSAGE_SUCCESSFUL: "Operazione eseguita con successo. Potrai visualizzare le modifiche a breve",
   MESSAGE_GENERIC_ERROR: "Errore generico",
 
   // Web socket

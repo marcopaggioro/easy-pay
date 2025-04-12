@@ -10,13 +10,13 @@
         <div class="form-floating my-3">
           <input type="email" class="form-control" id="email" placeholder="mario.rossi@gmail.com"
                  formControlName="email"
-                 [class.is-invalid]="loginForm.controls.email.touched && loginForm.controls.email.invalid">
+                 [class.is-invalid]="loginForm.controls.email.dirty && loginForm.controls.email.invalid">
           <label for="email">Email</label>
         </div>
         <!-- Password -->
         <div class="form-floating my-3">
           <input type="password" class="form-control" id="password" placeholder="password" formControlName="password"
-                 [class.is-invalid]="loginForm.controls.password.touched && loginForm.controls.password.invalid">
+                 [class.is-invalid]="loginForm.controls.password.dirty && loginForm.controls.password.invalid">
           <label for="password">Password</label>
         </div>
 

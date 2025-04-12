@@ -19,7 +19,7 @@ export class RechargeComponent {
   loading: boolean = false;
 
   rechargeForm = new FormGroup({
-    amount: new FormControl('', Validators.required)
+    amount: new FormControl('', [Validators.required, Validators.min(0.01)])
   });
 
   constructor(private http: HttpClient) {

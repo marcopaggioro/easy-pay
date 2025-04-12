@@ -12,6 +12,7 @@ import akka.projection.scaladsl.{GroupedProjection, Handler}
 import akka.projection.{ProjectionBehavior, ProjectionId}
 import com.typesafe.scalalogging.LazyLogging
 import it.marcopaggioro.easypay.actor.UsersManagerActor
+import it.marcopaggioro.easypay.actor.WebSocketManagerActor.WebSocketManagerActorCommand
 import it.marcopaggioro.easypay.database.PlainJdbcSession
 import it.marcopaggioro.easypay.database.PostgresProfile._
 import it.marcopaggioro.easypay.database.PostgresProfile.api._
@@ -25,6 +26,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 private class UsersManagerProjectorActor(
+    webSocketManagerActorRef: ActorRef[WebSocketManagerActorCommand],
     database: Database,
     system: ActorSystem[Nothing]
 ) extends Handler[Seq[EventEnvelope[UsersManagerEvent]]]
@@ -84,6 +86,7 @@ private class UsersManagerProjectorActor(
 object UsersManagerProjectorActor {
 
   def startProjectorActor(
+      webSocketManagerActorRef: ActorRef[WebSocketManagerActorCommand],
       database: Database,
       system: ActorSystem[Nothing]
   ): ActorRef[ProjectionBehavior.Command] = {
@@ -95,7 +98,7 @@ object UsersManagerProjectorActor {
         ProjectionId(s"${UsersManagerActor.Name}-jdbc-projection", UsersManagerActor.EventTag),
         sourceProvider,
         () => new PlainJdbcSession,
-        () => new UsersManagerProjectorActor(database, system)
+        () => new UsersManagerProjectorActor(webSocketManagerActorRef, database, system)
       )(system)
       .withGroup(groupAfterEnvelopes = 100, groupAfterDuration = 100.milliseconds)
 

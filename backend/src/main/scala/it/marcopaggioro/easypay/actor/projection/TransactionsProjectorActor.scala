@@ -11,7 +11,8 @@ import akka.projection.jdbc.scaladsl.JdbcProjection
 import akka.projection.scaladsl.{GroupedProjection, Handler, SourceProvider}
 import akka.projection.{ProjectionBehavior, ProjectionId}
 import com.typesafe.scalalogging.LazyLogging
-import it.marcopaggioro.easypay.actor.TransactionsManagerActor
+import it.marcopaggioro.easypay.actor.WebSocketManagerActor.WebSocketManagerActorCommand
+import it.marcopaggioro.easypay.actor.{TransactionsManagerActor, WebSocketManagerActor}
 import it.marcopaggioro.easypay.database.PlainJdbcSession
 import it.marcopaggioro.easypay.database.PostgresProfile._
 import it.marcopaggioro.easypay.database.PostgresProfile.api._
@@ -20,7 +21,8 @@ import it.marcopaggioro.easypay.database.transactionshistory.{TransactionsHistor
 import it.marcopaggioro.easypay.database.usersbalance.{UserBalanceRecord, UsersBalanceTable}
 import it.marcopaggioro.easypay.domain.TransactionsManager._
 import it.marcopaggioro.easypay.domain.classes.Aliases.{CustomerId, TransactionId}
-import it.marcopaggioro.easypay.domain.classes.{Money, Status}
+import it.marcopaggioro.easypay.domain.classes.WebSocketMessage.{ScheduledOperationsUpdated, WalletUpdated}
+import it.marcopaggioro.easypay.domain.classes.{Money, Status, WebSocketMessage}
 import slick.jdbc.JdbcBackend.Database
 
 import java.time.{Duration, Instant}
@@ -28,8 +30,11 @@ import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
-private class TransactionsProjectorActor(database: Database, system: ActorSystem[Nothing])
-    extends Handler[Seq[EventEnvelope[TransactionsManagerEvent]]]
+private class TransactionsProjectorActor(
+    webSocketManagerActorRef: ActorRef[WebSocketManagerActorCommand],
+    database: Database,
+    system: ActorSystem[Nothing]
+) extends Handler[Seq[EventEnvelope[TransactionsManagerEvent]]]
     with LazyLogging {
 
   private implicit lazy val executionContext: ExecutionContext = system.executionContext
@@ -78,60 +83,85 @@ private class TransactionsProjectorActor(database: Database, system: ActorSystem
   override def process(envelope: Seq[EventEnvelope[TransactionsManagerEvent]]): Future[Done] = {
     val startTime: Instant = Instant.now()
     logger.debug(s"Projecting ${envelope.size} events")
+    val events: List[TransactionsManagerEvent] = envelope.toList.map(_.event)
 
-    val operations = envelope.toList.map { eventEnvelope =>
-      eventEnvelope.event match {
-        case WalletRecharged(transactionId, customerId, amount, instant) =>
-          moneyOperations(customerId, customerId, transactionId, amount, instant, None)
+    // TODO testare se sono in un altra pagina se fa getWallet
+    val databaseOperations: DBIOAction[Int, NoStream, Effect.Read & Effect.Write] = DBIO
+      .sequence {
+        events.map {
+          case WalletRecharged(transactionId, customerId, amount, instant) =>
+            moneyOperations(customerId, customerId, transactionId, amount, instant, None)
 
-        case MoneyTransferred(customerId, recipientCustomerId, transactionId, description, amount, instant) =>
-          moneyOperations(customerId, recipientCustomerId, transactionId, amount, instant, Some(description))
+          case MoneyTransferred(customerId, recipientCustomerId, transactionId, description, amount, instant) =>
+            moneyOperations(customerId, recipientCustomerId, transactionId, amount, instant, Some(description))
 
-        case ScheduledOperationCreated(scheduledOperationId, scheduledOperation, _) =>
-          ScheduledOperationsTable.Table.insertOrUpdate(
-            ScheduledOperationRecord(
-              scheduledOperationId,
-              scheduledOperation.senderCustomerId,
-              scheduledOperation.recipientCustomerId,
-              scheduledOperation.description,
-              scheduledOperation.when,
-              scheduledOperation.amount,
-              scheduledOperation.repeat,
-              scheduledOperation.status.code
+          case ScheduledOperationCreated(scheduledOperationId, scheduledOperation, _) =>
+            ScheduledOperationsTable.Table.insertOrUpdate(
+              ScheduledOperationRecord(
+                scheduledOperationId,
+                scheduledOperation.senderCustomerId,
+                scheduledOperation.recipientCustomerId,
+                scheduledOperation.description,
+                scheduledOperation.when,
+                scheduledOperation.amount,
+                scheduledOperation.repeat,
+                scheduledOperation.status.code
+              )
             )
-          )
 
-        case ScheduledOperationDeleted(scheduledOperationId, instant) =>
-          ScheduledOperationsTable.Table.filter(_.scheduledOperationId === scheduledOperationId).delete
+          case ScheduledOperationDeleted(_, scheduledOperationId, instant) =>
+            ScheduledOperationsTable.Table.filter(_.scheduledOperationId === scheduledOperationId).delete
 
-        case ScheduledOperationExecuted(scheduledOperationId, scheduledOperation, nextStatus, instant) =>
-          nextStatus match {
-            case failed: Status.Failed =>
-              ScheduledOperationsTable.Table
-                .filter(_.scheduledOperationId === scheduledOperationId)
-                .map(_.status)
-                .update(failed.code)
+          case ScheduledOperationExecuted(scheduledOperationId, scheduledOperation, nextStatus, instant) =>
+            nextStatus match {
+              case failed: Status.Failed =>
+                ScheduledOperationsTable.Table
+                  .filter(_.scheduledOperationId === scheduledOperationId)
+                  .map(_.status)
+                  .update(failed.code)
 
-            case _ =>
-              scheduledOperation.repeat match {
-                case Some(repeat) =>
-                  ScheduledOperationsTable.Table
-                    .filter(_.scheduledOperationId === scheduledOperationId)
-                    .map(_.when)
-                    .update(scheduledOperation.when.plus(repeat))
+              case _ =>
+                scheduledOperation.repeat match {
+                  case Some(repeat) =>
+                    ScheduledOperationsTable.Table
+                      .filter(_.scheduledOperationId === scheduledOperationId)
+                      .map(_.when)
+                      .update(scheduledOperation.when.plus(repeat))
 
-                case None =>
-                  ScheduledOperationsTable.Table.filter(_.scheduledOperationId === scheduledOperationId).delete
-              }
-          }
+                  case None =>
+                    ScheduledOperationsTable.Table.filter(_.scheduledOperationId === scheduledOperationId).delete
+                }
+            }
+        }
       }
+      .map(_.sum)
+
+    val webSocketMessages: List[(CustomerId, WebSocketMessage)] = events.flatMap {
+      case WalletRecharged(_, customerId, _, _) =>
+        List((customerId, WalletUpdated))
+
+      case MoneyTransferred(customerId, recipientCustomerId, _, _, _, _) =>
+        List((customerId, WalletUpdated), (recipientCustomerId, WalletUpdated))
+
+      case ScheduledOperationCreated(_, scheduledOperation, _) =>
+        List((scheduledOperation.senderCustomerId, ScheduledOperationsUpdated))
+
+      case ScheduledOperationDeleted(customerId, _, _) =>
+        List((customerId, ScheduledOperationsUpdated))
+
+      case ScheduledOperationExecuted(_, scheduledOperation, _, _) =>
+        List((scheduledOperation.senderCustomerId, ScheduledOperationsUpdated))
     }
 
     database
-      .run(DBIO.sequence(operations))
+      .run(databaseOperations)
       .transform {
         case Success(operationsCount) =>
-          logger.debug(s"Executed ${operationsCount.sum} operations in ${Duration.between(startTime, Instant.now()).toString}")
+          logger.debug(s"Executed $operationsCount operations in ${Duration.between(startTime, Instant.now()).toString}")
+          webSocketMessages.foreach { case (customerId, message) =>
+            webSocketManagerActorRef.tell(WebSocketManagerActor.SendMessage(customerId, message))
+          }
+
           Success(Done)
 
         case Failure(throwable) =>
@@ -144,7 +174,11 @@ private class TransactionsProjectorActor(database: Database, system: ActorSystem
 
 object TransactionsProjectorActor {
 
-  def startProjectorActor(database: Database, system: ActorSystem[Nothing]): ActorRef[ProjectionBehavior.Command] = {
+  def startProjectorActor(
+      webSocketManagerActorRef: ActorRef[WebSocketManagerActorCommand],
+      database: Database,
+      system: ActorSystem[Nothing]
+  ): ActorRef[ProjectionBehavior.Command] = {
     val sourceProvider: SourceProvider[Offset, EventEnvelope[TransactionsManagerEvent]] = EventSourcedProvider
       .eventsByTag[TransactionsManagerEvent](system, JdbcReadJournal.Identifier, TransactionsManagerActor.EventTag)
 
@@ -153,7 +187,7 @@ object TransactionsProjectorActor {
         ProjectionId(s"${TransactionsManagerActor.Name}-jdbc-projection", TransactionsManagerActor.EventTag),
         sourceProvider,
         () => new PlainJdbcSession,
-        () => new TransactionsProjectorActor(database, system)
+        () => new TransactionsProjectorActor(webSocketManagerActorRef, database, system)
       )(system)
       .withGroup(groupAfterEnvelopes = 100, groupAfterDuration = 100.milliseconds)
 

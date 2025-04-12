@@ -21,13 +21,11 @@ val dockerSettings = Seq(
 
 val allowedWarts = Warts.unsafe.filterNot(
   Seq(
-    Wart.NonUnitStatements,
-    Wart.StringPlusAny,
     Wart.Throw,
-    Wart.DefaultArguments
+    Wart.DefaultArguments,
+    Wart.Any
   ).contains(_)
 )
-
 
 lazy val root = (project in file("."))
   .enablePlugins(BuildInfoPlugin, DockerPlugin, JavaAppPackaging)
@@ -45,7 +43,7 @@ lazy val root = (project in file("."))
     // scalafix
     semanticdbEnabled := true,
     semanticdbVersion := scalafixSemanticdb.revision,
-    scalacOptions += "-Wunused:imports",
+    scalacOptions += "-Wunused:imports"
   )
 
 // ############### DEPENDENCIES ###############

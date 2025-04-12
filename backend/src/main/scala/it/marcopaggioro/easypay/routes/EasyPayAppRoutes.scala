@@ -1,25 +1,29 @@
 package it.marcopaggioro.easypay.routes
 
-import akka.Done
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, ActorSystem, Scheduler, SupervisorStrategy}
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.HttpCookie
+import akka.http.scaladsl.model.ws.{Message, TextMessage}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.server.directives.BasicDirectives.extractRequest
 import akka.http.scaladsl.unmarshalling.{FromEntityUnmarshaller, Unmarshaller}
 import akka.pattern.StatusReply
-import akka.stream.scaladsl.Flow
+import akka.stream.OverflowStrategy
+import akka.stream.scaladsl.{Flow, Sink, Source}
+import akka.stream.typed.scaladsl.ActorSource
 import akka.util.ByteString
+import akka.{Done, NotUsed}
 import cats.data.Validated
 import io.circe.Encoder.encodeSeq
 import io.circe._
 import io.circe.jawn.decode
 import io.circe.syntax.EncoderOps
 import it.marcopaggioro.easypay.AppConfig.askTimeout
-import it.marcopaggioro.easypay.actor.TransactionsManagerActor
+import it.marcopaggioro.easypay.actor.WebSocketManagerActor.WebSocketManagerActorCommand
+import it.marcopaggioro.easypay.actor.{TransactionsManagerActor, UsersManagerActor, WebSocketManagerActor}
 import it.marcopaggioro.easypay.database.PostgresProfile._
 import it.marcopaggioro.easypay.database.PostgresProfile.api._
 import it.marcopaggioro.easypay.database.scheduledoperations.ScheduledOperationRecord.ScheduledOperationUserJoinEncoder
@@ -35,7 +39,7 @@ import it.marcopaggioro.easypay.domain.classes.Aliases.{CustomerId, ScheduledOpe
 import it.marcopaggioro.easypay.domain.classes.userdata.{Email, UserData}
 import it.marcopaggioro.easypay.domain.classes.{Money, ScheduledOperation, Validable}
 import it.marcopaggioro.easypay.domain.{TransactionsManager, UsersManager}
-import it.marcopaggioro.easypay.routes.EasyPayAppRoutes.circeUnmarshaller
+import it.marcopaggioro.easypay.routes.EasyPayAppRoutes.{CustomerIdSegment, circeUnmarshaller}
 import it.marcopaggioro.easypay.routes.payloads.LoginPayload.LoginPayloadDecoder
 import it.marcopaggioro.easypay.routes.payloads.scheduledoperation.CreateScheduledOperationPayload
 import it.marcopaggioro.easypay.routes.payloads.{LoginPayload, TransferMoneyPayload, UpdateUserDataPayload}
@@ -44,16 +48,20 @@ import slick.jdbc.JdbcBackend.Database
 
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 
-class EasyPayAppRoutes(usersManagerActorRef: ActorRef[UsersManagerCommand], database: Database)(implicit
+class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketManagerActorCommand], database: Database)(implicit
     system: ActorSystem[Nothing]
 ) {
 
   private implicit val scheduler: Scheduler = system.scheduler
   private implicit val executionContext: ExecutionContextExecutor = system.executionContext
 
-  private val transactionsManagerActorRef: ActorRef[TransactionsManagerCommand] = system.systemActorOf(
+  private lazy val usersManagerActorRef: ActorRef[UsersManagerCommand] = system.systemActorOf(
+    Behaviors.supervise(UsersManagerActor()).onFailure[Exception](SupervisorStrategy.restart),
+    UsersManagerActor.Name
+  )
+  private lazy val transactionsManagerActorRef: ActorRef[TransactionsManagerCommand] = system.systemActorOf(
     Behaviors.supervise(TransactionsManagerActor()).onFailure[Exception](SupervisorStrategy.restart),
     TransactionsManagerActor.Name
   )
@@ -231,6 +239,28 @@ class EasyPayAppRoutes(usersManagerActorRef: ActorRef[UsersManagerCommand], data
       }
     }
 
+  private def webSocketFlow(customerId: CustomerId): Flow[Message, Message, NotUsed] = {
+    val (clientActor, outSource): (ActorRef[TextMessage.Strict], Source[Message, NotUsed]) = ActorSource
+      .actorRef[TextMessage.Strict](
+        PartialFunction.empty,
+        PartialFunction.empty,
+        10,
+        OverflowStrategy.fail
+      )
+      .preMaterialize()
+
+    webSocketManagerActorRef.tell(WebSocketManagerActor.Register(customerId, clientActor))
+
+    val monitoredOutSource = outSource.watchTermination() { (mat, terminationFuture) =>
+      terminationFuture.onComplete { _ =>
+        webSocketManagerActorRef.tell(WebSocketManagerActor.Unregister(customerId))
+      }
+      mat
+    }
+
+    Flow.fromSinkAndSource(Sink.ignore, outSource)
+  }
+
   lazy val Routes: Route = extractRequest { request =>
     implicit val uri: Uri = request.uri
     system.log.debug(s"Received ${request.method.value} ${request.uri.path.toString()}")
@@ -240,6 +270,9 @@ class EasyPayAppRoutes(usersManagerActorRef: ActorRef[UsersManagerCommand], data
         concat(
           UserRoutes(uri),
           WalletRoutes(uri),
+          path("ws" / CustomerIdSegment) { customerId =>
+            handleWebSocketMessages(webSocketFlow(customerId))
+          },
           pathEndOrSingleSlash(complete("Server up and running"))
         )
       }
@@ -472,6 +505,10 @@ object EasyPayAppRoutes {
   implicit val ScheduledOperationTupleEncoder: Encoder[(ScheduledOperationId, ScheduledOperation)] = Encoder.instance {
     case (scheduledOperationId, scheduledOperation) =>
       scheduledOperation.asJson.deepMerge(Json.obj("id" -> scheduledOperationId.asJson))
+  }
+
+  val CustomerIdSegment: PathMatcher1[CustomerId] = Segment.flatMap { segment =>
+    Try(UUID.fromString(segment)).toOption
   }
 
 }

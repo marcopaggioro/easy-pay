@@ -141,7 +141,7 @@ object TransactionsManager {
     override protected def generateEvents(state: TransactionsManagerState): List[TransactionsManagerEvent] =
       state.scheduledOperations.get(scheduledOperationId) match {
         case Some(_) =>
-          List(ScheduledOperationDeleted(scheduledOperationId))
+          List(ScheduledOperationDeleted(customerId, scheduledOperationId))
 
         case None =>
           List.empty
@@ -149,6 +149,7 @@ object TransactionsManager {
   }
 
   case class ScheduledOperationDeleted(
+      customerId: CustomerId,
       scheduledOperationId: ScheduledOperationId,
       override val instant: Instant = Instant.now()
   ) extends TransactionsManagerEvent {

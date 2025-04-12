@@ -6,9 +6,9 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.ServerBinding
 import akka.serialization.jackson.CborSerializable
 import buildinfo.BuildInfo
-import it.marcopaggioro.easypay.actor.UsersManagerActor
+import it.marcopaggioro.easypay.actor.WebSocketManagerActor
+import it.marcopaggioro.easypay.actor.WebSocketManagerActor.WebSocketManagerActorCommand
 import it.marcopaggioro.easypay.actor.projection.{TransactionsProjectorActor, UsersManagerProjectorActor}
-import it.marcopaggioro.easypay.domain.UsersManager.UsersManagerCommand
 import it.marcopaggioro.easypay.routes.EasyPayAppRoutes
 import org.flywaydb.core.Flyway
 import slick.jdbc.JdbcBackend.Database
@@ -22,9 +22,11 @@ object EasyPayApp {
   private final case class ServerStarted(serverBinding: ServerBinding) extends AppCommand
   private final case class ServerStartupFailed(cause: Throwable) extends AppCommand
 
-  private def startProjectors(database: Database)(implicit system: ActorSystem[Nothing]): Unit = {
-    UsersManagerProjectorActor.startProjectorActor(database, system)
-    TransactionsProjectorActor.startProjectorActor(database, system)
+  private def startProjectors(webSocketManagerActorRef: ActorRef[WebSocketManagerActorCommand], database: Database)(implicit
+      system: ActorSystem[Nothing]
+  ): Unit = {
+    UsersManagerProjectorActor.startProjectorActor(webSocketManagerActorRef, database, system)
+    TransactionsProjectorActor.startProjectorActor(webSocketManagerActorRef, database, system)
   }
 
   private def started(serverBinding: ServerBinding): Behavior[AppCommand] = Behaviors.setup[AppCommand] { context =>
@@ -53,15 +55,15 @@ object EasyPayApp {
     implicit val system: ActorSystem[Nothing] = context.system
 
     val database: Database = Database.forConfig("slick.db", AppConfig.config)
-    val usersManagerActorRef: ActorRef[UsersManagerCommand] = system.systemActorOf(
-      Behaviors.supervise(UsersManagerActor()).onFailure[Exception](SupervisorStrategy.restart),
-      UsersManagerActor.Name
+    val webSocketManagerActorRef: ActorRef[WebSocketManagerActorCommand] = system.systemActorOf(
+      Behaviors.supervise(WebSocketManagerActor()).onFailure[Exception](SupervisorStrategy.restart),
+      WebSocketManagerActor.Name
     )
-    startProjectors(database)
+    startProjectors(webSocketManagerActorRef, database)
 
     val webServerBinding: Future[ServerBinding] = Http()
       .newServerAt(AppConfig.httpAddress, AppConfig.httpPort)
-      .bind(new EasyPayAppRoutes(usersManagerActorRef, database).Routes)
+      .bind(new EasyPayAppRoutes(webSocketManagerActorRef, database).Routes)
 
     context.pipeToSelf(webServerBinding) {
       case Failure(exception)     => ServerStartupFailed(exception)

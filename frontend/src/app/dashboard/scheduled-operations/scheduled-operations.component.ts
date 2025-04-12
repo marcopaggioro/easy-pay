@@ -47,7 +47,7 @@ export class ScheduledOperationsComponent implements OnInit {
   scheduledOperationForm = new FormGroup({
     recipientEmail: new FormControl('', [Validators.required, Validators.email, emailValidator()]),
     description: new FormControl('', Validators.required),
-    amount: new FormControl(0, Validators.required),
+    amount: new FormControl('', Validators.required),
     dateTime: new FormControl<Date | null>(null, Validators.required)
   });
 
@@ -89,11 +89,11 @@ export class ScheduledOperationsComponent implements OnInit {
       next: () => {
         this.scheduledOperationForm.reset();
 
-        this.alert.success("Operazione andata a buon fine");
+        this.alert.success(APP_CONSTANTS.MESSAGE_SUCCESSFUL);
         this.loading = false;
       },
       error: (httpErrorResponse: HttpErrorResponse) => {
-        this.alert.error(httpErrorResponse?.error?.error || "Errore generico");
+        this.alert.error(httpErrorResponse?.error?.error || APP_CONSTANTS.MESSAGE_GENERIC_ERROR);
         this.loading = false;
       }
     });

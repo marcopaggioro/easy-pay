@@ -8,49 +8,35 @@
       <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
         <!-- First name -->
         <div class="form-floating my-3">
-          <input type="text" class="form-control" id="firstName" placeholder="Mario" formControlName="firstName">
+          <input type="text" class="form-control" id="firstName" placeholder="Mario" formControlName="firstName"
+                 [class.is-invalid]="registerForm.controls.firstName.touched && registerForm.controls.firstName.invalid">
           <label for="firstName">Nome</label>
-          <div class="text-danger"
-               *ngIf="registerForm.controls.firstName.touched && registerForm.controls.firstName.invalid">
-            Campo obbligatorio
-          </div>
         </div>
         <!-- Last name -->
         <div class="form-floating my-3">
-          <input type="text" class="form-control" id="lastName" placeholder="Rossi" formControlName="lastName">
+          <input type="text" class="form-control" id="lastName" placeholder="Rossi" formControlName="lastName"
+                 [class.is-invalid]="registerForm.controls.lastName.touched && registerForm.controls.lastName.invalid">
           <label for="lastName">Cognome</label>
-          <div class="text-danger"
-               *ngIf="registerForm.controls.lastName.touched && registerForm.controls.lastName.invalid">
-            Campo obbligatorio
-          </div>
         </div>
         <!-- Birth date -->
         <div class="form-floating my-3">
           <!--            TODO ngdatepicker -->
-          <input type="date" class="form-control" id="birthDate" formControlName="birthDate">
+          <input type="date" class="form-control" id="birthDate" formControlName="birthDate"
+                 [class.is-invalid]="registerForm.controls.birthDate.touched && registerForm.controls.birthDate.invalid">
           <label for="birthDate">Data di nascita</label>
-          <div class="text-danger"
-               *ngIf="registerForm.controls.birthDate.touched && registerForm.controls.birthDate.invalid">
-            Campo obbligatorio
-          </div>
         </div>
         <!-- Email -->
         <div class="form-floating my-3">
           <input type="email" class="form-control" id="email" placeholder="mario.rossi@gmail.com"
-                 formControlName="email">
+                 formControlName="email"
+                 [class.is-invalid]="registerForm.controls.email.touched && registerForm.controls.email.invalid">
           <label for="email">Email</label>
-          <div class="text-danger" *ngIf="registerForm.controls.email.touched && registerForm.controls.email.invalid">
-            Campo obbligatorio
-          </div>
         </div>
         <!-- Password -->
         <div class="form-floating my-3">
-          <input type="password" class="form-control" id="password" placeholder="password" formControlName="password">
+          <input type="password" class="form-control" id="password" placeholder="password" formControlName="password"
+                 [class.is-invalid]="registerForm.controls.password.touched && registerForm.controls.password.invalid">
           <label for="password">Password</label>
-          <div class="text-danger"
-               *ngIf="registerForm.controls.password.touched && registerForm.controls.password.invalid">
-            Campo obbligatorio
-          </div>
         </div>
 
         <button class="btn btn-primary w-100 py-2" type="submit" id="submit"
@@ -64,5 +50,3 @@
     </div>
   </div>
 </div>
-
-<!--TODO https://getbootstrap.com/docs/5.3/components/spinners/#buttons-->

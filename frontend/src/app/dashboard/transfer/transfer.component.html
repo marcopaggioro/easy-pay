@@ -9,30 +9,22 @@
       <!-- Email -->
       <div class="form-floating my-3">
         <input type="email" class="form-control" id="email" placeholder="mario.rossi@gmail.com"
-               formControlName="recipientEmail"/>
+               formControlName="recipientEmail"
+               [class.is-invalid]="transferForm.controls.recipientEmail.touched && transferForm.controls.recipientEmail.invalid"/>
         <label for="email">Email</label>
-        <div class="text-danger"
-             *ngIf="transferForm.controls.recipientEmail.touched && transferForm.controls.recipientEmail.invalid">
-          Campo obbligatorio
-        </div>
       </div>
       <!-- Description -->
       <div class="form-floating my-3">
           <textarea class="form-control" id="description" placeholder="Descrizione"
-                    formControlName="description"></textarea>
+                    formControlName="description"
+                    [class.is-invalid]="transferForm.controls.description.touched && transferForm.controls.description.invalid"></textarea>
         <label for="description">Descrizione</label>
-        <div class="text-danger"
-             *ngIf="transferForm.controls.description.touched && transferForm.controls.description.invalid">
-          Campo obbligatorio
-        </div>
       </div>
       <!-- Amount -->
       <div class="form-floating my-3">
-        <input type="number" class="form-control" id="amount" placeholder="100.00" formControlName="amount"/>
+        <input type="number" class="form-control" id="amount" placeholder="100.00" formControlName="amount"
+               [class.is-invalid]="transferForm.controls.amount.touched && transferForm.controls.amount.invalid"/>
         <label for="amount">Importo</label>
-        <div class="text-danger" *ngIf="transferForm.controls.amount.touched && transferForm.controls.amount.invalid">
-          Campo obbligatorio
-        </div>
       </div>
 
       <button class="btn btn-primary w-100 py-2" type="submit" id="submit"

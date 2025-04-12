@@ -21,4 +21,11 @@ export const APP_CONSTANTS = {
   PATH_ROOT: "/",
   PATH_LOGIN: "/login",
   PATH_DASHBOARD: "/dashboard",
+
+  // Messages
+  MESSAGE_SUCCESSFUL: "Operazione andata a buon fine",
+  MESSAGE_GENERIC_ERROR: "Errore generico",
+
+  // Misc
+  PASSWORD_MIN_LENGHT: 8
 };

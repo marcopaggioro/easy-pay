@@ -40,11 +40,11 @@ export class RechargeComponent {
       next: () => {
         this.rechargeForm.reset();
 
-        this.alert.success("Operazione andata a buon fine");
+        this.alert.success(APP_CONSTANTS.MESSAGE_SUCCESSFUL);
         this.loading = false;
       },
       error: (httpErrorResponse: HttpErrorResponse) => {
-        this.alert.error(httpErrorResponse?.error?.error || "Errore generico");
+        this.alert.error(httpErrorResponse?.error?.error || APP_CONSTANTS.MESSAGE_GENERIC_ERROR);
         this.loading = false;
       }
     });

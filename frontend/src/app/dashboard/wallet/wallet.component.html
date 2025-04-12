@@ -1,6 +1,8 @@
 <app-spinner/>
 
 <!--TODO grafico andamento conto-->
+<!--TODO togliere spinner generale e metterlo nel body - placeholder nel conto-->
+
 
 <div class="row">
   <div class="col-8">
@@ -17,7 +19,7 @@
       <div class="card-body">
         <h2 class="card-title">Operazioni recenti</h2>
         <div ngbAccordion *ngIf="this.wallet?.history">
-          @for (operation of this.wallet.history; track operation) {
+          @for (operation of this.wallet?.history; track operation) {
             @if (operation.senderCustomerId != operation.recipientCustomerId) {
               @if (this.customerId == operation.recipientCustomerId) {
                 <!-- Received -->

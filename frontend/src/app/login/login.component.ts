@@ -26,7 +26,7 @@ export class LoginComponent implements OnInit {
 
   loginForm = new FormGroup({
     email: new FormControl('', [Validators.required, Validators.email, emailValidator()]),
-    password: new FormControl('', Validators.required),
+    password: new FormControl('', [Validators.required, Validators.minLength(APP_CONSTANTS.PASSWORD_MIN_LENGHT)]),
   });
 
   ngOnInit(): void {
@@ -46,7 +46,7 @@ export class LoginComponent implements OnInit {
         this.router.navigate([APP_CONSTANTS.PATH_DASHBOARD]);
       },
       error: (httpErrorResponse: HttpErrorResponse) => {
-        this.alert.error(httpErrorResponse?.error?.error || "Errore generico");
+        this.alert.error(httpErrorResponse?.error?.error || APP_CONSTANTS.MESSAGE_GENERIC_ERROR);
         this.loading = false;
       }
     });

@@ -10,9 +10,9 @@ import scala.util.matching.compat.Regex
 case class Email private (value: String) extends Validable[Email] {
 
   private lazy val maxLength: Int = 254
+  // https://www.regular-expressions.info/email.html
   private lazy val emailRegex: Regex = new Regex("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}\\b")
 
-  // https://www.regular-expressions.info/email.html
   override def validate(): ValidatedNel[String, Email] =
     condNel(value.nonEmpty, this, "Email can not be empty")
       .andThen(_ => condNel(value.length <= maxLength, this, "Email too long"))

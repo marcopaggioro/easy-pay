@@ -7,7 +7,6 @@ import {APP_CONSTANTS} from '../app.constants';
 export const authorizationInterceptor: HttpInterceptorFn = (request, next) => {
   const router = inject(Router);
 
-  //TODO test
   return next(request).pipe(
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401 && !request.url.includes("login/check")) {

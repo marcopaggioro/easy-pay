@@ -5,6 +5,7 @@ import {FormControl, FormGroup, ReactiveFormsModule, Validators} from "@angular/
 import {SpinnerComponent} from "../utilities/spinner.component";
 import {Router} from '@angular/router';
 import {APP_CONSTANTS} from '../app.constants';
+import {emailValidator} from '../utilities/email.validator';
 
 @Component({
   selector: 'app-login',
@@ -22,7 +23,7 @@ export class LoginComponent implements OnInit {
   }
 
   loginForm = new FormGroup({
-    email: new FormControl('', [Validators.required, Validators.email]), //TODO  validazione insufficiente: usare la regex del BE
+    email: new FormControl('', [Validators.required, Validators.email, emailValidator()]),
     password: new FormControl('', Validators.required),
   });
 

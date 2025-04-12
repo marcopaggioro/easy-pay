@@ -15,6 +15,7 @@ import {
   NgbAccordionItem,
   NgbTooltip
 } from '@ng-bootstrap/ng-bootstrap';
+import {emailValidator} from '../../utilities/email.validator';
 
 @Component({
   selector: 'app-scheduled-operations',
@@ -44,7 +45,7 @@ export class ScheduledOperationsComponent implements OnInit {
   scheduledOperations: ScheduledOperation[] = [];
 
   scheduledOperationForm = new FormGroup({
-    recipientEmail: new FormControl('', [Validators.required, Validators.email]), //TODO  validazione insufficiente: usare la regex del BE
+    recipientEmail: new FormControl('', [Validators.required, Validators.email, emailValidator()]),
     description: new FormControl('', Validators.required),
     amount: new FormControl(0, Validators.required),
     dateTime: new FormControl<Date | null>(null, Validators.required)

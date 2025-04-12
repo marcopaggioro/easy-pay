@@ -5,6 +5,7 @@ import {SpinnerComponent} from '../utilities/spinner.component';
 import {NgIf} from '@angular/common';
 import {Router} from '@angular/router';
 import {APP_CONSTANTS} from '../app.constants';
+import {emailValidator} from '../utilities/email.validator';
 
 @Component({
   selector: 'app-register',
@@ -26,7 +27,7 @@ export class RegisterComponent implements OnInit {
     firstName: new FormControl('', Validators.required),
     lastName: new FormControl('', Validators.required),
     birthDate: new FormControl('', Validators.required),
-    email: new FormControl('', [Validators.required, Validators.email]), //TODO  validazione insufficiente
+    email: new FormControl('', [Validators.required, Validators.email, emailValidator()]),
     password: new FormControl('', Validators.required),
   });
 

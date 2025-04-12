@@ -11,13 +11,16 @@ import akka.projection.jdbc.scaladsl.JdbcProjection
 import akka.projection.scaladsl.{GroupedProjection, Handler}
 import akka.projection.{ProjectionBehavior, ProjectionId}
 import com.typesafe.scalalogging.LazyLogging
-import it.marcopaggioro.easypay.actor.UsersManagerActor
+import it.marcopaggioro.easypay.actor.{UsersManagerActor, WebSocketManagerActor}
 import it.marcopaggioro.easypay.actor.WebSocketManagerActor.WebSocketManagerActorCommand
 import it.marcopaggioro.easypay.database.PlainJdbcSession
-import it.marcopaggioro.easypay.database.PostgresProfile._
-import it.marcopaggioro.easypay.database.PostgresProfile.api._
+import it.marcopaggioro.easypay.database.PostgresProfile.*
+import it.marcopaggioro.easypay.database.PostgresProfile.api.*
 import it.marcopaggioro.easypay.database.users.{UserRecord, UsersTable}
-import it.marcopaggioro.easypay.domain.UsersManager._
+import it.marcopaggioro.easypay.domain.UsersManager.*
+import it.marcopaggioro.easypay.domain.classes.Aliases.CustomerId
+import it.marcopaggioro.easypay.domain.classes.WebSocketMessage
+import it.marcopaggioro.easypay.domain.classes.WebSocketMessage.UserDataUpdated
 import slick.jdbc.JdbcBackend.Database
 
 import java.time.{Duration, Instant}
@@ -37,42 +40,50 @@ private class UsersManagerProjectorActor(
   override def process(envelope: Seq[EventEnvelope[UsersManagerEvent]]): Future[Done] = {
     val startTime: Instant = Instant.now()
     logger.debug(s"Projecting ${envelope.size} events")
+    val events: List[UsersManagerEvent] = envelope.toList.map(_.event)
 
-    val operations = envelope.toList.collect { eventEnvelope =>
-      eventEnvelope.event match
-        case UserCreated(customerId, userData, lastEdit) =>
-          UsersTable.Table.insertOrUpdate(
-            UserRecord(customerId, userData.firstName, userData.lastName, userData.birthDate, userData.email, lastEdit)
-          )
+    val databaseOperations: DBIOAction[Int, NoStream, Effect.Write] = DBIO
+      .sequence {
+        events.collect {
+          case UserCreated(customerId, userData, lastEdit) =>
+            UsersTable.Table.insertOrUpdate(
+              UserRecord(customerId, userData.firstName, userData.lastName, userData.birthDate, userData.email, lastEdit)
+            )
 
-        case FirstNameChanged(customerId, firstName, instant) =>
-          UsersTable.Table
-            .filter(_.customerId === customerId)
-            .map(record => (record.firstName, record.lastEdit))
-            .update((firstName, instant))
+          case FirstNameChanged(customerId, firstName, instant) =>
+            UsersTable.Table
+              .filter(_.customerId === customerId)
+              .map(record => (record.firstName, record.lastEdit))
+              .update((firstName, instant))
 
-        case LastNameChanged(customerId, lastName, instant) =>
-          UsersTable.Table
-            .filter(_.customerId === customerId)
-            .map(record => (record.lastName, record.lastEdit))
-            .update((lastName, instant))
+          case LastNameChanged(customerId, lastName, instant) =>
+            UsersTable.Table
+              .filter(_.customerId === customerId)
+              .map(record => (record.lastName, record.lastEdit))
+              .update((lastName, instant))
 
-        case BirthDateChanged(customerId, birthDate, instant) =>
-          UsersTable.Table
-            .filter(_.customerId === customerId)
-            .map(record => (record.birtDate, record.lastEdit))
-            .update((birthDate, instant))
+          case BirthDateChanged(customerId, birthDate, instant) =>
+            UsersTable.Table
+              .filter(_.customerId === customerId)
+              .map(record => (record.birtDate, record.lastEdit))
+              .update((birthDate, instant))
 
-        case EmailChanged(customerId, email, instant) =>
-          UsersTable.Table
-            .filter(_.customerId === customerId)
-            .map(record => (record.email, record.lastEdit))
-            .update((email, instant))
-    }
+          case EmailChanged(customerId, email, instant) =>
+            UsersTable.Table
+              .filter(_.customerId === customerId)
+              .map(record => (record.email, record.lastEdit))
+              .update((email, instant))
+        }
+      }
+      .map(_.sum)
 
-    database.run(DBIO.sequence(operations)).transform {
+    database.run(databaseOperations).transform {
       case Success(operationsCount) =>
-        logger.debug(s"Projected ${operationsCount.sum} events in ${Duration.between(startTime, Instant.now()).toString}")
+        logger.debug(s"Projected $operationsCount events in ${Duration.between(startTime, Instant.now()).toString}")
+        events.map(_.customerId).foreach { customerId =>
+          webSocketManagerActorRef.tell(WebSocketManagerActor.SendMessage(customerId, UserDataUpdated))
+        }
+
         Success(Done)
 
       case Failure(throwable) =>

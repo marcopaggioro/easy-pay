@@ -85,7 +85,6 @@ private class TransactionsProjectorActor(
     logger.debug(s"Projecting ${envelope.size} events")
     val events: List[TransactionsManagerEvent] = envelope.toList.map(_.event)
 
-    // TODO testare se sono in un altra pagina se fa getWallet
     val databaseOperations: DBIOAction[Int, NoStream, Effect.Read & Effect.Write] = DBIO
       .sequence {
         events.map {

@@ -31,7 +31,7 @@ object TransactionsManagerActor
     extends PersistentActor[TransactionsManagerCommand, TransactionsManagerEvent, TransactionsManagerState] {
 
   val Name: String = "transactions-manager-actor"
-  val EventTag: String = "transaction"
+  val EventTag: String = "transactions-manager"
 
   private def eventHandler(state: TransactionsManagerState, event: TransactionsManagerEvent): TransactionsManagerState =
     event.applyTo(state)

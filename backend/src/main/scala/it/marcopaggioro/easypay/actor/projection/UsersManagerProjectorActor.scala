@@ -11,14 +11,13 @@ import akka.projection.jdbc.scaladsl.JdbcProjection
 import akka.projection.scaladsl.{GroupedProjection, Handler}
 import akka.projection.{ProjectionBehavior, ProjectionId}
 import com.typesafe.scalalogging.LazyLogging
-import it.marcopaggioro.easypay.actor.{UsersManagerActor, WebSocketManagerActor}
-import it.marcopaggioro.easypay.actor.WebSocketManagerActor.WebSocketManagerActorCommand
+import it.marcopaggioro.easypay.actor.WebSocketsManagerActor.WebSocketsManagerActorCommand
+import it.marcopaggioro.easypay.actor.{UsersManagerActor, WebSocketsManagerActor}
 import it.marcopaggioro.easypay.database.PlainJdbcSession
-import it.marcopaggioro.easypay.database.PostgresProfile.*
-import it.marcopaggioro.easypay.database.PostgresProfile.api.*
+import it.marcopaggioro.easypay.database.PostgresProfile._
+import it.marcopaggioro.easypay.database.PostgresProfile.api._
 import it.marcopaggioro.easypay.database.users.{UserRecord, UsersTable}
-import it.marcopaggioro.easypay.domain.UsersManager.*
-import it.marcopaggioro.easypay.domain.classes.Aliases.CustomerId
+import it.marcopaggioro.easypay.domain.UsersManager._
 import it.marcopaggioro.easypay.domain.classes.WebSocketMessage
 import it.marcopaggioro.easypay.domain.classes.WebSocketMessage.UserDataUpdated
 import slick.jdbc.JdbcBackend.Database
@@ -29,7 +28,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 private class UsersManagerProjectorActor(
-    webSocketManagerActorRef: ActorRef[WebSocketManagerActorCommand],
+    webSocketManagerActorRef: ActorRef[WebSocketsManagerActorCommand],
     database: Database,
     system: ActorSystem[Nothing]
 ) extends Handler[Seq[EventEnvelope[UsersManagerEvent]]]
@@ -81,7 +80,7 @@ private class UsersManagerProjectorActor(
       case Success(operationsCount) =>
         logger.debug(s"Projected $operationsCount events in ${Duration.between(startTime, Instant.now()).toString}")
         events.map(_.customerId).foreach { customerId =>
-          webSocketManagerActorRef.tell(WebSocketManagerActor.SendMessage(customerId, UserDataUpdated))
+          webSocketManagerActorRef.tell(WebSocketsManagerActor.SendMessage(customerId, UserDataUpdated))
         }
 
         Success(Done)
@@ -97,7 +96,7 @@ private class UsersManagerProjectorActor(
 object UsersManagerProjectorActor {
 
   def startProjectorActor(
-      webSocketManagerActorRef: ActorRef[WebSocketManagerActorCommand],
+      webSocketManagerActorRef: ActorRef[WebSocketsManagerActorCommand],
       database: Database,
       system: ActorSystem[Nothing]
   ): ActorRef[ProjectionBehavior.Command] = {

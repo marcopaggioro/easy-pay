@@ -6,8 +6,8 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.ServerBinding
 import akka.serialization.jackson.CborSerializable
 import buildinfo.BuildInfo
-import it.marcopaggioro.easypay.actor.WebSocketManagerActor
-import it.marcopaggioro.easypay.actor.WebSocketManagerActor.WebSocketManagerActorCommand
+import it.marcopaggioro.easypay.actor.WebSocketsManagerActor
+import it.marcopaggioro.easypay.actor.WebSocketsManagerActor.WebSocketsManagerActorCommand
 import it.marcopaggioro.easypay.actor.projection.{TransactionsProjectorActor, UsersManagerProjectorActor}
 import it.marcopaggioro.easypay.routes.EasyPayAppRoutes
 import org.flywaydb.core.Flyway
@@ -22,7 +22,7 @@ object EasyPayApp {
   private final case class ServerStarted(serverBinding: ServerBinding) extends AppCommand
   private final case class ServerStartupFailed(cause: Throwable) extends AppCommand
 
-  private def startProjectors(webSocketManagerActorRef: ActorRef[WebSocketManagerActorCommand], database: Database)(implicit
+  private def startProjectors(webSocketManagerActorRef: ActorRef[WebSocketsManagerActorCommand], database: Database)(implicit
       system: ActorSystem[Nothing]
   ): Unit = {
     UsersManagerProjectorActor.startProjectorActor(webSocketManagerActorRef, database, system)
@@ -55,9 +55,9 @@ object EasyPayApp {
     implicit val system: ActorSystem[Nothing] = context.system
 
     val database: Database = Database.forConfig("slick.db", AppConfig.config)
-    val webSocketManagerActorRef: ActorRef[WebSocketManagerActorCommand] = system.systemActorOf(
-      Behaviors.supervise(WebSocketManagerActor()).onFailure[Exception](SupervisorStrategy.restart),
-      WebSocketManagerActor.Name
+    val webSocketManagerActorRef: ActorRef[WebSocketsManagerActorCommand] = system.systemActorOf(
+      Behaviors.supervise(WebSocketsManagerActor()).onFailure[Exception](SupervisorStrategy.restart),
+      WebSocketsManagerActor.Name
     )
     startProjectors(webSocketManagerActorRef, database)
 
@@ -73,7 +73,6 @@ object EasyPayApp {
     starting()
   }
 
-  // TODO commenti ovunque
   // TODO numero di telefono su utente? login etc
   def main(args: Array[String]): Unit = {
     Flyway.configure().dataSource(AppConfig.dbUrl, AppConfig.dbUser, AppConfig.dbPassword).load().migrate()

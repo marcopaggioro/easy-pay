@@ -22,8 +22,8 @@ import io.circe._
 import io.circe.jawn.decode
 import io.circe.syntax.EncoderOps
 import it.marcopaggioro.easypay.AppConfig.askTimeout
-import it.marcopaggioro.easypay.actor.WebSocketManagerActor.WebSocketManagerActorCommand
-import it.marcopaggioro.easypay.actor.{TransactionsManagerActor, UsersManagerActor, WebSocketManagerActor}
+import it.marcopaggioro.easypay.actor.WebSocketsManagerActor.WebSocketsManagerActorCommand
+import it.marcopaggioro.easypay.actor.{TransactionsManagerActor, UsersManagerActor, WebSocketsManagerActor}
 import it.marcopaggioro.easypay.database.PostgresProfile._
 import it.marcopaggioro.easypay.database.PostgresProfile.api._
 import it.marcopaggioro.easypay.database.scheduledoperations.ScheduledOperationRecord.ScheduledOperationUserJoinEncoder
@@ -50,7 +50,7 @@ import java.util.UUID
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
 import scala.util.{Failure, Success, Try}
 
-class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketManagerActorCommand], database: Database)(implicit
+class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActorCommand], database: Database)(implicit
     system: ActorSystem[Nothing]
 ) {
 
@@ -244,19 +244,16 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketManagerActorC
       .actorRef[TextMessage.Strict](
         PartialFunction.empty,
         PartialFunction.empty,
-        10,
+        100,
         OverflowStrategy.fail
       )
+      .watchTermination() { (actorRef, terminationFuture) =>
+        terminationFuture.onComplete(_ => webSocketManagerActorRef ! WebSocketsManagerActor.Unregister(customerId, actorRef))
+        actorRef
+      }
       .preMaterialize()
 
-    webSocketManagerActorRef.tell(WebSocketManagerActor.Register(customerId, clientActor))
-
-    val monitoredOutSource = outSource.watchTermination() { (mat, terminationFuture) =>
-      terminationFuture.onComplete { _ =>
-        webSocketManagerActorRef.tell(WebSocketManagerActor.Unregister(customerId))
-      }
-      mat
-    }
+    webSocketManagerActorRef.tell(WebSocketsManagerActor.Register(customerId, clientActor))
 
     Flow.fromSinkAndSource(Sink.ignore, outSource)
   }

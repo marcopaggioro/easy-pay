@@ -1,5 +1,3 @@
-<!--TODO grafico andamento conto-->
-
 <div class="row">
   <div class="col-8">
     <div class="card">
@@ -18,7 +16,6 @@
       </div>
     </div>
 
-<!--    TODO lista operazioni paginata -->
     <div class="card mt-5">
       <div class="card-body">
         <h2 class="card-title">Operazioni recenti</h2>
@@ -28,7 +25,6 @@
           @for (operation of this.wallet?.history; track operation.transactionId) {
             @if (operation.senderCustomerId != operation.recipientCustomerId) {
               @if (this.customerId == operation.recipientCustomerId) {
-                <!--                TODO componente per i vari tipi?-->
                   <!-- Received -->
                 <div ngbAccordionItem>
                   <h2 ngbAccordionHeader>

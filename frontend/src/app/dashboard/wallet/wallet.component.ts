@@ -68,7 +68,6 @@ export class WalletComponent implements OnInit {
   }
 
   getWallet(): void {
-    //TODO deve mettere gli spinner o comunque di default non devono essere visibili
     this.http.get<Wallet>(APP_CONSTANTS.ENDPOINT_WALLET_GET, {withCredentials: true}).subscribe(wallet => {
       this.wallet = wallet;
       this.wallet.history = this.wallet.history.sort((a, b) =>

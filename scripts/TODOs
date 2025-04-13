@@ -2,6 +2,12 @@ TODO script linux per build
 TODO commenti BE
 TODO commenti FE
 TODO numero di telefono su utente? login etc
-
+TODO messaggi di errore in italiano
+TODO componenti dedicati per operazioni history
+TODO menu mobile non si apre
+TODO footer con contatti, legal terms etc
+TODO lista operazioni paginata
+TODO footer con contatti, legal terms etc
+TODO repeat nelle scheduled operations
 
 netstat -aon | findstr :9000

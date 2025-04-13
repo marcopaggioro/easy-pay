@@ -62,7 +62,7 @@ export class ScheduledOperationsComponent implements OnInit {
 
     this.webSocketService.getWebSocketMessages().subscribe(
       (message) => {
-        if (message.event == APP_CONSTANTS.WS_SCHEDULED_OPERATIONS_UPDATED) {
+        if (message.type == APP_CONSTANTS.WS_SCHEDULED_OPERATIONS_UPDATED) {
           this.getScheduledOperations();
         }
       }
@@ -109,14 +109,12 @@ export class ScheduledOperationsComponent implements OnInit {
     });
   }
 
-  deleteScheduledOperation(id: string): void {
-    this.http.delete(APP_CONSTANTS.ENDPOINT_WALLET_DELETE_SCHEDULE + "/" + id, {
+  deleteScheduledOperation(scheduledOperationId: string): void {
+    this.http.delete(`${APP_CONSTANTS.ENDPOINT_WALLET_DELETE_SCHEDULE}/${scheduledOperationId}`, {
       withCredentials: true,
       responseType: 'text'
     }).subscribe(
-      () => {
-        this.getScheduledOperations();
-      }
+      () => this.getScheduledOperations()
     );
   }
 

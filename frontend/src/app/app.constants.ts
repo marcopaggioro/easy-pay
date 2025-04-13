@@ -34,6 +34,10 @@ export const APP_CONSTANTS = {
   WS_SCHEDULED_OPERATIONS_UPDATED: "scheduled_operations_updated",
   WS_USER_DATA_UPDATED: "user_data_updated",
 
+  // Intervals
+  INTERVAL_REGISTRATION_CHECK: 1000,
+  INTERVAL_WS_RETRY: 5000,
+
   // Misc
   PASSWORD_MIN_LENGHT: 8,
   CUSTOMER_ID_COOKIE_NAME: "easypay_customer_id"

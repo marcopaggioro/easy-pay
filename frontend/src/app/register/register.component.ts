@@ -4,8 +4,9 @@ import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} fr
 import {NgIf} from '@angular/common';
 import {emailValidator} from '../utilities/email.validator';
 import {AlertComponent} from '../utilities/alert.component';
-import {HttpErrorResponse} from '@angular/common/http';
+import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {APP_CONSTANTS} from '../app.constants';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'app-register',
@@ -21,7 +22,7 @@ export class RegisterComponent implements OnInit {
   @ViewChild(AlertComponent) alert!: AlertComponent;
   loading: boolean = false;
 
-  constructor(private authorizationService: AuthorizationService) {
+  constructor(private authorizationService: AuthorizationService, private http: HttpClient, private router: Router) {
   }
 
   registerForm = new FormGroup({
@@ -48,10 +49,7 @@ export class RegisterComponent implements OnInit {
       this.registerForm.controls.birthDate.value!,
       this.registerForm.controls.email.value!,
       this.registerForm.controls.password.value!).subscribe({
-      next: () => {
-        //TODO deve aspettare notifica ws per la fine della proiezione
-        // this.router.navigate([APP_CONSTANTS.PATH_DASHBOARD]);
-      },
+      next: () => this.router.navigate([APP_CONSTANTS.PATH_DASHBOARD]),
       error: (httpErrorResponse: HttpErrorResponse) => {
         this.alert.error(httpErrorResponse?.error?.error || APP_CONSTANTS.MESSAGE_GENERIC_ERROR);
         this.loading = false;

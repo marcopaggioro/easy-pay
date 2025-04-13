@@ -7,7 +7,6 @@ import {APP_CONSTANTS} from '../app.constants';
 import {emailValidator} from '../utilities/email.validator';
 import {HttpErrorResponse} from '@angular/common/http';
 import {AlertComponent} from '../utilities/alert.component';
-import {CookieService} from 'ngx-cookie-service';
 
 @Component({
   selector: 'app-login',
@@ -22,7 +21,7 @@ export class LoginComponent implements OnInit {
   @ViewChild(AlertComponent) alert!: AlertComponent;
   loading: boolean = false;
 
-  constructor(private authorizationService: AuthorizationService, private router: Router, private cookieService: CookieService) {
+  constructor(private authorizationService: AuthorizationService, private router: Router) {
   }
 
   loginForm = new FormGroup({
@@ -42,10 +41,7 @@ export class LoginComponent implements OnInit {
     }
 
     this.authorizationService.login(this.loginForm.controls.email.value!, this.loginForm.controls.password.value!).subscribe({
-      next: (customerId) => {
-        this.cookieService.set(APP_CONSTANTS.CUSTOMER_ID_COOKIE_NAME, customerId, 1);
-        this.router.navigate([APP_CONSTANTS.PATH_DASHBOARD]);
-      },
+      next: () => this.router.navigate([APP_CONSTANTS.PATH_DASHBOARD]),
       error: (httpErrorResponse: HttpErrorResponse) => {
         this.alert.error(httpErrorResponse?.error?.error || APP_CONSTANTS.MESSAGE_GENERIC_ERROR);
         this.loading = false;

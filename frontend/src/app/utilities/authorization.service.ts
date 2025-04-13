@@ -13,33 +13,40 @@ import {WebSocketService} from './web-socket.service';
 })
 export class AuthorizationService {
 
-  constructor(private http: HttpClient, private router: Router, private cookieService: CookieService, private webSocketService: WebSocketService) {
+  constructor(private http: HttpClient, private router: Router, private cookieService: CookieService) {
   }
 
   hashPassword(password: string): string {
     return CryptoJS.SHA512(password).toString();
   }
 
-  register(firstName: string, lastName: string, birthDate: string, email: string, password: string): Observable<string> {
-    const body = {firstName, lastName, birthDate, email, encryptedPassword: this.hashPassword(password)};
-    return this.http.post<string>(APP_CONSTANTS.ENDPOINT_USER_REGISTER, body, {withCredentials: true});
+  setCustomerIdCookie(customerId: string): void {
+    this.cookieService.set(APP_CONSTANTS.CUSTOMER_ID_COOKIE_NAME, customerId);
   }
 
-  login(email: string, password: string): Observable<string> {
+  register(firstName: string, lastName: string, birthDate: string, email: string, password: string): Observable<void> {
+    const body = {firstName, lastName, birthDate, email, encryptedPassword: this.hashPassword(password)};
+    return this.http.post<string>(APP_CONSTANTS.ENDPOINT_USER_REGISTER, body, {
+      withCredentials: true,
+      responseType: 'json'
+    }).pipe(map(customerId => this.setCustomerIdCookie(customerId)));
+  }
+
+  login(email: string, password: string): Observable<void> {
     return this.http.post<string>(APP_CONSTANTS.ENDPOINT_USER_LOGIN, {
       email,
       encryptedPassword: this.hashPassword(password)
     }, {
       withCredentials: true,
       responseType: 'json'
-    });
+    }).pipe(map(customerId => this.setCustomerIdCookie(customerId)));
   }
 
-  logout(): void {
+  logout(webSocketService: WebSocketService): void {
     this.http.post(APP_CONSTANTS.ENDPOINT_USER_LOGOUT, {}, {withCredentials: true, responseType: 'text'}).subscribe(
       () => {
         this.cookieService.delete(APP_CONSTANTS.CUSTOMER_ID_COOKIE_NAME);
-        this.webSocketService.close();
+        webSocketService.close();
         this.router.navigate([APP_CONSTANTS.PATH_ROOT]);
       }
     )
@@ -60,16 +67,6 @@ export class AuthorizationService {
       isLogged => {
         if (isLogged) {
           this.router.navigate([APP_CONSTANTS.PATH_DASHBOARD]);
-        }
-      }
-    )
-  }
-
-  redirectIfNotLoggedIn(): void {
-    this.isAlreadyLoggedIn().subscribe(
-      isLogged => {
-        if (!isLogged) {
-          this.router.navigate([APP_CONSTANTS.PATH_LOGIN]);
         }
       }
     )

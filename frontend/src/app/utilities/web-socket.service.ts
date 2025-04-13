@@ -1,7 +1,7 @@
-import {Injectable, NgZone} from '@angular/core';
-import {WebSocketSubject} from 'rxjs/internal/observable/dom/WebSocketSubject';
+import {Injectable} from '@angular/core';
+import {WebSocketSubject, WebSocketSubjectConfig} from 'rxjs/internal/observable/dom/WebSocketSubject';
 import {webSocket} from 'rxjs/webSocket';
-import {delayWhen, Observable, retry, tap, timer} from 'rxjs';
+import {Observable, retry, shareReplay, timer} from 'rxjs';
 import {APP_CONSTANTS} from '../app.constants';
 import {CookieService} from 'ngx-cookie-service';
 
@@ -9,35 +9,36 @@ import {CookieService} from 'ngx-cookie-service';
   providedIn: 'root'
 })
 export class WebSocketService {
-  private readonly HEARTBEAT_INTERVAL = 30000;
-  private socket$!: WebSocketSubject<any>;
+  private readonly socket$!: WebSocketSubject<any>;
+  private readonly messages$!: Observable<any>;
 
-  constructor(private cookieService: CookieService, private ngZone: NgZone) {
+  constructor(private cookieService: CookieService) {
     const customerId: string = this.cookieService.get(APP_CONSTANTS.CUSTOMER_ID_COOKIE_NAME);
-    const url = `${APP_CONSTANTS.ENDPOINT_WS}/${customerId}`;
-    this.socket$ = webSocket(url);
+    if (customerId) {
+      const url: string = `${APP_CONSTANTS.ENDPOINT_WS}/${customerId}`;
+      const webSocketConfig: WebSocketSubjectConfig<any> = {
+        url,
+        openObserver: {
+          next: () => console.log("[WS] Connessione stabilita")
+        }
+      };
 
-    this.ngZone.runOutsideAngular(() => {
-      timer(this.HEARTBEAT_INTERVAL, this.HEARTBEAT_INTERVAL).subscribe(
-        () => this.socket$.next({})
+      this.socket$ = webSocket(webSocketConfig);
+      this.messages$ = this.socket$.pipe(
+        retry({
+          count: Infinity,
+          delay: (_, retryAttempt) => {
+            console.log(`[WS] Tentativo di riconnessione ${retryAttempt}`);
+            return timer(APP_CONSTANTS.INTERVAL_WS_RETRY);
+          }
+        }),
+        shareReplay({bufferSize: 1, refCount: true})
       );
-    });
+    }
   }
 
   getWebSocketMessages(): Observable<any> {
-    return this.socket$.asObservable().pipe(
-      tap({
-        error: err => console.error('WebSocket error:', err)
-      }),
-      retry({
-        count: Infinity, // oppure un numero fisso di tentativi, ad esempio 10
-        delay: (error, retryAttempt) => {
-          //TODO migliorare log e mettere anche log di successo
-          console.log(`Tentativo di riconnessione ${retryAttempt}: attendo 5 secondi...`);
-          return timer(5000); // attende 5 secondi prima del retry
-        }
-      })
-    );
+    return this.messages$;
   }
 
   close(): void {

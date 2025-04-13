@@ -18,7 +18,7 @@ export class UserDataService {
 
     this.webSocketService.getWebSocketMessages().subscribe(
       (message) => {
-        if (message.event == APP_CONSTANTS.WS_USER_DATA_UPDATED) {
+        if (message.type == APP_CONSTANTS.WS_USER_DATA_UPDATED) {
           this.getUserData();
         }
       }

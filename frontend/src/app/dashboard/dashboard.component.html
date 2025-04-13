@@ -1,35 +1,44 @@
 <nav class="navbar bg-dark navbar-expand-lg bg-body-tertiary" data-bs-theme="dark">
   <div class="container">
     <a class="navbar-brand" routerLink="./">EasyPay</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <button class="navbar-toggler" type="button" (click)="mobileNavBarCollapsed = !mobileNavBarCollapsed"
+            data-bs-toggle="collapse" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <div [ngbCollapse]="mobileNavBarCollapsed" class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item">
-          <a class="nav-link" aria-current="page" routerLink="./wallet" routerLinkActive="active"
+          <a class="nav-link" aria-current="page" routerLink="./wallet" (click)="mobileNavBarCollapsed = true"
+             routerLinkActive="active"
              ariaCurrentWhenActive="page">Dashboard</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" aria-current="page" routerLink="./transfer" routerLinkActive="active"
+          <a class="nav-link" aria-current="page" routerLink="./transfer" (click)="mobileNavBarCollapsed = true"
+             routerLinkActive="active"
              ariaCurrentWhenActive="page">Trasferisci</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" aria-current="page" routerLink="./recharge" routerLinkActive="active"
+          <a class="nav-link" aria-current="page" routerLink="./recharge" (click)="mobileNavBarCollapsed = true"
+             routerLinkActive="active"
              ariaCurrentWhenActive="page">Ricarica</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" aria-current="page" routerLink="./scheduled" routerLinkActive="active"
+          <a class="nav-link" aria-current="page" routerLink="./scheduled" (click)="mobileNavBarCollapsed = true"
+             routerLinkActive="active"
              ariaCurrentWhenActive="page">Operazioni pianificate</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" aria-current="page" routerLink="./profile" routerLinkActive="active"
+          <a class="nav-link" aria-current="page" routerLink="./profile" (click)="mobileNavBarCollapsed = true"
+             routerLinkActive="active"
              ariaCurrentWhenActive="page">Profilo</a>
         </li>
       </ul>
 
-      <button class="btn" (click)="authorizationService.logout(this.webSocketService)">Logout</button>
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a href="#" class="nav-link" (click)="$event.preventDefault(); authorizationService.logout(webSocketService)">Logout</a>
+        </li>
+      </ul>
     </div>
   </div>
 </nav>

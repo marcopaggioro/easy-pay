@@ -13,12 +13,12 @@ import {FormControl, ReactiveFormsModule, ValidatorFn, Validators} from '@angula
   templateUrl: './profile-field.component.html'
 })
 export class ProfileFieldComponent implements OnChanges {
-  @Input() protected fieldLabel!: string;
-  @Input() protected httpFieldName!: string;
-  @Input() protected fieldValue!: any;
-  @Input() protected fieldPlaceholder!: string;
-  @Input() protected inputType!: string;
-  @Input() protected additionalValidators: ValidatorFn[] = [];
+  @Input() fieldLabel!: string;
+  @Input() httpFieldName!: string;
+  @Input() fieldValue!: any;
+  @Input() fieldPlaceholder!: string;
+  @Input() inputType!: string;
+  @Input() additionalValidators: ValidatorFn[] = [];
 
   @Output() editResult = new EventEmitter<string | null>();
 

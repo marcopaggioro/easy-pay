@@ -12,7 +12,7 @@ import {
   NgbAccordionItem,
   NgbTooltip
 } from '@ng-bootstrap/ng-bootstrap';
-import {UserdataService} from '../../utilities/userdata.service';
+import {UserDataService} from '../../utilities/user-data.service';
 import {Router, RouterLink} from '@angular/router';
 import {Wallet} from '../../classes/Wallet';
 import {WebSocketService} from '../../utilities/web-socket.service';
@@ -47,7 +47,7 @@ export class WalletComponent implements OnInit {
   wallet?: Wallet;
   interactedCustomers: Map<string, [string, string]> = new Map<string, [string, string]>();
 
-  constructor(protected userDataService: UserdataService, private http: HttpClient, private router: Router, private webSocketService: WebSocketService) {
+  constructor(protected userDataService: UserDataService, private http: HttpClient, private router: Router, private webSocketService: WebSocketService) {
   }
 
   ngOnInit(): void {

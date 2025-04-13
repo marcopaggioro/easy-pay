@@ -1,7 +1,7 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
 import {ReactiveFormsModule, Validators} from '@angular/forms';
 import {SpinnerComponent} from '../../utilities/spinner.component';
-import {UserdataService} from '../../utilities/userdata.service';
+import {UserDataService} from '../../utilities/user-data.service';
 import {UserData} from '../../classes/UserData';
 import {AlertComponent} from '../../utilities/alert.component';
 import {ProfileFieldComponent} from './profile-field/profile-field.component';
@@ -23,7 +23,7 @@ export class ProfileComponent implements OnInit {
   @ViewChild(AlertComponent) alert!: AlertComponent;
   userData?: UserData;
 
-  constructor(protected userDataService: UserdataService) {
+  constructor(protected userDataService: UserDataService) {
   }
 
   ngOnInit(): void {

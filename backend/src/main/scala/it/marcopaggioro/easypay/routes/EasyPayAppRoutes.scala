@@ -7,8 +7,8 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.HttpCookie
 import akka.http.scaladsl.model.ws.{Message, TextMessage}
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server._
 import akka.http.scaladsl.server.directives.BasicDirectives.extractRequest
+import akka.http.scaladsl.server.{Route, _}
 import akka.http.scaladsl.unmarshalling.{FromEntityUnmarshaller, Unmarshaller}
 import akka.pattern.StatusReply
 import akka.stream.OverflowStrategy
@@ -102,12 +102,10 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
       concat(
         pathPrefix("login") {
           concat(
-            pathPrefix("check") {
-              pathEndOrSingleSlash {
-                get { // GET /user/login/check
-                  JwtUtils.withCustomerIdFromToken(uri) { customerId =>
-                    completeWithOK()
-                  }
+            path("check") {
+              get { // GET /user/login/check
+                JwtUtils.withCustomerIdFromToken(uri) { customerId =>
+                  completeWithOK()
                 }
               }
             },
@@ -122,12 +120,10 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
             }
           )
         },
-        pathPrefix("logout") {
-          pathEndOrSingleSlash {
-            post { // POST /user/logout
-              deleteCookie(JwtUtils.baseCookie) {
-                completeWithOK()
-              }
+        path("logout") {
+          post { // POST /user/logout
+            deleteCookie(JwtUtils.baseCookie) {
+              completeWithOK()
             }
           }
         },
@@ -173,18 +169,16 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
     }
 
   private lazy val WalletRoutes: Uri => Route = implicit uri =>
-    pathPrefix("wallet") {
-      JwtUtils.withCustomerIdFromToken(uri) { customerId =>
+    JwtUtils.withCustomerIdFromToken(uri) { customerId =>
+      pathPrefix("wallet") {
         concat(
-          pathPrefix("recharge") {
-            pathEndOrSingleSlash {
-              post { // POST /wallet/recharge
-                entity(as[Money]) { amount =>
-                  askToTransactionsManagerActor[Done](
-                    TransactionsManager.RechargeWallet(UUID.randomUUID(), customerId, amount)(_),
-                    _ => completeWithOK()
-                  )
-                }
+          path("recharge") {
+            post { // POST /wallet/recharge
+              entity(as[Money]) { amount =>
+                askToTransactionsManagerActor[Done](
+                  TransactionsManager.RechargeWallet(UUID.randomUUID(), customerId, amount)(_),
+                  _ => completeWithOK()
+                )
               }
             }
           },
@@ -192,14 +186,12 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
             concat(
               pathPrefix("scheduler") {
                 concat(
-                  pathPrefix(JavaUUID) { scheduledOperationId =>
-                    pathEndOrSingleSlash {
-                      delete { // DELETE /wallet/transfer/schedule/123-456-678
-                        askToTransactionsManagerActor[Done](
-                          TransactionsManager.DeleteScheduledOperation(customerId, scheduledOperationId)(_),
-                          _ => completeWithOK()
-                        )
-                      }
+                  path(JavaUUID) { scheduledOperationId =>
+                    delete { // DELETE /wallet/transfer/schedule/123-456-678
+                      askToTransactionsManagerActor[Done](
+                        TransactionsManager.DeleteScheduledOperation(customerId, scheduledOperationId)(_),
+                        _ => completeWithOK()
+                      )
                     }
                   },
                   pathEndOrSingleSlash {
@@ -258,6 +250,13 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
     Flow.fromSinkAndSource(Sink.ignore, outSource)
   }
 
+  private val WebSocketRoutes: Uri => Route = implicit uri =>
+    JwtUtils.withCustomerIdFromToken(uri) { customerId =>
+      path("ws" / CustomerIdSegment) { customerId =>
+        handleWebSocketMessages(webSocketFlow(customerId))
+      }
+    }
+
   lazy val Routes: Route = extractRequest { request =>
     implicit val uri: Uri = request.uri
     system.log.debug(s"Received ${request.method.value} ${request.uri.path.toString()}")
@@ -267,9 +266,7 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
         concat(
           UserRoutes(uri),
           WalletRoutes(uri),
-          path("ws" / CustomerIdSegment) { customerId =>
-            handleWebSocketMessages(webSocketFlow(customerId))
-          },
+          WebSocketRoutes(uri),
           pathEndOrSingleSlash(complete("Server up and running"))
         )
       }
@@ -364,19 +361,23 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
       system: ActorSystem[Nothing],
       uri: Uri
   ): Route = {
-    val getUser: Future[UserRecord] = database.run {
-      UsersTable.Table
-        .filter(record => record.customerId === customerId)
-        .result
-        .head
-    }
+    val getUser: Future[Option[UserRecord]] = database
+      .run {
+        UsersTable.Table
+          .filter(record => record.customerId === customerId)
+          .result
+          .headOption
+      }
 
     onComplete(getUser) {
       case Failure(throwable) =>
         system.log.error(s"Failure while getting user", throwable)
         completeWithError(StatusCodes.InternalServerError, throwable.getMessage)
 
-      case Success(userRecord) =>
+      case Success(None) =>
+        completeWithError(StatusCodes.NotFound, s"Customer $customerId not found")
+
+      case Success(Some(userRecord)) =>
         completeWithJson(userRecord.asJson)
     }
   }

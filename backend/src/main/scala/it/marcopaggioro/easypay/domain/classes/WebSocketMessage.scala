@@ -14,16 +14,16 @@ object WebSocketMessage {
 
   implicit val WebSocketMessageEncoder: Encoder[WebSocketMessage] = Encoder.instance {
     case CustomerRegistered =>
-      Json.obj("event" -> "customer_registered".asJson)
+      Json.obj("type" -> "customer_registered".asJson)
 
     case WalletUpdated =>
-      Json.obj("event" -> "wallet_updated".asJson)
+      Json.obj("type" -> "wallet_updated".asJson)
 
     case ScheduledOperationsUpdated =>
-      Json.obj("event" -> "scheduled_operations_updated".asJson)
+      Json.obj("type" -> "scheduled_operations_updated".asJson)
 
     case UserDataUpdated =>
-      Json.obj("event" -> "user_data_updated".asJson)
+      Json.obj("type" -> "user_data_updated".asJson)
   }
 
 }

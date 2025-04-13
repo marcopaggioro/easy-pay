@@ -40,9 +40,8 @@ object WebSocketsManagerActor {
     }
   }
 
-  // TODO doppia mappa con email per notificare l'email registrata?
-  private def withClients(clients: CustomersMapping): Behavior[WebSocketsManagerActorCommand] =
-    Behaviors.receive[WebSocketsManagerActorCommand] { case (context, command) =>
+  // TODO doppia mappa con email per notificare l'email registrata? forse non serve se il register restituisce il customer id e avvio il ws
+  private def withClients(clients: CustomersMapping): Behavior[WebSocketsManagerActorCommand] = Behaviors.receive[WebSocketsManagerActorCommand] { case (context, command) =>
       command match {
         case Register(customerId, actorRef) =>
           context.log.debug(s"Registering WS for $customerId ($actorRef)")

@@ -42,7 +42,6 @@ export class WalletComponent implements OnInit {
   @ViewChild('interactedUsersSpinner') interactedUsersSpinner!: SpinnerComponent;
 
   @ViewChild('balancePlaceholder') balancePlaceholder!: ElementRef;
-  //TODO perchè customer id?
   customerId!: string;
   wallet?: Wallet;
   interactedCustomers: Map<string, [string, string]> = new Map<string, [string, string]>();

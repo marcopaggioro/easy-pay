@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges} from '@angular/core';
 import {NgIf} from '@angular/common';
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {APP_CONSTANTS} from '../../../app.constants';
@@ -12,27 +12,28 @@ import {FormControl, ReactiveFormsModule, ValidatorFn, Validators} from '@angula
   ],
   templateUrl: './profile-field.component.html'
 })
-export class ProfileFieldComponent implements OnInit {
-  @Input() fieldLabel!: string;
-  @Input() httpFieldName!: string;
-  @Input() fieldValue!: any;
-  @Input() fieldPlaceholder!: string;
-  @Input() inputType!: string;
-  @Input() additionalValidators: ValidatorFn[] = [];
+export class ProfileFieldComponent implements OnChanges {
+  @Input() protected fieldLabel!: string;
+  @Input() protected httpFieldName!: string;
+  @Input() protected fieldValue!: any;
+  @Input() protected fieldPlaceholder!: string;
+  @Input() protected inputType!: string;
+  @Input() protected additionalValidators: ValidatorFn[] = [];
 
   @Output() editResult = new EventEmitter<string | null>();
 
-  editing: boolean = false;
-  waitingResponse: boolean = false;
+  protected editing: boolean = false;
+  protected waitingResponse: boolean = false;
 
-  formField !: FormControl;
+  protected formField = new FormControl(null, [Validators.required, ...this.additionalValidators]);
 
   constructor(private http: HttpClient) {
   }
 
-  ngOnInit() {
-    //TODO a volte inzializza i field, a volte no: cambio pagina si. reload pagina no
-    this.formField = new FormControl(this.fieldValue, [Validators.required, ...this.additionalValidators]);
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['fieldValue'] && changes['fieldValue'].currentValue !== undefined) {
+      this.formField.setValue(changes['fieldValue'].currentValue);
+    }
   }
 
   enableEditField(): void {

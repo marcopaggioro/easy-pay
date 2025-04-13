@@ -9,7 +9,6 @@ import {WebSocketService} from './web-socket.service';
   providedIn: 'root'
 })
 export class UserDataService {
-  //TODO capire bene come si interfaccia
   private userDataSubject = new BehaviorSubject<UserData | null>(null);
   userData$ = this.userDataSubject.asObservable();
 

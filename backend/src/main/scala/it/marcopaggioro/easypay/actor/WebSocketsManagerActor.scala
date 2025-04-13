@@ -24,7 +24,7 @@ object WebSocketsManagerActor {
       customerId: CustomerId,
       actorRef: ActorRef[TextMessage.Strict]
   )(context: ActorContext[WebSocketsManagerActorCommand]): CustomersMapping = {
-    context.log.info(s"Unregistering WS for $customerId ($actorRef)")
+    context.log.debug(s"Unregistering WS for $customerId ($actorRef)")
 
     clients.get(customerId) match {
       case Some(currentActorValues) =>
@@ -45,7 +45,7 @@ object WebSocketsManagerActor {
     Behaviors.receive[WebSocketsManagerActorCommand] { case (context, command) =>
       command match {
         case Register(customerId, actorRef) =>
-          context.log.info(s"Registering WS for $customerId ($actorRef)")
+          context.log.debug(s"Registering WS for $customerId ($actorRef)")
           clients.get(customerId) match {
             case Some(currentActorValues) =>
               withClients(clients.updated(customerId, currentActorValues + actorRef))
@@ -67,7 +67,7 @@ object WebSocketsManagerActor {
               Behaviors.same
 
             case None =>
-              context.log.debug(s"WS client not found for $customerId")
+              context.log.warn(s"WS client not found for $customerId")
               Behaviors.same
           }
       }

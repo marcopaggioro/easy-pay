@@ -73,7 +73,6 @@ object EasyPayApp {
     starting()
   }
 
-  // TODO numero di telefono su utente? login etc
   def main(args: Array[String]): Unit = {
     Flyway.configure().dataSource(AppConfig.dbUrl, AppConfig.dbUser, AppConfig.dbPassword).load().migrate()
 

@@ -1,0 +1,7 @@
+TODO script linux per build
+TODO commenti BE
+TODO commenti FE
+TODO numero di telefono su utente? login etc
+
+
+netstat -aon | findstr :9000

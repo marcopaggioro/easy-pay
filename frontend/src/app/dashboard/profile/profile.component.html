@@ -19,7 +19,8 @@
       <tr app-profile-field fieldLabel="Cognome" [fieldValue]="userData?.lastName" httpFieldName="lastName"
           fieldPlaceholder="Rossi" inputType="text" (editResult)="handleEditResult($event)"></tr>
 
-      <tr app-profile-field fieldLabel="Data di nascita" [fieldValue]="userData?.birthDate | date: 'dd/MM/YYYY'"
+      <tr app-profile-field fieldLabel="Data di nascita" [fieldValue]="userData?.birthDate"
+          [fieldValueVisualizer]="userData?.birthDate | date: 'dd/MM/YYYY'"
           httpFieldName="birthDate" inputType="date" (editResult)="handleEditResult($event)"></tr>
 
       <tr app-profile-field fieldLabel="Email" [fieldValue]="userData?.email" httpFieldName="email"

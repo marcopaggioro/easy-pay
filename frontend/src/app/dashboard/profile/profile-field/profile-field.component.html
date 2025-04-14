@@ -1,6 +1,6 @@
 <th scope="row">{{ this.fieldLabel }}</th>
 <td>
-  <code *ngIf="!editing">{{ this.fieldValue }}</code>
+  <code *ngIf="!editing">{{ this.fieldValueVisualizer || this.fieldValue }}</code>
 
   <div *ngIf="editing">
     <input #inputField [type]="inputType" class="form-control" [placeholder]="fieldPlaceholder"

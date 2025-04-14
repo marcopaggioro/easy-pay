@@ -1,15 +1,16 @@
-import {Component, ElementRef, OnChanges, OnInit, SimpleChanges, ViewChild} from '@angular/core';
+import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {SpinnerComponent} from "../../utilities/spinner.component";
 import {HttpClient} from '@angular/common/http';
 import {APP_CONSTANTS} from '../../app.constants';
-import {DatePipe, DecimalPipe, KeyValuePipe, NgForOf, NgIf} from '@angular/common';
+import {DatePipe, DecimalPipe, NgIf} from '@angular/common';
 import {
   NgbAccordionBody,
   NgbAccordionButton,
   NgbAccordionCollapse,
   NgbAccordionDirective,
   NgbAccordionHeader,
-  NgbAccordionItem, NgbPagination,
+  NgbAccordionItem,
+  NgbPagination,
   NgbTooltip
 } from '@ng-bootstrap/ng-bootstrap';
 import {UserDataService} from '../../utilities/user-data.service';
@@ -33,8 +34,6 @@ import {InteractedCustomer} from '../../classes/InteractedCustomer';
     DecimalPipe,
     NgbTooltip,
     RouterLink,
-    KeyValuePipe,
-    NgForOf,
     NgbPagination
   ],
   templateUrl: './wallet.component.html'

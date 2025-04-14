@@ -43,6 +43,7 @@ export class ScheduledOperationsComponent implements OnInit {
   @ViewChild(SpinnerComponent) spinner!: SpinnerComponent;
   @ViewChild(AlertComponent) alert!: AlertComponent;
   loading: boolean = false;
+  repeatToggle: boolean = false;
 
   scheduledOperations: ScheduledOperation[] = [];
 
@@ -50,7 +51,8 @@ export class ScheduledOperationsComponent implements OnInit {
     recipientEmail: new FormControl('', [Validators.required, Validators.email, emailValidator()]),
     description: new FormControl('', Validators.required),
     amount: new FormControl('', [Validators.required, Validators.min(0.01)]),
-    dateTime: new FormControl('', Validators.required)
+    dateTime: new FormControl('', Validators.required),
+    repeatDays: new FormControl('', Validators.min(1))
   });
 
 
@@ -91,7 +93,11 @@ export class ScheduledOperationsComponent implements OnInit {
       description: this.scheduledOperationForm.controls.description.value!,
       amount: this.scheduledOperationForm.controls.amount.value!,
       when: new Date(this.scheduledOperationForm.controls.dateTime.value!).toISOString()
+    } as any;
+    if (this.repeatToggle) {
+      body.repeat = `P${this.scheduledOperationForm.controls.repeatDays.value!}D`;
     }
+
     this.http.put(APP_CONSTANTS.ENDPOINT_WALLET_CREATE_SCHEDULE, body, {
       withCredentials: true,
       responseType: 'json'
@@ -100,10 +106,12 @@ export class ScheduledOperationsComponent implements OnInit {
         this.scheduledOperationForm.reset();
 
         this.alert.success(APP_CONSTANTS.MESSAGE_SUCCESSFUL);
+        this.repeatToggle = false;
         this.loading = false;
       },
       error: (httpErrorResponse: HttpErrorResponse) => {
         this.alert.error(httpErrorResponse?.error?.error || APP_CONSTANTS.MESSAGE_GENERIC_ERROR);
+        this.repeatToggle = false;
         this.loading = false;
       }
     });
@@ -112,10 +120,11 @@ export class ScheduledOperationsComponent implements OnInit {
   deleteScheduledOperation(scheduledOperationId: string): void {
     this.http.delete(`${APP_CONSTANTS.ENDPOINT_WALLET_DELETE_SCHEDULE}/${scheduledOperationId}`, {
       withCredentials: true,
-      responseType: 'text'
-    }).subscribe(
-      () => this.getScheduledOperations()
-    );
+      responseType: 'json'
+    }).subscribe({
+      next: () => this.alert.success(APP_CONSTANTS.MESSAGE_SUCCESSFUL),
+      error: (httpErrorResponse: HttpErrorResponse) => this.alert.error(httpErrorResponse?.error?.error || APP_CONSTANTS.MESSAGE_GENERIC_ERROR)
+    });
   }
 
   protected readonly Number = Number;

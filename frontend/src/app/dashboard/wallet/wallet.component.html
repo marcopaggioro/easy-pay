@@ -1,5 +1,5 @@
-<div class="row">
-  <div class="col-8">
+<div class="row justify-content-center">
+  <div class="col-12 col-md-6 col-lg-5 col-xl-4 col-xxl-3">
     <div class="card">
       <div class="card-body">
         <h4 class="mb-0">Saldo del wallet</h4>
@@ -15,7 +15,37 @@
         <button type="button" class="btn btn-info ms-3" routerLink="../recharge">Ricarica wallet</button>
       </div>
     </div>
+  </div>
 
+  <div class="d-none d-md-block col-md-6 col-lg-5 col-xl-4 col-xxl-3">
+    <div class="card">
+      <div class="card-body">
+        <h4 class="card-title">Interagisci nuovamente</h4>
+
+        <app-spinner #interactedUsersSpinner/>
+
+        <div class="list-group">
+          @for (interactedCustomer of this.interactedCustomers; track interactedCustomer) {
+            <button href="#" class="list-group-item list-group-item-action"
+                    (click)="$event.preventDefault(); goToTransfer(interactedCustomer.interactedEmail)">
+              <div class="d-flex align-items-center">
+                <img class="img-fluid rounded-circle me-3" style="width: 40px; height: 40px;"
+                     [src]="APP_CONSTANTS.ENDPOINT_AVATAR + interactedCustomer.interactedCustomerId"
+                     alt="user-avatar"/>
+                <h5
+                  class="mb-1"> {{ interactedCustomer.interactedFirstName + " " + interactedCustomer.interactedLastName }}</h5>
+              </div>
+            </button>
+          }
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-md-12 col-lg-10 col-xl-8 col-xxl-6">
     <div class="card mt-5">
       <div class="card-body">
         <h4 class="card-title">Operazioni recenti</h4>
@@ -46,32 +76,6 @@
           </div>
         }
       </div>
-    </div>
-  </div>
-
-  <div class="col-4">
-    <div class="card">
-      <div class="card-body">
-        <h4 class="card-title">Interagisci nuovamente</h4>
-
-        <app-spinner #interactedUsersSpinner/>
-
-        <div class="list-group">
-          @for (interactedCustomer of this.interactedCustomers; track interactedCustomer) {
-            <button href="#" class="list-group-item list-group-item-action"
-                    (click)="$event.preventDefault(); goToTransfer(interactedCustomer.interactedEmail)">
-              <div class="d-flex align-items-center">
-                <img class="img-fluid rounded-circle me-3" style="width: 40px; height: 40px;"
-                     [src]="APP_CONSTANTS.ENDPOINT_AVATAR + interactedCustomer.interactedCustomerId"
-                     alt="user-avatar"/>
-                <h5
-                  class="mb-1"> {{ interactedCustomer.interactedFirstName + " " + interactedCustomer.interactedLastName }}</h5>
-              </div>
-            </button>
-          }
-        </div>
-      </div>
-
     </div>
   </div>
 </div>

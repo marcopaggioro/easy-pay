@@ -8,16 +8,12 @@
   </div>
 </td>
 <td>
-  <button type="button" class="btn btn-outline-secondary btn-sm mx-2" *ngIf="!editing"
+  <button type="button" class="btn btn-outline-secondary btn-sm" *ngIf="!editing"
           (click)="enableEditField()">
     <i class="bi bi-pencil-fill"></i>
   </button>
   <button type="button" class="btn btn-outline-success btn-sm" *ngIf="editing"
           (click)="editField()" [disabled]="formField.invalid || waitingResponse">
     <i class="bi bi-check-lg"></i>
-  </button>
-  <button type="button" class="btn btn-outline-warning btn-sm ms-2" *ngIf="editing"
-          (click)="editing = false">
-    <i class="bi bi-x-lg"></i>
   </button>
 </td>

@@ -48,7 +48,7 @@ export class ProfileFieldComponent implements OnChanges {
   }
 
   editField(): void {
-    if(this.fieldValue != this.formField.value) {
+    if (this.fieldValue != this.formField.value) {
       if (!this.waitingResponse) {
         this.waitingResponse = true;
 

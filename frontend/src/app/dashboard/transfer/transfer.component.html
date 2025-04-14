@@ -1,38 +1,42 @@
-<div class="card">
-  <div class="card-body">
-    <app-alert/>
+<div class="row justify-content-center">
+  <div class="col col-md-10 col-lg-8 col-xl-6 col-xxl-5">
+    <div class="card">
+      <div class="card-body">
+        <app-alert/>
 
-    <h2 class="card-title">Trasferimento denaro</h2>
-    <small>E' possibile trasferire denaro ad un altro utente specificando l'email</small>
+        <h2 class="card-title">Trasferimento denaro</h2>
+        <small>E' possibile trasferire denaro ad un altro utente specificando l'email</small>
 
-    <form [formGroup]="transferForm" (ngSubmit)="onSubmit()">
-      <!-- Email -->
-      <div class="form-floating my-3">
-        <input type="email" class="form-control" id="email" placeholder="mario.rossi@gmail.com"
-               [formControl]="transferForm.controls.recipientEmail"
-               [class.is-invalid]="transferForm.controls.recipientEmail.dirty && transferForm.controls.recipientEmail.invalid"/>
-        <label for="email">Email</label>
-      </div>
-      <!-- Description -->
-      <div class="form-floating my-3">
+        <form [formGroup]="transferForm" (ngSubmit)="onSubmit()">
+          <!-- Email -->
+          <div class="form-floating my-3">
+            <input type="email" class="form-control" id="email" placeholder="mario.rossi@gmail.com"
+                   [formControl]="transferForm.controls.recipientEmail"
+                   [class.is-invalid]="transferForm.controls.recipientEmail.dirty && transferForm.controls.recipientEmail.invalid"/>
+            <label for="email">Email</label>
+          </div>
+          <!-- Description -->
+          <div class="form-floating my-3">
           <textarea class="form-control" id="description" placeholder="Descrizione"
                     [formControl]="transferForm.controls.description"
                     [class.is-invalid]="transferForm.controls.description.dirty && transferForm.controls.description.invalid"></textarea>
-        <label for="description">Descrizione</label>
-      </div>
-      <!-- Amount -->
-      <div class="form-floating my-3">
-        <input type="number" class="form-control" id="amount" placeholder="100.00"
-               [formControl]="transferForm.controls.amount"
-               [class.is-invalid]="transferForm.controls.amount.dirty && transferForm.controls.amount.invalid"/>
-        <label for="amount">Importo</label>
-      </div>
+            <label for="description">Descrizione</label>
+          </div>
+          <!-- Amount -->
+          <div class="form-floating my-3">
+            <input type="number" class="form-control" id="amount" placeholder="100.00"
+                   [formControl]="transferForm.controls.amount"
+                   [class.is-invalid]="transferForm.controls.amount.dirty && transferForm.controls.amount.invalid"/>
+            <label for="amount">Importo</label>
+          </div>
 
-      <button class="btn btn-primary w-100 py-2" type="submit" id="submit"
-              [disabled]="transferForm.invalid || this.loading">
-        <span class="spinner-border spinner-border-sm me-1" aria-hidden="true" *ngIf="this.loading"></span>
-        <span role="status">Trasferisci</span>
-      </button>
-    </form>
+          <button class="btn btn-primary w-100 py-2" type="submit" id="submit"
+                  [disabled]="transferForm.invalid || this.loading">
+            <span class="spinner-border spinner-border-sm me-1" aria-hidden="true" *ngIf="this.loading"></span>
+            <span role="status">Trasferisci</span>
+          </button>
+        </form>
+      </div>
+    </div>
   </div>
 </div>

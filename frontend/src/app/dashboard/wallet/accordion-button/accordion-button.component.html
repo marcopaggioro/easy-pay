@@ -1,16 +1,24 @@
 <button ngbAccordionButton class="bg-opacity-10 p-2" [ngClass]="operationClass()">
-  <div class="container row">
-    <div class="col-1 d-flex align-items-center justify-content-center">
-      <img class="img-fluid"
-           [src]="APP_CONSTANTS.ENDPOINT_AVATAR + operation.recipientCustomerId"
-           alt="user-avatar"/>
-    </div>
-    <div class="col-8">
-      <h5><b>{{ operation.interactedFirstName + " " + operation.interactedLastName }}</b></h5>
-      <small class="m-0 ps-1">{{ operation.instant | date:'dd MMMM HH:mm' }}</small>
-    </div>
-    <div class="col-3 d-flex align-items-center justify-content-center">
-      <h5>{{ Number(operation.amount) | number:'1.2-2' }}&euro;</h5>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-2 col-md-1 d-flex align-items-center justify-content-center">
+        <img class="img-fluid"
+             [src]="APP_CONSTANTS.ENDPOINT_AVATAR + operation.recipientCustomerId"
+             alt="user-avatar"/>
+      </div>
+      <div class="col-8 col-md-8 text-truncate">
+        @if (operation.senderCustomerId == operation.recipientCustomerId) {
+          <h5><b>Ricarica wallet</b></h5>
+        } @else {
+          <h5><b>{{ operation.interactedFirstName + " " + operation.interactedLastName }}</b>
+            <small class="d-none d-sm-inline"><i class="bi bi-dot"></i><i>{{ operation.interactedEmail }}</i></small>
+          </h5>
+        }
+        <small class="m-0 ps-1">{{ operation.instant | date:'dd MMMM HH:mm' }}</small>
+      </div>
+      <div class="col-2 col-md-3 d-flex align-items-center justify-content-end">
+        <h5>{{ Number(operation.amount) | number:'1.2-2' }}&euro;</h5>
+      </div>
     </div>
   </div>
 </button>

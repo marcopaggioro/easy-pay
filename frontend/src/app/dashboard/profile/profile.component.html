@@ -1,46 +1,51 @@
-<div class="card">
-  <div class="card-body">
-    <app-alert/>
+<div class="row justify-content-center">
+  <div class="col col-md-10 col-lg-8 col-xl-6 col-xxl-5">
+    <div class="card">
+      <div class="card-body">
+        <app-alert/>
 
-    <h2 class="card-title">Gestione anagrafica</h2>
-    <small>E' possibile visualizzare e modificare i propri dati</small>
-    <table class="table align-middle">
-      <tbody>
-      <tr>
-        <th scope="row">ID</th>
-        <td><code>{{ this.userData?.id }}</code></td>
-        <td></td>
-      </tr>
+        <h2 class="card-title">Gestione anagrafica</h2>
+        <small>E' possibile visualizzare e modificare i propri dati</small>
+        <div class="table-responsive">
+          <table class="table">
+            <tbody>
+            <tr>
+              <th scope="row">ID</th>
+              <td><code>{{ this.userData?.id }}</code></td>
+              <td></td>
+            </tr>
 
-      <tr app-profile-field fieldLabel="Nome" [fieldValue]="userData?.firstName" httpFieldName="firstName"
-          fieldPlaceholder="Mario" inputType="text" (editResult)="handleEditResult($event)">>
-      </tr>
+            <tr app-profile-field fieldLabel="Nome" [fieldValue]="userData?.firstName" httpFieldName="firstName"
+                fieldPlaceholder="Mario" inputType="text" (editResult)="handleEditResult($event)">>
+            </tr>
 
-      <tr app-profile-field fieldLabel="Cognome" [fieldValue]="userData?.lastName" httpFieldName="lastName"
-          fieldPlaceholder="Rossi" inputType="text" (editResult)="handleEditResult($event)"></tr>
+            <tr app-profile-field fieldLabel="Cognome" [fieldValue]="userData?.lastName" httpFieldName="lastName"
+                fieldPlaceholder="Rossi" inputType="text" (editResult)="handleEditResult($event)"></tr>
 
-      <tr app-profile-field fieldLabel="Data di nascita" [fieldValue]="userData?.birthDate"
-          [fieldValueVisualizer]="userData?.birthDate | date: 'dd/MM/YYYY'"
-          httpFieldName="birthDate" inputType="date" (editResult)="handleEditResult($event)"></tr>
+            <tr app-profile-field fieldLabel="Data di nascita" [fieldValue]="userData?.birthDate"
+                [fieldValueVisualizer]="userData?.birthDate | date: 'dd/MM/YYYY'"
+                httpFieldName="birthDate" inputType="date" (editResult)="handleEditResult($event)"></tr>
 
-      <tr app-profile-field fieldLabel="Email" [fieldValue]="userData?.email" httpFieldName="email"
-          fieldPlaceholder="mario.rossi@gmail.com" inputType="email" (editResult)="handleEditResult($event)"
-          [additionalValidators]="[emailValidator()]"></tr>
+            <tr app-profile-field fieldLabel="Email" [fieldValue]="userData?.email" httpFieldName="email"
+                fieldPlaceholder="mario.rossi@gmail.com" inputType="email" (editResult)="handleEditResult($event)"
+                [additionalValidators]="[emailValidator()]"></tr>
 
-      <tr app-profile-field fieldLabel="Password"
-          fieldValueVisualizer="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"
-          httpFieldName="encryptedPassword" fieldPlaceholder="Password" inputType="password"
-          (editResult)="handleEditResult($event)"
-          [additionalValidators]="[Validators.minLength(APP_CONSTANTS.PASSWORD_MIN_LENGHT)]"></tr>
+            <tr app-profile-field fieldLabel="Password"
+                fieldValueVisualizer="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"
+                httpFieldName="encryptedPassword" fieldPlaceholder="Password" inputType="password"
+                (editResult)="handleEditResult($event)"
+                [additionalValidators]="[Validators.minLength(APP_CONSTANTS.PASSWORD_MIN_LENGHT)]"></tr>
 
-      <tr>
-        <th scope="row">Ultima modifica</th>
-        <td><code>{{ this.userData?.lastEdit | date: 'dd MMMM HH:mm' }}</code></td>
-        <td></td>
-      </tr>
+            <tr>
+              <th scope="row">Ultima modifica</th>
+              <td><code>{{ this.userData?.lastEdit | date: 'dd MMMM HH:mm' }}</code></td>
+              <td></td>
+            </tr>
 
-      </tbody>
-    </table>
-    <p class="mt-5 mb-3 text-center text-body-secondary">&copy; EasyPay - 2025</p>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </div>
 </div>

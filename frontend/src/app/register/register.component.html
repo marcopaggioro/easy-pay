@@ -1,52 +1,56 @@
-<div class="container col-6">
-  <div class="card">
-    <div class="card-body">
-      <app-alert/>
+<div class="container-fluid h-100">
+  <div class="row justify-content-center align-items-center h-100">
+    <div class="col col-sm-8 col-lg-6 col-xl-4 col-xxl-3">
+      <div class="card">
+        <div class="card-body">
+          <app-alert/>
 
-      <h2 class="card-title">Registrazione</h2>
-      <small>Dati personali</small>
-      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
-        <!-- First name -->
-        <div class="form-floating my-3">
-          <input type="text" class="form-control" id="firstName" placeholder="Mario"
-                 [formControl]="registerForm.controls.firstName"
-                 [class.is-invalid]="registerForm.controls.firstName.dirty && registerForm.controls.firstName.invalid">
-          <label for="firstName">Nome</label>
-        </div>
-        <!-- Last name -->
-        <div class="form-floating my-3">
-          <input type="text" class="form-control" id="lastName" placeholder="Rossi"
-                 [formControl]="registerForm.controls.lastName"
-                 [class.is-invalid]="registerForm.controls.lastName.dirty && registerForm.controls.lastName.invalid">
-          <label for="lastName">Cognome</label>
-        </div>
-        <!-- Birth date -->
-        <div class="form-floating my-3">
-          <input type="date" class="form-control" id="birthDate" [formControl]="registerForm.controls.birthDate"
-                 [class.is-invalid]="registerForm.controls.birthDate.dirty && registerForm.controls.birthDate.invalid">
-          <label for="birthDate">Data di nascita</label>
-        </div>
-        <!-- Email -->
-        <div class="form-floating my-3">
-          <input type="email" class="form-control" id="email" placeholder="mario.rossi@gmail.com"
-                 [formControl]="registerForm.controls.email"
-                 [class.is-invalid]="registerForm.controls.email.dirty && registerForm.controls.email.invalid">
-          <label for="email">Email</label>
-        </div>
-        <!-- Password -->
-        <div class="form-floating my-3">
-          <input type="password" class="form-control" id="password" placeholder="password"
-                 [formControl]="registerForm.controls.password"
-                 [class.is-invalid]="registerForm.controls.password.dirty && registerForm.controls.password.invalid">
-          <label for="password">Password</label>
-        </div>
+          <h2 class="card-title">Registrazione</h2>
+          <small>Dati personali</small>
+          <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+            <!-- First name -->
+            <div class="form-floating my-3">
+              <input type="text" class="form-control" id="firstName" placeholder="Mario"
+                     [formControl]="registerForm.controls.firstName"
+                     [class.is-invalid]="registerForm.controls.firstName.dirty && registerForm.controls.firstName.invalid">
+              <label for="firstName">Nome</label>
+            </div>
+            <!-- Last name -->
+            <div class="form-floating my-3">
+              <input type="text" class="form-control" id="lastName" placeholder="Rossi"
+                     [formControl]="registerForm.controls.lastName"
+                     [class.is-invalid]="registerForm.controls.lastName.dirty && registerForm.controls.lastName.invalid">
+              <label for="lastName">Cognome</label>
+            </div>
+            <!-- Birth date -->
+            <div class="form-floating my-3">
+              <input type="date" class="form-control" id="birthDate" [formControl]="registerForm.controls.birthDate"
+                     [class.is-invalid]="registerForm.controls.birthDate.dirty && registerForm.controls.birthDate.invalid">
+              <label for="birthDate">Data di nascita</label>
+            </div>
+            <!-- Email -->
+            <div class="form-floating my-3">
+              <input type="email" class="form-control" id="email" placeholder="mario.rossi@gmail.com"
+                     [formControl]="registerForm.controls.email"
+                     [class.is-invalid]="registerForm.controls.email.dirty && registerForm.controls.email.invalid">
+              <label for="email">Email</label>
+            </div>
+            <!-- Password -->
+            <div class="form-floating my-3">
+              <input type="password" class="form-control" id="password" placeholder="password"
+                     [formControl]="registerForm.controls.password"
+                     [class.is-invalid]="registerForm.controls.password.dirty && registerForm.controls.password.invalid">
+              <label for="password">Password</label>
+            </div>
 
-        <button class="btn btn-primary w-100 py-2" type="submit" id="submit"
-                [disabled]="registerForm.invalid || this.loading">
-          <span class="spinner-border spinner-border-sm me-1" aria-hidden="true" *ngIf="this.loading"></span>
-          <span role="status">Registrati</span>
-        </button>
-      </form>
+            <button class="btn btn-primary w-100 py-2" type="submit" id="submit"
+                    [disabled]="registerForm.invalid || this.loading">
+              <span class="spinner-border spinner-border-sm me-1" aria-hidden="true" *ngIf="this.loading"></span>
+              <span role="status">Registrati</span>
+            </button>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
 </div>

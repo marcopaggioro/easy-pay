@@ -48,25 +48,30 @@ export class ProfileFieldComponent implements OnChanges {
   }
 
   editField(): void {
-    if (!this.waitingResponse) {
-      this.waitingResponse = true;
+    if(this.fieldValue != this.formField.value) {
+      if (!this.waitingResponse) {
+        this.waitingResponse = true;
 
-      const body = {[this.httpFieldName]: this.formField.value!}
-      this.http.patch(APP_CONSTANTS.ENDPOINT_USER_UPDATE, body, {
-        withCredentials: true,
-        responseType: 'json'
-      }).subscribe({
-        next: () => {
-          this.editResult.emit(null);
-          this.editing = false;
-          this.waitingResponse = false;
-        },
-        error: (httpErrorResponse: HttpErrorResponse) => {
-          this.editResult.emit(httpErrorResponse?.error?.error || APP_CONSTANTS.MESSAGE_GENERIC_ERROR);
-          this.editing = false;
-          this.waitingResponse = false;
-        }
-      });
+        const body = {[this.httpFieldName]: this.formField.value!}
+        this.http.patch(APP_CONSTANTS.ENDPOINT_USER_UPDATE, body, {
+          withCredentials: true,
+          responseType: 'json'
+        }).subscribe({
+          next: () => {
+            this.editResult.emit(null);
+            this.editing = false;
+            this.waitingResponse = false;
+          },
+          error: (httpErrorResponse: HttpErrorResponse) => {
+            this.editResult.emit(httpErrorResponse?.error?.error || APP_CONSTANTS.MESSAGE_GENERIC_ERROR);
+            this.editing = false;
+            this.waitingResponse = false;
+            this.formField.setValue(this.fieldValue);
+          }
+        });
+      }
+    } else {
+      this.editing = false;
     }
   }
 

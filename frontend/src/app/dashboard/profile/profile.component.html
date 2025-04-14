@@ -28,7 +28,7 @@
           [additionalValidators]="[emailValidator()]"></tr>
 
       <tr app-profile-field fieldLabel="Password"
-          fieldValue="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"
+          fieldValueVisualizer="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"
           httpFieldName="encryptedPassword" fieldPlaceholder="Password" inputType="password"
           (editResult)="handleEditResult($event)"
           [additionalValidators]="[Validators.minLength(APP_CONSTANTS.PASSWORD_MIN_LENGHT)]"></tr>

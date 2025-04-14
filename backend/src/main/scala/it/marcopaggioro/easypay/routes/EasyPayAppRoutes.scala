@@ -219,13 +219,12 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
                     }
                   }
                 }
-
               }
             )
           },
-          pathEndOrSingleSlash {
-            get { // GET /wallet
-              getWallet(customerId)
+          path(IntNumber) { page =>
+            get { // GET /wallet/{page}
+              getWallet(customerId, page - 1)
             }
           }
         )
@@ -378,7 +377,10 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
     }
   }
 
-  private def getWallet(customerId: CustomerId)(implicit system: ActorSystem[Nothing], uri: Uri): Route = {
+  private def getWallet(customerId: CustomerId, pageNumber: Int)(implicit
+      system: ActorSystem[Nothing],
+      uri: Uri
+  ): Route = {
     val getBalance = database.run {
       UsersBalanceTable.Table
         .filter(record => record.customerId === customerId)
@@ -388,27 +390,43 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
         .map(_.getOrElse(Money(0)))
     }
 
+    val baseHistoryQuery = TransactionsHistoryTable.Table
+      .filter(record => record.senderCustomerId === customerId || record.recipientCustomerId === customerId)
+      .joinLeft(UsersTable.Table)
+      .on { case (transactionRecord, userRecord) =>
+        Case
+          .If(transactionRecord.senderCustomerId === customerId)
+          .Then(transactionRecord.recipientCustomerId === userRecord.customerId)
+          .Else(transactionRecord.senderCustomerId === userRecord.customerId)
+      }
+
+    val getHistoryCount: Future[Int] = database.run {
+      baseHistoryQuery.result.map(_.size)
+    }
+
+    val offset: Int = pageNumber * AppConfig.historyPageSize
     val getHistory: Future[Seq[(TransactionsHistoryRecord, Option[UserRecord])]] = database.run {
-      TransactionsHistoryTable.Table
-        .filter(record => record.senderCustomerId === customerId || record.recipientCustomerId === customerId)
-        .joinLeft(UsersTable.Table)
-        .on { case (transactionRecord, userRecord) =>
-          Case
-            .If(transactionRecord.senderCustomerId === customerId)
-            .Then(transactionRecord.recipientCustomerId === userRecord.customerId)
-            .Else(transactionRecord.senderCustomerId === userRecord.customerId)
-        }
+      baseHistoryQuery
+        .sortBy(_._1.instant.desc)
+        .drop(offset)
+        .take(AppConfig.historyPageSize)
         .result
     }
 
     val result: Future[Json] = for {
       balance <- getBalance
+      historyCount <- getHistoryCount
       history <- getHistory
-    } yield Json.obj("balance" -> balance.asJson, "history" -> history.asJson(encodeSeq(TransactionUserJoinEncoder)))
+    } yield Json.obj(
+      "balance" -> balance.asJson,
+      "pageSize" -> AppConfig.historyPageSize.asJson,
+      "historyCount" -> historyCount.asJson,
+      "history" -> history.asJson(encodeSeq(TransactionUserJoinEncoder))
+    )
 
     onComplete(result) {
       case Failure(throwable) =>
-        system.log.error(s"Failure while transferring money", throwable)
+        system.log.error(s"Failure while getting wallet", throwable)
         completeWithError(StatusCodes.InternalServerError, ValidationUtilities.GenericError)
 
       case Success(json) =>

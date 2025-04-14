@@ -9,7 +9,7 @@ case class EncryptedPassword private (value: String) extends Validable[Encrypted
 
   private lazy val encryptionLength: Int = 128
   override def validate(): ValidatedNel[String, EncryptedPassword] =
-    condNel(value.length == encryptionLength, this, "Wrong password encryption")
+    condNel(value.length == encryptionLength, this, "Crittografia della password invalida")
 
 }
 

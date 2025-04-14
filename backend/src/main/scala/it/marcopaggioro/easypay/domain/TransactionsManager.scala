@@ -64,7 +64,7 @@ object TransactionsManager {
     private def customerHasSufficientBalance(state: TransactionsManagerState): ValidatedNel[String, Unit] = condNel(
       state.balances.getOrElse(customerId, Money(0)).value >= amount.value,
       (),
-      s"Customer does not have sufficient balance"
+      s"Non ci sono fondi sufficienti"
     )
 
     override def validate(state: TransactionsManagerState): ValidatedNel[String, Unit] =
@@ -103,7 +103,7 @@ object TransactionsManager {
   ) extends TransactionsManagerCommand {
 
     override def validate(state: TransactionsManagerState): ValidatedNel[String, Unit] =
-      condNel(!state.scheduledOperations.contains(scheduledOperationId), (), "Scheduled transaction id already exists")
+      condNel(!state.scheduledOperations.contains(scheduledOperationId), (), "L'operazione pianificata esiste già")
         .andThen(_ => scheduledOperation.resetSeconds().validate().map(_ => ()))
 
     override protected def generateEvents(state: TransactionsManagerState): List[TransactionsManagerEvent] = List(
@@ -131,7 +131,7 @@ object TransactionsManager {
           condNel(
             scheduledOperation.senderCustomerId == customerId,
             (),
-            "Can not delete this scheduled operation"
+            "Non puoi eliminare questa operazione pianificata"
           )
 
         case None =>

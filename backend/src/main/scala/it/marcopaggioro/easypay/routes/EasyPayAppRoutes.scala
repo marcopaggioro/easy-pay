@@ -43,7 +43,7 @@ import it.marcopaggioro.easypay.routes.EasyPayAppRoutes.{CustomerIdSegment, circ
 import it.marcopaggioro.easypay.routes.payloads.LoginPayload.LoginPayloadDecoder
 import it.marcopaggioro.easypay.routes.payloads.scheduledoperation.CreateScheduledOperationPayload
 import it.marcopaggioro.easypay.routes.payloads.{LoginPayload, TransferMoneyPayload, UpdateUserDataPayload}
-import it.marcopaggioro.easypay.utilities.JwtUtils
+import it.marcopaggioro.easypay.utilities.{JwtUtils, ValidationUtilities}
 import slick.jdbc.JdbcBackend.Database
 
 import java.util.UUID
@@ -132,7 +132,8 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
             post { // POST /user
               entity(as[UserData]) { userData =>
                 checkPayloadIsValid(userData) {
-                  askToUsersManagerActor[CustomerId](
+                  askToActor[UsersManagerCommand, CustomerId](
+                    usersManagerActorRef,
                     UsersManager.CreateUser(UUID.randomUUID(), userData)(_),
                     customerId => completeWithToken(customerId)
                   )
@@ -148,7 +149,8 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
               JwtUtils.withCustomerIdFromToken(uri) { customerId =>
                 entity(as[UpdateUserDataPayload]) { payload =>
                   checkPayloadIsValid(payload) {
-                    askToUsersManagerActor[Done](
+                    askToActor[UsersManagerCommand, Done](
+                      usersManagerActorRef,
                       UsersManager.UpdateUserData(
                         customerId,
                         payload.maybeFirstName,
@@ -175,7 +177,8 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
           path("recharge") {
             post { // POST /wallet/recharge
               entity(as[Money]) { amount =>
-                askToTransactionsManagerActor[Done](
+                askToActor[TransactionsManagerCommand, Done](
+                  transactionsManagerActorRef,
                   TransactionsManager.RechargeWallet(UUID.randomUUID(), customerId, amount)(_),
                   _ => completeWithOK()
                 )
@@ -188,7 +191,8 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
                 concat(
                   path(JavaUUID) { scheduledOperationId =>
                     delete { // DELETE /wallet/transfer/schedule/123-456-678
-                      askToTransactionsManagerActor[Done](
+                      askToActor[TransactionsManagerCommand, Done](
+                        transactionsManagerActorRef,
                         TransactionsManager.DeleteScheduledOperation(customerId, scheduledOperationId)(_),
                         _ => completeWithOK()
                       )
@@ -273,40 +277,18 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
     }
   }
 
-  private def askToUsersManagerActor[R](command: ActorRef[StatusReply[R]] => UsersManagerCommand, onSuccess: R => Route)(implicit
+  private def askToActor[C, R](actorRef: ActorRef[C], command: ActorRef[StatusReply[R]] => C, onSuccess: R => Route)(implicit
       system: ActorSystem[Nothing],
       uri: Uri
-  ): Route = {
-    lazy val future: Future[R] = usersManagerActorRef.askWithStatus[R](replyTo => command(replyTo))
-
-    onComplete(future) {
+  ): Route =
+    onComplete(actorRef.askWithStatus[R](replyTo => command(replyTo))) {
       case Failure(throwable) =>
         system.log.error(s"Failure in $uri", throwable)
-        completeWithError(StatusCodes.InternalServerError, throwable.getMessage)
+        completeWithError(StatusCodes.InternalServerError, ValidationUtilities.GenericError)
 
       case Success(response) =>
         onSuccess(response)
     }
-  }
-
-  private def askToTransactionsManagerActor[R](
-      command: ActorRef[StatusReply[R]] => TransactionsManagerCommand,
-      onSuccess: R => Route
-  )(implicit
-      system: ActorSystem[Nothing],
-      uri: Uri
-  ): Route = {
-    lazy val future: Future[R] = transactionsManagerActorRef.askWithStatus[R](replyTo => command(replyTo))
-
-    onComplete(future) {
-      case Failure(throwable) =>
-        system.log.error(s"Failure in $uri", throwable)
-        completeWithError(StatusCodes.InternalServerError, throwable.getMessage)
-
-      case Success(response) =>
-        onSuccess(response)
-    }
-  }
 
   def loginUser(payload: LoginPayload)(implicit system: ActorSystem[Nothing], uri: Uri): Route = {
     lazy val future: Future[CustomerId] = usersManagerActorRef
@@ -316,7 +298,7 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
       case Failure(throwable) =>
         system.log.error(s"Failure while logging-in user", throwable)
         // Due to security reasons we do not inform about the reason for the failed login (email does not exist etc.)
-        completeWithError(StatusCodes.Unauthorized, "Failed to login")
+        completeWithError(StatusCodes.Unauthorized, "Credenziali invalide")
 
       case Success(customerId) =>
         completeWithToken(customerId)
@@ -327,7 +309,7 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
     database
       .run(UsersTable.Table.filter(_.email === email).map(_.customerId).result.head)
       .recoverWith { case _: NoSuchElementException =>
-        Future.failed(new NoSuchElementException(s"Customer with email ${email.value} not found"))
+        Future.failed(new NoSuchElementException(s"L'email ${email.value} non esiste"))
       }
 
   def transferMoney(senderCustomerId: CustomerId, payload: TransferMoneyPayload)(implicit
@@ -350,7 +332,7 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
     onComplete(getCustomerId(payload.recipientEmail).flatMap(recipientCustomerId => transferMoney(recipientCustomerId))) {
       case Failure(throwable) =>
         system.log.error(s"Failure while transferring money", throwable)
-        completeWithError(StatusCodes.InternalServerError, throwable.getMessage)
+        completeWithError(StatusCodes.InternalServerError, ValidationUtilities.GenericError)
 
       case Success(_) =>
         completeWithOK()
@@ -372,10 +354,10 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
     onComplete(getUser) {
       case Failure(throwable) =>
         system.log.error(s"Failure while getting user", throwable)
-        completeWithError(StatusCodes.InternalServerError, throwable.getMessage)
+        completeWithError(StatusCodes.InternalServerError, ValidationUtilities.GenericError)
 
       case Success(None) =>
-        completeWithError(StatusCodes.NotFound, s"Customer $customerId not found")
+        completeWithError(StatusCodes.NotFound, s"Cliente $customerId non trovato")
 
       case Success(Some(userRecord)) =>
         completeWithJson(userRecord.asJson)
@@ -416,7 +398,7 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
     onComplete(result) {
       case Failure(throwable) =>
         system.log.error(s"Failure while transferring money", throwable)
-        completeWithError(StatusCodes.InternalServerError, throwable.getMessage)
+        completeWithError(StatusCodes.InternalServerError, ValidationUtilities.GenericError)
 
       case Success(json) =>
         completeWithJson(json)
@@ -440,7 +422,7 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
     onComplete(getScheduledOperations.map(_.asJson(encodeSeq(ScheduledOperationUserJoinEncoder)))) {
       case Failure(throwable) =>
         system.log.error(s"Failure while transferring money", throwable)
-        completeWithError(StatusCodes.InternalServerError, throwable.getMessage)
+        completeWithError(StatusCodes.InternalServerError, ValidationUtilities.GenericError)
 
       case Success(json) =>
         completeWithJson(json)
@@ -473,19 +455,23 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
     ) {
       case Failure(throwable) =>
         system.log.error(s"Failure while creating scheduled operation", throwable)
-        completeWithError(StatusCodes.InternalServerError, throwable.getMessage)
+        completeWithError(StatusCodes.InternalServerError, ValidationUtilities.GenericError)
 
       case Success(_) =>
         completeWithOK()
     }
   }
 
-  def checkPayloadIsValid[P <: Validable[_]](payload: P)(handleSuccess: Route)(implicit uri: Uri): Route =
+  def checkPayloadIsValid[P <: Validable[_]](
+      payload: P
+  )(handleSuccess: Route)(implicit system: ActorSystem[Nothing], uri: Uri): Route =
     payload.validate() match {
       case Validated.Valid(_) =>
         handleSuccess
+
       case Validated.Invalid(errors) =>
-        completeWithError(StatusCodes.BadRequest, errors.toList.mkString(", "))
+        system.log.warn(s"Invalid payload in $uri: ${errors.toList.mkString(", ")}")
+        completeWithError(StatusCodes.BadRequest, "Payload invalido")
     }
 
 }

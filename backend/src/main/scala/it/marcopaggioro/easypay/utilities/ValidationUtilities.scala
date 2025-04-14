@@ -9,32 +9,36 @@ import java.time.{Instant, LocalDate, Period}
 
 object ValidationUtilities {
 
+  lazy val GenericError: String = "Errore generico"
+
   private lazy val maxDescriptionLength: Int = 500
   def validateDescription(value: String): ValidatedNel[String, Unit] =
-    condNel(value.trim.nonEmpty, (), "Description can not be empty").andThen(_ =>
+    condNel(value.trim.nonEmpty, (), "La descrizione non può essere vuota").andThen(_ =>
       condNel(
         value.trim.length <= maxDescriptionLength,
         (),
-        s"Description must be a maximum of $maxDescriptionLength characters long"
+        s"La descrizione può essere lunga al massimo $maxDescriptionLength caratteri"
       )
     )
 
   private lazy val minAge: Int = 16
   def validateBirthDate(date: LocalDate): ValidatedNel[String, Unit] =
-    condNel(date.isBefore(LocalDate.now()), (), "Birth date can not be in future")
-      .andThen(_ => condNel(Period.between(date, LocalDate.now()).getYears >= minAge, (), s"Required minimum of $minAge years"))
+    condNel(date.isBefore(LocalDate.now()), (), "La data di nascita non può essere nel futuro")
+      .andThen(_ =>
+        condNel(Period.between(date, LocalDate.now()).getYears >= minAge, (), s"E' richiesta un'età minima di $minAge anni")
+      )
 
   def validatePositiveAmount(amount: Money): ValidatedNel[String, Unit] =
-    condNel(amount.value > 0, (), "Amount must be more than 0")
+    condNel(amount.value > 0, (), "L'importo deve essere maggiore di 0")
 
   def validateInstantInFuture(instant: Instant): ValidatedNel[String, Unit] =
-    condNel(instant.isAfter(Instant.now()), (), "Date time must be in future")
+    condNel(instant.isAfter(Instant.now()), (), "La data deve essere nel futuro")
 
   private lazy val minPeriod: Period = Period.ofDays(1)
   def validateMinimumPeriod(period: Period): ValidatedNel[String, Unit] =
-    condNel(LocalDate.now().plus(period).isAfter(LocalDate.now().plus(minPeriod)), (), s"Minimum period is $minPeriod")
+    condNel(LocalDate.now().plus(period).isAfter(LocalDate.now().plus(minPeriod)), (), s"Il periodo minimo è $minPeriod")
 
   def differentCustomerIdsValidation(first: CustomerId, second: CustomerId): ValidatedNel[String, Unit] =
-    condNel(first != second, (), "Can not operate on yourself")
+    condNel(first != second, (), "Non puoi operare su te stesso")
 
 }

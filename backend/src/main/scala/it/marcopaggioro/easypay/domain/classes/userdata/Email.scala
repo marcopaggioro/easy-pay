@@ -14,9 +14,9 @@ case class Email private (value: String) extends Validable[Email] {
   private lazy val emailRegex: Regex = new Regex("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}\\b")
 
   override def validate(): ValidatedNel[String, Email] =
-    condNel(value.nonEmpty, this, "Email can not be empty")
-      .andThen(_ => condNel(value.length <= maxLength, this, "Email too long"))
-      .andThen(_ => condNel(emailRegex.matches(value.toUpperCase), this, "Invalid email"))
+    condNel(value.nonEmpty, this, "L'email non può essere vuota")
+      .andThen(_ => condNel(value.length <= maxLength, this, s"L'email può essere lunga al massimo $maxLength caratteri"))
+      .andThen(_ => condNel(emailRegex.matches(value.toUpperCase), this, "Email invalida"))
 
 }
 

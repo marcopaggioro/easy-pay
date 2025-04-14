@@ -30,12 +30,12 @@ object UsersManager {
     def customerIdExistsValidation(state: UsersManagerState, customerId: CustomerId): ValidatedNel[String, UserData] =
       state.users.get(customerId) match {
         case Some(userData) => validNel(userData)
-        case None           => invalidNel(s"Customer id $customerId not exists")
+        case None           => invalidNel(s"Cliente $customerId non trovato")
       }
 
     def customerIdNotExistsValidation(state: UsersManagerState, customerId: CustomerId): ValidatedNel[String, Unit] =
       customerIdExistsValidation(state, customerId) match {
-        case Valid(_)        => invalidNel(s"Customer id $customerId already exists")
+        case Valid(_)        => invalidNel(s"Cliente $customerId già esistente")
         case Invalid(errors) => validNel(())
       }
 
@@ -44,10 +44,10 @@ object UsersManager {
         .collectFirst {
           case (customerId, userData) if userData.email == email => validNel(customerId -> userData)
         }
-        .getOrElse(invalidNel(s"Email ${email.value} not exists"))
+        .getOrElse(invalidNel(s"Email ${email.value} non trovata"))
 
     def emailNotAlreadyExistsValidation(state: UsersManagerState, email: Email): ValidatedNel[String, Unit] =
-      condNel(!state.usersEmails.contains(email), (), s"Email ${email.value} already registered")
+      condNel(!state.usersEmails.contains(email), (), s"Email ${email.value} già esistente")
   }
 
   // -----
@@ -188,7 +188,7 @@ object UsersManager {
         .andThen(_ => encryptedPassword.validate())
         .andThen(_ => customerEmailExistsValidation(state, email))
         .andThen { case (customerId, userData) =>
-          condNel(userData.encryptedPassword == encryptedPassword, customerId, "Wrong credentials")
+          condNel(userData.encryptedPassword == encryptedPassword, customerId, "Credenziali invalide")
         }
 
     override def validate(state: UsersManagerState): ValidatedNel[String, Unit] =

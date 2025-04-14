@@ -11,6 +11,7 @@ import akka.http.scaladsl.server.directives.BasicDirectives.extractRequest
 import akka.http.scaladsl.server.{Route, *}
 import akka.http.scaladsl.unmarshalling.{FromEntityUnmarshaller, Unmarshaller}
 import akka.pattern.StatusReply
+import akka.pattern.StatusReply.ErrorMessage
 import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.{Flow, Sink, Source}
 import akka.stream.typed.scaladsl.ActorSource
@@ -287,7 +288,13 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
     onComplete(actorRef.askWithStatus[R](replyTo => command(replyTo))) {
       case Failure(throwable) =>
         system.log.error(s"Failure in $uri", throwable)
-        completeWithError(StatusCodes.InternalServerError, ValidationUtilities.GenericError)
+        throwable match {
+          case errorMessage: ErrorMessage =>
+            completeWithError(StatusCodes.InternalServerError, errorMessage.getMessage)
+
+          case _ =>
+            completeWithError(StatusCodes.InternalServerError, ValidationUtilities.GenericError)
+        }
 
       case Success(response) =>
         onSuccess(response)
@@ -306,7 +313,13 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
     onComplete(result) {
       case Failure(throwable) =>
         system.log.error(s"Failure while creating user", throwable)
-        completeWithError(StatusCodes.InternalServerError, ValidationUtilities.GenericError)
+        throwable match {
+          case errorMessage: ErrorMessage =>
+            completeWithError(StatusCodes.InternalServerError, errorMessage.getMessage)
+
+          case _ =>
+            completeWithError(StatusCodes.InternalServerError, ValidationUtilities.GenericError)
+        }
 
       case Success(customerId) =>
         completeWithToken(customerId)
@@ -332,7 +345,7 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
     database
       .run(UsersTable.Table.filter(_.email === email).map(_.customerId).result.head)
       .recoverWith { case _: NoSuchElementException =>
-        Future.failed(new NoSuchElementException(s"L'email ${email.value} non esiste"))
+        Future.failed(new NoSuchElementException(s"Email ${email.value} non trovata"))
       }
 
   private def transferMoney(senderCustomerId: CustomerId, payload: TransferMoneyPayload)(implicit
@@ -353,13 +366,18 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
       )
 
     onComplete(getCustomerId(payload.recipientEmail).flatMap(recipientCustomerId => transferMoney(recipientCustomerId))) {
-      case Failure(throwable: NoSuchElementException) =>
-        system.log.error(s"Failure while transferring money", throwable)
-        completeWithError(StatusCodes.NotFound, throwable.getMessage)
+      case Failure(throwable) =>
+        system.log.error(s"Failure while transferring money $uri", throwable)
+        throwable match {
+          case errorMessage: ErrorMessage =>
+            completeWithError(StatusCodes.InternalServerError, errorMessage.getMessage)
 
-      case Failure(throwable: NoSuchElementException) =>
-        system.log.error(s"Failure while transferring money", throwable)
-        completeWithError(StatusCodes.InternalServerError, ValidationUtilities.GenericError)
+          case _: NoSuchElementException =>
+            completeWithError(StatusCodes.NotFound, throwable.getMessage)
+
+          case _ =>
+            completeWithError(StatusCodes.InternalServerError, ValidationUtilities.GenericError)
+        }
 
       case Success(_) =>
         completeWithOK()
@@ -522,13 +540,18 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
     onComplete(
       getCustomerId(payload.recipientEmail).flatMap(recipientCustomerId => createScheduledOperation(recipientCustomerId))
     ) {
-      case Failure(throwable: NoSuchElementException) =>
-        system.log.error(s"Failure while transferring money", throwable)
-        completeWithError(StatusCodes.NotFound, throwable.getMessage)
-
       case Failure(throwable) =>
         system.log.error(s"Failure while creating scheduled operation", throwable)
-        completeWithError(StatusCodes.InternalServerError, ValidationUtilities.GenericError)
+        throwable match {
+          case errorMessage: ErrorMessage =>
+            completeWithError(StatusCodes.InternalServerError, errorMessage.getMessage)
+
+          case _: NoSuchElementException=>
+            completeWithError(StatusCodes.NotFound, throwable.getMessage)
+
+          case _ =>
+            completeWithError(StatusCodes.InternalServerError, ValidationUtilities.GenericError)
+        }
 
       case Success(_) =>
         completeWithOK()

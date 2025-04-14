@@ -30,6 +30,7 @@ object UserRecord {
   }
   val UserRecordInteractedEncoder: Encoder[UserRecord] = Encoder.instance { recipientUserRecord =>
     Json.obj(
+      "interactedCustomerId" -> recipientUserRecord.customerId.asJson,
       "interactedFirstName" -> recipientUserRecord.firstName.asJson,
       "interactedLastName" -> recipientUserRecord.lastName.asJson,
       "interactedEmail" -> recipientUserRecord.email.asJson

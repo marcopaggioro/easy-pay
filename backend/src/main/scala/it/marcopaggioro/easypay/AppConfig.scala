@@ -12,6 +12,7 @@ object AppConfig {
 
   lazy val startingBalance: Money = Money(10)
   lazy val historyPageSize: Int = 10
+  lazy val interactedUsersSize: Int = 10
 
   // Timeouts
   private lazy val timeoutsNode: Config = config.getConfig("timeouts")

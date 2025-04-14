@@ -31,15 +31,9 @@ object TransactionsHistoryRecord {
     )
   }
 
-  implicit val TransactionUserJoinEncoder: Encoder[(TransactionsHistoryRecord, Option[UserRecord])] = Encoder.instance {
-    case (transactionsHistoryRecord, maybeRecipientRecord) =>
-      maybeRecipientRecord match {
-        case Some(recipientRecord) =>
-          transactionsHistoryRecord.asJson.deepMerge(recipientRecord.asJson(UserRecordInteractedEncoder))
-
-        case None =>
-          transactionsHistoryRecord.asJson
-      }
+  implicit val TransactionUserJoinEncoder: Encoder[(TransactionsHistoryRecord, UserRecord)] = Encoder.instance {
+    case (transactionsHistoryRecord, recipientRecord) =>
+      transactionsHistoryRecord.asJson.deepMerge(recipientRecord.asJson(UserRecordInteractedEncoder))
   }
 
 }

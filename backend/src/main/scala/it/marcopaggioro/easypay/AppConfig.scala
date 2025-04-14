@@ -4,13 +4,14 @@ import akka.util.Timeout
 import com.typesafe.config.{Config, ConfigFactory}
 import it.marcopaggioro.easypay.domain.classes.Money
 
-import java.time.Period
+import java.time.{Period, ZoneId}
 import scala.concurrent.duration.DurationLong
 
 object AppConfig {
 
   lazy val config: Config = ConfigFactory.load()
 
+  lazy val romeZoneId: ZoneId = ZoneId.of("Europe/Rome")
   lazy val startingBalance: Money = Money(10)
   lazy val historyPageSize: Int = 10
   lazy val interactedUsersSize: Int = 10

@@ -22,6 +22,21 @@ final case class ScheduledOperationRecord(
 
 object ScheduledOperationRecord {
 
+  implicit val PeriodEncoder: Encoder[Period] = Encoder.instance { period =>
+    val monthsString: String = period.getMonths match {
+      case months if months > 1 => s"$months mesi"
+      case 1                    => "1 mese"
+      case 0                    => ""
+    }
+    val daysString: String = period.getDays match {
+      case months if months > 1 => s"$months giorni"
+      case 1                    => "1 giorno"
+      case 0                    => ""
+    }
+
+    Seq(monthsString, daysString).filter(_.nonEmpty).mkString(" e ").asJson
+  }
+
   implicit val ScheduledOperationRecordEncoder: Encoder[ScheduledOperationRecord] = Encoder.instance { record =>
     Json.obj(
       "id" -> record.scheduledOperationId.asJson,

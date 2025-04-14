@@ -5,16 +5,14 @@ import akka.actor.typed.ActorRef
 import akka.pattern.StatusReply
 import cats.data.Validated.{condNel, validNel}
 import cats.data.ValidatedNel
+import it.marcopaggioro.easypay.AppConfig
 import it.marcopaggioro.easypay.domain.classes.Aliases.{CustomerId, ScheduledOperationId, TransactionId}
 import it.marcopaggioro.easypay.domain.classes.Domain.{DomainCommand, DomainEvent, DomainState}
 import it.marcopaggioro.easypay.domain.classes.{Money, ScheduledOperation, Status}
-import it.marcopaggioro.easypay.utilities.ValidationUtilities.{
-  differentCustomerIdsValidation,
-  validateDescription,
-  validatePositiveAmount
-}
+import it.marcopaggioro.easypay.utilities.ValidationUtilities.{differentCustomerIdsValidation, validateDescription, validatePositiveAmount}
 
-import java.time.{Instant, Period}
+import java.time.temporal.ChronoUnit
+import java.time.{Instant, Period, ZoneId}
 
 object TransactionsManager {
   case class TransactionsManagerState(
@@ -207,9 +205,9 @@ object TransactionsManager {
             case _: Status.Done =>
               scheduledOperation.repeat match {
                 case Some(repeatPeriod) =>
+                  val updatedWhen: Instant = scheduledOperation.when.atZone(AppConfig.romeZoneId).plus(repeatPeriod).toInstant
                   state.copy(scheduledOperations =
-                    state.scheduledOperations
-                      .updated(scheduledOperationId, scheduledOperation.copy(when = scheduledOperation.when.plus(repeatPeriod)))
+                    state.scheduledOperations.updated(scheduledOperationId, scheduledOperation.copy(when = updatedWhen))
                   )
 
                 case None =>

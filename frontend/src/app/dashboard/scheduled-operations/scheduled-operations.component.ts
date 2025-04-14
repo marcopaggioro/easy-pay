@@ -52,6 +52,7 @@ export class ScheduledOperationsComponent implements OnInit {
     description: new FormControl('', Validators.required),
     amount: new FormControl('', [Validators.required, Validators.min(0.01)]),
     dateTime: new FormControl('', Validators.required),
+    repeatMonths: new FormControl('', Validators.min(1)),
     repeatDays: new FormControl('', Validators.min(1))
   });
 
@@ -95,7 +96,9 @@ export class ScheduledOperationsComponent implements OnInit {
       when: new Date(this.scheduledOperationForm.controls.dateTime.value!).toISOString()
     } as any;
     if (this.repeatToggle) {
-      body.repeat = `P${this.scheduledOperationForm.controls.repeatDays.value!}D`;
+      const months = this.scheduledOperationForm.controls.repeatMonths.value || 0;
+      const days = this.scheduledOperationForm.controls.repeatDays.value || 0;
+      body.repeat = `P${months}M${days}D`;
     }
 
     this.http.put(APP_CONSTANTS.ENDPOINT_WALLET_CREATE_SCHEDULE, body, {

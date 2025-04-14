@@ -2,12 +2,15 @@ package it.marcopaggioro.easypay
 
 import akka.util.Timeout
 import com.typesafe.config.{Config, ConfigFactory}
+import it.marcopaggioro.easypay.domain.classes.Money
 
 import scala.concurrent.duration.DurationLong
 
 object AppConfig {
 
   lazy val config: Config = ConfigFactory.load()
+
+  lazy val startingBalance: Money = Money(10)
 
   // Timeouts
   private lazy val timeoutsNode: Config = config.getConfig("timeouts")

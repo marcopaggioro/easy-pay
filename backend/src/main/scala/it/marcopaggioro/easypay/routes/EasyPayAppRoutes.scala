@@ -21,6 +21,7 @@ import io.circe.Encoder.encodeSeq
 import io.circe._
 import io.circe.jawn.decode
 import io.circe.syntax.EncoderOps
+import it.marcopaggioro.easypay.AppConfig
 import it.marcopaggioro.easypay.AppConfig.askTimeout
 import it.marcopaggioro.easypay.actor.WebSocketsManagerActor.WebSocketsManagerActorCommand
 import it.marcopaggioro.easypay.actor.{TransactionsManagerActor, UsersManagerActor, WebSocketsManagerActor}
@@ -132,11 +133,7 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
             post { // POST /user
               entity(as[UserData]) { userData =>
                 checkPayloadIsValid(userData) {
-                  askToActor[UsersManagerCommand, CustomerId](
-                    usersManagerActorRef,
-                    UsersManager.CreateUser(UUID.randomUUID(), userData)(_),
-                    customerId => completeWithToken(customerId)
-                  )
+                  createUser(userData)
                 }
               }
             },
@@ -290,7 +287,27 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
         onSuccess(response)
     }
 
-  def loginUser(payload: LoginPayload)(implicit system: ActorSystem[Nothing], uri: Uri): Route = {
+  private def createUser(userData: UserData)(implicit system: ActorSystem[Nothing], uri: Uri): Route = {
+    val result: Future[CustomerId] = for {
+      customerId <- usersManagerActorRef
+        .askWithStatus[CustomerId](replyTo => UsersManager.CreateUser(UUID.randomUUID(), userData)(replyTo))
+      _ <- transactionsManagerActorRef
+        .askWithStatus[Done](replyTo =>
+          TransactionsManager.RechargeWallet(UUID.randomUUID(), customerId, AppConfig.startingBalance)(replyTo)
+        )
+    } yield customerId
+
+    onComplete(result) {
+      case Failure(throwable) =>
+        system.log.error(s"Failure while creating user", throwable)
+        completeWithError(StatusCodes.InternalServerError, ValidationUtilities.GenericError)
+
+      case Success(customerId) =>
+        completeWithToken(customerId)
+    }
+  }
+
+  private def loginUser(payload: LoginPayload)(implicit system: ActorSystem[Nothing], uri: Uri): Route = {
     lazy val future: Future[CustomerId] = usersManagerActorRef
       .askWithStatus[CustomerId](replyTo => UsersManager.LoginUserWithEmail(payload.email, payload.encryptedPassword)(replyTo))
 
@@ -305,14 +322,14 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
     }
   }
 
-  def getCustomerId(email: Email): Future[CustomerId] =
+  private def getCustomerId(email: Email): Future[CustomerId] =
     database
       .run(UsersTable.Table.filter(_.email === email).map(_.customerId).result.head)
       .recoverWith { case _: NoSuchElementException =>
         Future.failed(new NoSuchElementException(s"L'email ${email.value} non esiste"))
       }
 
-  def transferMoney(senderCustomerId: CustomerId, payload: TransferMoneyPayload)(implicit
+  private def transferMoney(senderCustomerId: CustomerId, payload: TransferMoneyPayload)(implicit
       system: ActorSystem[Nothing],
       uri: Uri
   ): Route = {
@@ -339,10 +356,7 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
     }
   }
 
-  def getUser(customerId: CustomerId)(implicit
-      system: ActorSystem[Nothing],
-      uri: Uri
-  ): Route = {
+  private def getUser(customerId: CustomerId)(implicit system: ActorSystem[Nothing], uri: Uri): Route = {
     val getUser: Future[Option[UserRecord]] = database
       .run {
         UsersTable.Table
@@ -364,10 +378,7 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
     }
   }
 
-  def getWallet(customerId: CustomerId)(implicit
-      system: ActorSystem[Nothing],
-      uri: Uri
-  ): Route = {
+  private def getWallet(customerId: CustomerId)(implicit system: ActorSystem[Nothing], uri: Uri): Route = {
     val getBalance = database.run {
       UsersBalanceTable.Table
         .filter(record => record.customerId === customerId)
@@ -405,10 +416,7 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
     }
   }
 
-  def getScheduledOperations(customerId: CustomerId)(implicit
-      system: ActorSystem[Nothing],
-      uri: Uri
-  ): Route = {
+  private def getScheduledOperations(customerId: CustomerId)(implicit system: ActorSystem[Nothing], uri: Uri): Route = {
     val getScheduledOperations: Future[Seq[(ScheduledOperationRecord, UserRecord)]] = database.run {
       ScheduledOperationsTable.Table
         .filter(record => record.senderCustomerId === customerId)
@@ -429,7 +437,7 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
     }
   }
 
-  def createScheduledOperation(customerId: CustomerId, payload: CreateScheduledOperationPayload)(implicit
+  private def createScheduledOperation(customerId: CustomerId, payload: CreateScheduledOperationPayload)(implicit
       system: ActorSystem[Nothing],
       uri: Uri
   ): Route = {
@@ -462,7 +470,7 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
     }
   }
 
-  def checkPayloadIsValid[P <: Validable[_]](
+  private def checkPayloadIsValid[P <: Validable[_]](
       payload: P
   )(handleSuccess: Route)(implicit system: ActorSystem[Nothing], uri: Uri): Route =
     payload.validate() match {

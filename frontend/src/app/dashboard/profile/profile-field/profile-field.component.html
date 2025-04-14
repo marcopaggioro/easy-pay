@@ -3,7 +3,7 @@
   <code *ngIf="!editing">{{ this.fieldValue }}</code>
 
   <div *ngIf="editing">
-    <input [type]="inputType" class="form-control" [placeholder]="fieldPlaceholder"
+    <input #inputField [type]="inputType" class="form-control" [placeholder]="fieldPlaceholder"
            [formControl]="formField" (keyup.enter)="editField()">
   </div>
 </td>

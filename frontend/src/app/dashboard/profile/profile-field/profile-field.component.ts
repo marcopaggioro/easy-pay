@@ -1,4 +1,14 @@
-import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges} from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnInit,
+  Output,
+  SimpleChanges,
+  ViewChild
+} from '@angular/core';
 import {NgIf} from '@angular/common';
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {APP_CONSTANTS} from '../../../app.constants';
@@ -13,6 +23,8 @@ import {FormControl, ReactiveFormsModule, ValidatorFn, Validators} from '@angula
   templateUrl: './profile-field.component.html'
 })
 export class ProfileFieldComponent implements OnChanges {
+  @ViewChild('inputField') inputField!: ElementRef;
+
   @Input() fieldLabel!: string;
   @Input() httpFieldName!: string;
   @Input() fieldValue!: any;
@@ -38,6 +50,9 @@ export class ProfileFieldComponent implements OnChanges {
 
   enableEditField(): void {
     this.editing = true;
+    setTimeout(() => {
+      this.inputField.nativeElement.focus();
+    });
   }
 
   editField(): void {

@@ -1,11 +1,13 @@
+Infrastructure:
 TODO script linux per build
 TODO commenti BE
 TODO commenti FE
 
-TODO navigazione mobile
-TODO numero di telefono su utente? login etc
+Functionality:
 TODO componenti dedicati per operazioni history
-TODO repeat nelle scheduled operations
+
+Style:
+TODO navigazione mobile
 TODO scegliere palette colori
 
 netstat -aon | findstr :9000

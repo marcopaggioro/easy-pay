@@ -9,10 +9,13 @@ import it.marcopaggioro.easypay.AppConfig
 import it.marcopaggioro.easypay.domain.classes.Aliases.{CustomerId, ScheduledOperationId, TransactionId}
 import it.marcopaggioro.easypay.domain.classes.Domain.{DomainCommand, DomainEvent, DomainState}
 import it.marcopaggioro.easypay.domain.classes.{Money, ScheduledOperation, Status}
-import it.marcopaggioro.easypay.utilities.ValidationUtilities.{differentCustomerIdsValidation, validateDescription, validatePositiveAmount}
+import it.marcopaggioro.easypay.utilities.ValidationUtilities.{
+  differentCustomerIdsValidation,
+  validateDescription,
+  validatePositiveAmount
+}
 
-import java.time.temporal.ChronoUnit
-import java.time.{Instant, Period, ZoneId}
+import java.time.{Instant, Period}
 
 object TransactionsManager {
   case class TransactionsManagerState(

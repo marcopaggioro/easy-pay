@@ -15,18 +15,18 @@ import it.marcopaggioro.easypay.AppConfig
 import it.marcopaggioro.easypay.actor.WebSocketsManagerActor.WebSocketsManagerActorCommand
 import it.marcopaggioro.easypay.actor.{TransactionsManagerActor, WebSocketsManagerActor}
 import it.marcopaggioro.easypay.database.PlainJdbcSession
-import it.marcopaggioro.easypay.database.PostgresProfile.*
-import it.marcopaggioro.easypay.database.PostgresProfile.api.*
+import it.marcopaggioro.easypay.database.PostgresProfile._
+import it.marcopaggioro.easypay.database.PostgresProfile.api._
 import it.marcopaggioro.easypay.database.scheduledoperations.{ScheduledOperationRecord, ScheduledOperationsTable}
 import it.marcopaggioro.easypay.database.transactionshistory.{TransactionsHistoryRecord, TransactionsHistoryTable}
 import it.marcopaggioro.easypay.database.usersbalance.{UserBalanceRecord, UsersBalanceTable}
-import it.marcopaggioro.easypay.domain.TransactionsManager.*
+import it.marcopaggioro.easypay.domain.TransactionsManager._
 import it.marcopaggioro.easypay.domain.classes.Aliases.{CustomerId, TransactionId}
 import it.marcopaggioro.easypay.domain.classes.WebSocketMessage.{ScheduledOperationsUpdated, WalletUpdated}
 import it.marcopaggioro.easypay.domain.classes.{Money, Status, WebSocketMessage}
 import slick.jdbc.JdbcBackend.Database
 
-import java.time.{Duration, Instant, ZoneId}
+import java.time.{Duration, Instant}
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}

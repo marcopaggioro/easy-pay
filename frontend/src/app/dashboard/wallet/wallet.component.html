@@ -188,16 +188,17 @@
         <app-spinner #interactedUsersSpinner/>
 
         <div class="list-group">
-          <button href="#" class="list-group-item list-group-item-action"
-                  *ngFor="let customerTuple of this.interactedCustomers | keyvalue"
-                  (click)="$event.preventDefault(); goToTransfer(customerTuple.value[0])">
-            <div class="d-flex align-items-center">
-              <img class="img-fluid rounded-circle me-3" style="width: 40px; height: 40px;"
-                   [src]="APP_CONSTANTS.ENDPOINT_AVATAR + customerTuple.key"
-                   alt="user-avatar"/>
-              <h5 class="mb-1"> {{ customerTuple.value[1] }}</h5>
-            </div>
-          </button>
+          @for (interactedCustomer of this.interactedCustomers; track interactedCustomer) {
+            <button href="#" class="list-group-item list-group-item-action"
+                    (click)="$event.preventDefault(); goToTransfer(interactedCustomer.interactedEmail)">
+              <div class="d-flex align-items-center">
+                <img class="img-fluid rounded-circle me-3" style="width: 40px; height: 40px;"
+                     [src]="APP_CONSTANTS.ENDPOINT_AVATAR + interactedCustomer.interactedCustomerId"
+                     alt="user-avatar"/>
+                <h5 class="mb-1"> {{ interactedCustomer.interactedFirstName + " " + interactedCustomer.interactedLastName }}</h5>
+              </div>
+            </button>
+          }
         </div>
       </div>
 

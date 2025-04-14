@@ -16,6 +16,7 @@ import {UserDataService} from '../../utilities/user-data.service';
 import {Router, RouterLink} from '@angular/router';
 import {Wallet} from '../../classes/Wallet';
 import {WebSocketService} from '../../utilities/web-socket.service';
+import {InteractedCustomer} from '../../classes/InteractedCustomer';
 
 @Component({
   selector: 'app-wallet',
@@ -45,7 +46,7 @@ export class WalletComponent implements OnInit {
   @ViewChild('balancePlaceholder') balancePlaceholder!: ElementRef;
   customerId!: string;
   wallet?: Wallet;
-  interactedCustomers: Map<string, [string, string]> = new Map<string, [string, string]>();
+  interactedCustomers: InteractedCustomer[] = [];
   page: number = 1;
 
   constructor(protected userDataService: UserDataService, private http: HttpClient, private router: Router, private webSocketService: WebSocketService) {
@@ -53,6 +54,7 @@ export class WalletComponent implements OnInit {
 
   ngOnInit(): void {
     this.getWallet();
+    this.getInteractedUsers();
 
     this.userDataService.userData$.subscribe(userData => {
       if (userData) {
@@ -64,31 +66,29 @@ export class WalletComponent implements OnInit {
       (message) => {
         if (message.type == APP_CONSTANTS.WS_WALLET_UPDATED) {
           this.getWallet();
+          this.getInteractedUsers();
         }
       }
     );
   }
 
-  getWallet(): void {
-    this.http.get<Wallet>(`${APP_CONSTANTS.ENDPOINT_WALLET_GET}/${this.page}`, {withCredentials: true}).subscribe(wallet => {
-      this.wallet = wallet;
-      this.wallet.history = this.wallet.history.sort((a, b) =>
-        new Date(b.instant).getTime() - new Date(a.instant).getTime()
-      );
-
-      this.wallet!.history
-        .filter(op => op.senderCustomerId !== op.recipientCustomerId)
-        .forEach(op => {
-          const fullName = `${op.interactedFirstName} ${op.interactedLastName}`;
-          if (op.senderCustomerId == this.customerId) {
-            this.interactedCustomers.set(op.recipientCustomerId, [op.interactedEmail, fullName]);
-          } else {
-            this.interactedCustomers.set(op.senderCustomerId, [op.interactedEmail, fullName]);
-          }
-        });
-
-      this.historySpinner.hide();
+  getInteractedUsers(): void {
+    this.http.get<InteractedCustomer[]>(APP_CONSTANTS.ENDPOINT_WALLET_GET_INTERACTED_CUSTOMERS, {
+      responseType: 'json',
+      withCredentials: true
+    }).subscribe(interactedCustomers => {
+      this.interactedCustomers = interactedCustomers;
       this.interactedUsersSpinner.hide();
+    });
+  }
+
+  getWallet(): void {
+    this.http.get<Wallet>(APP_CONSTANTS.ENDPOINT_WALLET_GET, {
+      params: {page: this.page},
+      withCredentials: true
+    }).subscribe(wallet => {
+      this.wallet = wallet;
+      this.historySpinner.hide();
     });
   }
 

@@ -2,6 +2,7 @@ package it.marcopaggioro.easypay.utilities
 
 import cats.data.Validated.condNel
 import cats.data.{Validated, ValidatedNel}
+import it.marcopaggioro.easypay.AppConfig
 import it.marcopaggioro.easypay.domain.classes.Aliases.CustomerId
 import it.marcopaggioro.easypay.domain.classes.Money
 
@@ -34,9 +35,12 @@ object ValidationUtilities {
   def validateInstantInFuture(instant: Instant): ValidatedNel[String, Unit] =
     condNel(instant.isAfter(Instant.now()), (), "La data deve essere nel futuro")
 
-  private lazy val minPeriod: Period = Period.ofDays(1)
   def validateMinimumPeriod(period: Period): ValidatedNel[String, Unit] =
-    condNel(LocalDate.now().plus(period).isAfter(LocalDate.now().plus(minPeriod)), (), s"Il periodo minimo è $minPeriod")
+    condNel(
+      !LocalDate.now().plus(period).isBefore(LocalDate.now().plus(AppConfig.minScheduledOperationPeriod)),
+      (),
+      s"Il periodo minimo è $AppConfig.minScheduledOperationPeriod"
+    )
 
   def differentCustomerIdsValidation(first: CustomerId, second: CustomerId): ValidatedNel[String, Unit] =
     condNel(first != second, (), "Non puoi operare su te stesso")

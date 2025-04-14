@@ -4,6 +4,7 @@ import akka.util.Timeout
 import com.typesafe.config.{Config, ConfigFactory}
 import it.marcopaggioro.easypay.domain.classes.Money
 
+import java.time.Period
 import scala.concurrent.duration.DurationLong
 
 object AppConfig {
@@ -13,6 +14,7 @@ object AppConfig {
   lazy val startingBalance: Money = Money(10)
   lazy val historyPageSize: Int = 10
   lazy val interactedUsersSize: Int = 10
+  lazy val minScheduledOperationPeriod: Period = Period.ofDays(1)
 
   // Timeouts
   private lazy val timeoutsNode: Config = config.getConfig("timeouts")

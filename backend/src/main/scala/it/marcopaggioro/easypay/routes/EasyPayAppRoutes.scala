@@ -59,11 +59,11 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
   private implicit val scheduler: Scheduler = system.scheduler
   private implicit val executionContext: ExecutionContextExecutor = system.executionContext
 
-  private lazy val usersManagerActorRef: ActorRef[UsersManagerCommand] = system.systemActorOf(
+  private val usersManagerActorRef: ActorRef[UsersManagerCommand] = system.systemActorOf(
     Behaviors.supervise(UsersManagerActor()).onFailure[Exception](SupervisorStrategy.restart),
     UsersManagerActor.Name
   )
-  private lazy val transactionsManagerActorRef: ActorRef[TransactionsManagerCommand] = system.systemActorOf(
+  private val transactionsManagerActorRef: ActorRef[TransactionsManagerCommand] = system.systemActorOf(
     Behaviors.supervise(TransactionsManagerActor()).onFailure[Exception](SupervisorStrategy.restart),
     TransactionsManagerActor.Name
   )
@@ -566,8 +566,9 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
         handleSuccess
 
       case Validated.Invalid(errors) =>
-        system.log.warn(s"Invalid payload in $uri: ${errors.toList.mkString(", ")}")
-        completeWithError(StatusCodes.BadRequest, "Payload invalido")
+        val errorsFlattened: String = errors.toList.mkString(", ")
+        system.log.warn(s"Invalid payload in $uri: errorsFlattened")
+        completeWithError(StatusCodes.BadRequest, errorsFlattened)
     }
 
 }

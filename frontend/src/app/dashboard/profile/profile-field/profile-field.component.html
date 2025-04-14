@@ -4,7 +4,7 @@
 
   <div *ngIf="editing">
     <input [type]="inputType" class="form-control" [placeholder]="fieldPlaceholder"
-           [formControl]="formField">
+           [formControl]="formField" (keyup.enter)="editField()">
   </div>
 </td>
 <td>

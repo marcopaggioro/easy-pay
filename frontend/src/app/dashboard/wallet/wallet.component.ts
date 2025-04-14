@@ -1,4 +1,4 @@
-import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {Component, ElementRef, OnChanges, OnInit, SimpleChanges, ViewChild} from '@angular/core';
 import {SpinnerComponent} from "../../utilities/spinner.component";
 import {HttpClient} from '@angular/common/http';
 import {APP_CONSTANTS} from '../../app.constants';
@@ -9,7 +9,7 @@ import {
   NgbAccordionCollapse,
   NgbAccordionDirective,
   NgbAccordionHeader,
-  NgbAccordionItem,
+  NgbAccordionItem, NgbPagination,
   NgbTooltip
 } from '@ng-bootstrap/ng-bootstrap';
 import {UserDataService} from '../../utilities/user-data.service';
@@ -33,7 +33,8 @@ import {WebSocketService} from '../../utilities/web-socket.service';
     NgbTooltip,
     RouterLink,
     KeyValuePipe,
-    NgForOf
+    NgForOf,
+    NgbPagination
   ],
   templateUrl: './wallet.component.html'
 })
@@ -45,6 +46,7 @@ export class WalletComponent implements OnInit {
   customerId!: string;
   wallet?: Wallet;
   interactedCustomers: Map<string, [string, string]> = new Map<string, [string, string]>();
+  page: number = 1;
 
   constructor(protected userDataService: UserDataService, private http: HttpClient, private router: Router, private webSocketService: WebSocketService) {
   }
@@ -68,7 +70,7 @@ export class WalletComponent implements OnInit {
   }
 
   getWallet(): void {
-    this.http.get<Wallet>(APP_CONSTANTS.ENDPOINT_WALLET_GET, {withCredentials: true}).subscribe(wallet => {
+    this.http.get<Wallet>(`${APP_CONSTANTS.ENDPOINT_WALLET_GET}/${this.page}`, {withCredentials: true}).subscribe(wallet => {
       this.wallet = wallet;
       this.wallet.history = this.wallet.history.sort((a, b) =>
         new Date(b.instant).getTime() - new Date(a.instant).getTime()

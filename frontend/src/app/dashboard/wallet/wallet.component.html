@@ -25,7 +25,7 @@
           @for (operation of this.wallet?.history; track operation.transactionId) {
             @if (operation.senderCustomerId != operation.recipientCustomerId) {
               @if (this.customerId == operation.recipientCustomerId) {
-                  <!-- Received -->
+                <!-- Received -->
                 <div ngbAccordionItem>
                   <h2 ngbAccordionHeader>
                     <button ngbAccordionButton class="bg-success bg-opacity-10 p-2">
@@ -163,6 +163,19 @@
             }
           }
         </div>
+
+
+        @if (wallet) {
+          <div class="d-flex justify-content-center align-items-center mt-3">
+            <ngb-pagination [(page)]="page"
+                            [pageSize]="wallet.pageSize"
+                            [collectionSize]="wallet.historyCount"
+                            [maxSize]="5"
+                            [rotate]="true"
+                            (pageChange)="this.getWallet()"
+                            [directionLinks]="false"/>
+          </div>
+        }
       </div>
     </div>
   </div>
@@ -176,8 +189,8 @@
 
         <div class="list-group">
           <button href="#" class="list-group-item list-group-item-action"
-             *ngFor="let customerTuple of this.interactedCustomers | keyvalue"
-             (click)="$event.preventDefault(); goToTransfer(customerTuple.value[0])">
+                  *ngFor="let customerTuple of this.interactedCustomers | keyvalue"
+                  (click)="$event.preventDefault(); goToTransfer(customerTuple.value[0])">
             <div class="d-flex align-items-center">
               <img class="img-fluid rounded-circle me-3" style="width: 40px; height: 40px;"
                    [src]="APP_CONSTANTS.ENDPOINT_AVATAR + customerTuple.key"

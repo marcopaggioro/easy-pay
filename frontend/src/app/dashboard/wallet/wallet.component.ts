@@ -18,6 +18,8 @@ import {Router, RouterLink} from '@angular/router';
 import {Wallet} from '../../classes/Wallet';
 import {WebSocketService} from '../../utilities/web-socket.service';
 import {InteractedCustomer} from '../../classes/InteractedCustomer';
+import {AccordionButtonComponent} from './accordion-button/accordion-button.component';
+import {AccordionBodyComponent} from './accordion-body/accordion-body.component';
 
 @Component({
   selector: 'app-wallet',
@@ -34,7 +36,9 @@ import {InteractedCustomer} from '../../classes/InteractedCustomer';
     DecimalPipe,
     NgbTooltip,
     RouterLink,
-    NgbPagination
+    NgbPagination,
+    AccordionButtonComponent,
+    AccordionBodyComponent
   ],
   templateUrl: './wallet.component.html'
 })

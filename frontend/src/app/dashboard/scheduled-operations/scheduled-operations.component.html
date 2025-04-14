@@ -40,7 +40,7 @@
             <input class="form-check-input" type="checkbox" id="repeat-toggle" [checked]="repeatToggle"
                    (click)="repeatToggle = !repeatToggle">
             <label class="form-check-label" for="repeat-toggle">
-              Ripetuto
+              Ripetizione
             </label>
           </div>
 
@@ -49,8 +49,8 @@
               <div class="col-6">
                 <div class="form-floating my-3">
                   <input type="number" class="form-control" id="repeatMonths" placeholder="0"
-                                           [formControl]="scheduledOperationForm.controls.repeatMonths"
-                                           [class.is-invalid]="scheduledOperationForm.controls.repeatMonths.dirty && scheduledOperationForm.controls.repeatMonths.invalid">
+                         [formControl]="scheduledOperationForm.controls.repeatMonths"
+                         [class.is-invalid]="scheduledOperationForm.controls.repeatMonths.dirty && scheduledOperationForm.controls.repeatMonths.invalid">
                   <label for="repeatMonths">Mesi</label>
                 </div>
               </div>
@@ -111,25 +111,34 @@
                 <div ngbAccordionBody>
                   <ng-template>
                     <ul class="list-group list-group-flush">
-                      <li class="list-group-item">Transazione <code
-                        class="ps-2">{{ scheduledOperation.id }}</code></li>
-                      <li class="list-group-item">Destinatario <code
-                        class="ps-2">{{ scheduledOperation.interactedFirstName + " " + scheduledOperation.interactedLastName }}</code>
+                      <li class="list-group-item">
+                        Transazione
+                        <code class="ps-2">{{ scheduledOperation.id }}</code></li>
+                      <li class="list-group-item">
+                        Destinatario
+                        <code
+                          class="ps-2">{{ scheduledOperation.interactedFirstName + " " + scheduledOperation.interactedLastName }}</code>
                       </li>
-                      <li class="list-group-item">Descrizione <code
-                        class="ps-2">{{ scheduledOperation.description }}</code>
+                      <li class="list-group-item">
+                        Descrizione
+                        <code class="ps-2">{{ scheduledOperation.description }}</code>
                       </li>
-                      <li class="list-group-item">Email <code class="ps-2" placement="bottom"
-                                                              ngbTooltip="{{scheduledOperation.recipientCustomerId}}">{{ scheduledOperation.interactedEmail }}</code>
+                      <li class="list-group-item">
+                        Email
+                        <code class="ps-2" placement="bottom"
+                              ngbTooltip="{{scheduledOperation.recipientCustomerId}}">{{ scheduledOperation.interactedEmail }}</code>
                       </li>
-                      <li class="list-group-item">Data <code
-                        class="ps-2">{{ scheduledOperation.when | date:'dd/MM/YYYY HH:mm:ss' }}</code>
+                      <li class="list-group-item">
+                        Data
+                        <code class="ps-2">{{ scheduledOperation.when | date:'dd/MM/YYYY HH:mm:ss' }}</code>
                       </li>
-                      <li *ngIf="scheduledOperation.repeat" class="list-group-item">Ripetuto <code
-                        class="ps-2">{{ scheduledOperation.repeat }}</code>
+                      <li *ngIf="scheduledOperation.repeat" class="list-group-item">
+                        Ripetizione
+                        <code class="ps-2">{{ scheduledOperation.repeat }}</code>
                       </li>
-                      <li class="list-group-item">Status <code
-                        class="ps-2">{{ scheduledOperation.status }}</code>
+                      <li class="list-group-item">
+                        Status
+                        <code class="ps-2">{{ scheduledOperation.status }}</code>
                       </li>
                     </ul>
                     <div class="d-flex justify-content-center">

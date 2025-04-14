@@ -1,0 +1,16 @@
+<button ngbAccordionButton class="bg-opacity-10 p-2" [ngClass]="operationClass()">
+  <div class="container row">
+    <div class="col-1 d-flex align-items-center justify-content-center">
+      <img class="img-fluid"
+           [src]="APP_CONSTANTS.ENDPOINT_AVATAR + operation.recipientCustomerId"
+           alt="user-avatar"/>
+    </div>
+    <div class="col-8">
+      <h5><b>{{ operation.interactedFirstName + " " + operation.interactedLastName }}</b></h5>
+      <small class="m-0 ps-1">{{ operation.instant | date:'dd MMMM HH:mm' }}</small>
+    </div>
+    <div class="col-3 d-flex align-items-center justify-content-center">
+      <h5>{{ Number(operation.amount) | number:'1.2-2' }}&euro;</h5>
+    </div>
+  </div>
+</button>

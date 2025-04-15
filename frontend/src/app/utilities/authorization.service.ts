@@ -21,6 +21,10 @@ export class AuthorizationService {
     return CryptoJS.SHA512(password).toString();
   }
 
+  getCustomerIdCookie(): string {
+    return this.cookieService.get(APP_CONSTANTS.CUSTOMER_ID_COOKIE_NAME);
+  }
+
   setCustomerIdCookie(authorization: Authorization): void {
     this.cookieService.set(APP_CONSTANTS.CUSTOMER_ID_COOKIE_NAME, authorization.customerId, {expires: new Date(authorization.expiration)});
   }

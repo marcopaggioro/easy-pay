@@ -10,13 +10,13 @@ import {
   NgbAccordionItem,
   NgbPagination
 } from '@ng-bootstrap/ng-bootstrap';
-import {UserDataService} from '../../utilities/user-data.service';
 import {Router, RouterLink} from '@angular/router';
 import {Wallet} from '../../classes/Wallet';
 import {WebSocketService} from '../../utilities/web-socket.service';
 import {InteractedCustomer} from '../../classes/InteractedCustomer';
 import {AccordionButtonComponent} from './accordion-button/accordion-button.component';
 import {AccordionBodyComponent} from './accordion-body/accordion-body.component';
+import {AuthorizationService} from '../../utilities/authorization.service';
 
 @Component({
   selector: 'app-wallet',
@@ -41,18 +41,14 @@ export class WalletComponent implements OnInit {
   interactedCustomers!: InteractedCustomer[];
   page: number = 1;
 
-  constructor(protected userDataService: UserDataService, private http: HttpClient, private router: Router, private webSocketService: WebSocketService) {
+  constructor(protected authorizationService: AuthorizationService, private http: HttpClient, private router: Router, private webSocketService: WebSocketService) {
   }
 
   ngOnInit(): void {
     this.getWallet();
     this.getInteractedUsers();
 
-    this.userDataService.userData$.subscribe(userData => {
-      if (userData) {
-        this.customerId = userData.id;
-      }
-    });
+    this.customerId = this.authorizationService.getCustomerIdCookie();
 
     this.webSocketService.getWebSocketMessages().subscribe(
       (message) => {

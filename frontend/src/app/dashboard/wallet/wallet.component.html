@@ -29,20 +29,24 @@
         <hr/>
         <app-spinner #interactedUsersSpinner/>
 
-        <div class="list-group">
-          @for (interactedCustomer of this.interactedCustomers; track interactedCustomer.interactedCustomerId) {
-            <button href="#" class="list-group-item list-group-item-action bg-secondary bg-opacity-10"
-                    (click)="$event.preventDefault(); goToTransfer(interactedCustomer.interactedEmail)">
-              <div class="d-flex align-items-center">
-                <img class="img-fluid rounded-circle me-3" style="width: 40px; height: 40px;"
-                     [src]="APP_CONSTANTS.ENDPOINT_AVATAR + interactedCustomer.interactedCustomerId"
-                     alt="user-avatar"/>
-                <h5
-                  class="mb-1"> {{ interactedCustomer.interactedFirstName + " " + interactedCustomer.interactedLastName }}</h5>
-              </div>
-            </button>
-          }
-        </div>
+        @if (this.interactedCustomers.length > 0) {
+          <div class="list-group">
+            @for (interactedCustomer of this.interactedCustomers; track interactedCustomer.interactedCustomerId) {
+              <button href="#" class="list-group-item list-group-item-action bg-secondary bg-opacity-10"
+                      (click)="$event.preventDefault(); goToTransfer(interactedCustomer.interactedEmail)">
+                <div class="d-flex align-items-center">
+                  <img class="img-fluid rounded-circle me-3" style="width: 40px; height: 40px;"
+                       [src]="APP_CONSTANTS.ENDPOINT_AVATAR + interactedCustomer.interactedCustomerId"
+                       alt="user-avatar"/>
+                  <h5
+                    class="mb-1"> {{ interactedCustomer.interactedFirstName + " " + interactedCustomer.interactedLastName }}</h5>
+                </div>
+              </button>
+            }
+          </div>
+        } @else {
+          <small class="d-flex justify-content-center">Inizia a trasferire ora!</small>
+        }
       </div>
 
     </div>
@@ -57,20 +61,24 @@
         <hr/>
         <app-spinner #historySpinner/>
 
-        <div ngbAccordion *ngIf="this.wallet?.history">
-          @for (operation of this.wallet?.history; track operation.transactionId) {
-            <div ngbAccordionItem>
-              <h2 ngbAccordionHeader>
-                <app-accordion-button [operation]="operation" [customerId]="customerId"/>
-              </h2>
-              <div ngbAccordionCollapse>
-                <app-accordion-body [operation]="operation" [customerId]="customerId"/>
+        @if (this.wallet?.history?.length || 0 > 0) {
+          <div ngbAccordion>
+            @for (operation of this.wallet?.history; track operation.transactionId) {
+              <div ngbAccordionItem>
+                <h2 ngbAccordionHeader>
+                  <app-accordion-button [operation]="operation" [customerId]="customerId"/>
+                </h2>
+                <div ngbAccordionCollapse>
+                  <app-accordion-body [operation]="operation" [customerId]="customerId"/>
+                </div>
               </div>
-            </div>
-          }
-        </div>
+            }
+          </div>
+        } @else {
+          <small class="d-flex justify-content-center">Nessuna operazione recente</small>
+        }
 
-        @if (wallet) {
+        @if (wallet && wallet.historyCount > wallet.pageSize) {
           <div class="d-flex justify-content-center align-items-center mt-3">
             <ngb-pagination [(page)]="page"
                             [pageSize]="wallet.pageSize"

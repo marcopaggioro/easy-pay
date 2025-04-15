@@ -36,7 +36,8 @@ export class WebSocketService {
                 console.log(`[WS] Reconnect attempt ${retryAttempt}`);
                 return timer(APP_CONSTANTS.INTERVAL_WS_RETRY);
               } else {
-                this.router.navigate([APP_CONSTANTS.PATH_ROOT]);
+                this.close();
+                this.router.navigate([APP_CONSTANTS.PATH_ROOT])
                 return throwError(() => new Error("Token expired"));
               }
             }

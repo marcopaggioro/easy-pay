@@ -12,7 +12,7 @@ import it.marcopaggioro.easypay.domain.classes.{Money, ScheduledOperation, Statu
 import it.marcopaggioro.easypay.utilities.ValidationUtilities.{
   differentCustomerIdsValidation,
   validateDescription,
-  validatePositiveAmount
+  validateAmount
 }
 
 import java.time.{Instant, Period}
@@ -31,7 +31,7 @@ object TransactionsManager {
   case class RechargeWallet(transactionId: TransactionId, customerId: CustomerId, amount: Money)(
       val replyTo: ActorRef[StatusReply[Done]]
   ) extends TransactionsManagerCommand {
-    override def validate(state: TransactionsManagerState): ValidatedNel[String, Unit] = validatePositiveAmount(amount)
+    override def validate(state: TransactionsManagerState): ValidatedNel[String, Unit] = validateAmount(amount)
 
     override protected def generateEvents(state: TransactionsManagerState): List[TransactionsManagerEvent] = List(
       WalletRecharged(transactionId, customerId, amount)
@@ -69,7 +69,7 @@ object TransactionsManager {
     )
 
     override def validate(state: TransactionsManagerState): ValidatedNel[String, Unit] =
-      validatePositiveAmount(amount)
+      validateAmount(amount)
         .andThen(_ => customerHasSufficientBalance(state))
         .andThen(_ => differentCustomerIdsValidation(customerId, recipientCustomerId))
         .andThen(_ => validateDescription(description))

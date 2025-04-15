@@ -1,4 +1,5 @@
 import {environment} from '../environments/environment';
+import {Validators} from '@angular/forms';
 
 export const APP_CONSTANTS = {
   // Endpoints
@@ -41,5 +42,9 @@ export const APP_CONSTANTS = {
 
   // Misc
   PASSWORD_MIN_LENGHT: 8,
-  CUSTOMER_ID_COOKIE_NAME: "easypay_customer_id"
+  CUSTOMER_ID_COOKIE_NAME: "easypay_customer_id",
+
+  // Validators
+  VALIDATOR_MIN_AMOUNT: Validators.min(0.01),
+  VALIDATOR_MAX_AMOUNT: Validators.max(10000)
 };

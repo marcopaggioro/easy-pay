@@ -20,7 +20,7 @@ export class RechargeComponent {
   loading = false;
 
   rechargeForm = new FormGroup({
-    amount: new FormControl('', [Validators.required, Validators.min(0.01), maxTwoDecimalsValidator()])
+    amount: new FormControl('', [Validators.required, APP_CONSTANTS.VALIDATOR_MIN_AMOUNT, APP_CONSTANTS.VALIDATOR_MAX_AMOUNT, maxTwoDecimalsValidator()])
   });
 
   constructor(private http: HttpClient) {

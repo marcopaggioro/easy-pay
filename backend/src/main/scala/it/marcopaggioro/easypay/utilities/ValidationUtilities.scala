@@ -29,8 +29,10 @@ object ValidationUtilities {
         condNel(Period.between(date, LocalDate.now()).getYears >= minAge, (), s"E' richiesta un'età minima di $minAge anni")
       )
 
-  def validatePositiveAmount(amount: Money): ValidatedNel[String, Unit] =
+  private lazy val maxAmount = 10000
+  def validateAmount(amount: Money): ValidatedNel[String, Unit] =
     condNel(amount.value > 0, (), "L'importo deve essere maggiore di 0")
+      .andThen(_ => condNel(amount.value <= maxAmount, (), s"L'importo massimo per operazione è di $maxAmount"))
 
   def validateInstantInFuture(instant: Instant): ValidatedNel[String, Unit] =
     condNel(instant.isAfter(Instant.now()), (), "La data deve essere nel futuro")

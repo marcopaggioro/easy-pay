@@ -51,7 +51,7 @@ export class ScheduledOperationsComponent implements OnInit {
   scheduledOperationForm = new FormGroup({
     recipientEmail: new FormControl('', [Validators.required, Validators.email, emailValidator()]),
     description: new FormControl('', Validators.required),
-    amount: new FormControl<number | null>(null, [Validators.required, Validators.min(0.01), maxTwoDecimalsValidator()]),
+    amount: new FormControl<number | null>(null, [Validators.required, APP_CONSTANTS.VALIDATOR_MIN_AMOUNT, APP_CONSTANTS.VALIDATOR_MAX_AMOUNT, maxTwoDecimalsValidator()]),
     dateTime: new FormControl('', Validators.required),
     repeatMonths: new FormControl('', Validators.min(1)),
     repeatDays: new FormControl('', Validators.min(1))

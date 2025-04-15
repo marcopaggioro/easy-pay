@@ -10,7 +10,7 @@ import it.marcopaggioro.easypay.utilities.ValidationUtilities.{
   validateDescription,
   validateInstantInFuture,
   validateMinimumPeriod,
-  validatePositiveAmount
+  validateAmount
 }
 
 import java.time.temporal.ChronoUnit
@@ -27,7 +27,7 @@ case class ScheduledOperation(
 ) extends Validable[ScheduledOperation] {
   override def validate(): ValidatedNel[String, ScheduledOperation] =
     differentCustomerIdsValidation(senderCustomerId, recipientCustomerId)
-      .andThen(_ => validatePositiveAmount(amount))
+      .andThen(_ => validateAmount(amount))
       .andThen(_ => validateInstantInFuture(when))
       .andThen(_ => validateDescription(description))
       .andThen(_ => repeat.traverse(validateMinimumPeriod))

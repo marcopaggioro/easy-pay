@@ -7,7 +7,7 @@ import {NgbAlert} from '@ng-bootstrap/ng-bootstrap';
     NgbAlert
   ],
   template: `@if (alertMessage) {
-    <ngb-alert [type]="alertType" (closed)="alertMessage = undefined">{{ alertMessage }}</ngb-alert>
+    <ngb-alert [type]="alertType" (closed)="alertMessage = undefined" class="my-2">{{ alertMessage }}</ngb-alert>
   }`,
 })
 export class AlertComponent {

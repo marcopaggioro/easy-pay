@@ -6,7 +6,6 @@ import {WalletComponent} from './dashboard/wallet/wallet.component';
 import {TransferComponent} from './dashboard/transfer/transfer.component';
 import {RechargeComponent} from './dashboard/recharge/recharge.component';
 import {ProfileComponent} from './dashboard/profile/profile.component';
-import {HomepageComponent} from './homepage/homepage.component';
 import {ScheduledOperationsComponent} from './dashboard/scheduled-operations/scheduled-operations.component';
 
 export const routes: Routes = [
@@ -22,6 +21,5 @@ export const routes: Routes = [
       {path: "scheduled", component: ScheduledOperationsComponent}
     ]
   },
-  {path: "", component: HomepageComponent},
-  {path: "**", redirectTo: ""}
+  {path: "**", redirectTo: "login"}
 ];

@@ -4,8 +4,8 @@
       <div class="card-body">
         <app-alert/>
 
-        <h2 class="card-title">Ricarica wallet</h2>
-        <small>E' possibile ricaricare il proprio wallet</small>
+        <h2 class="card-title d-flex justify-content-center">Ricarica wallet</h2>
+        <hr/>
         <form [formGroup]="rechargeForm" (ngSubmit)="onSubmit()">
           <!-- Amount -->
           <div class="form-floating my-3">
@@ -15,7 +15,7 @@
             <label for="amount">Importo</label>
           </div>
 
-          <button class="btn btn-primary w-100 py-2" type="submit" id="submit"
+          <button class="btn btn-outline-dark w-100 py-2" type="submit" id="submit"
                   [disabled]="rechargeForm.invalid || this.loading">
             <span class="spinner-border spinner-border-sm me-1" aria-hidden="true" *ngIf="this.loading"></span>
             <span role="status">Ricarica</span>

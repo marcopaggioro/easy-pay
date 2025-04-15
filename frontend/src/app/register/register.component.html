@@ -5,9 +5,10 @@
         <div class="card-body d-grid justify-content-center align-items-center">
           <img class="img-fluid p-5" src="logo-black.png" alt="Logo"/>
 
-          <h2 class="card-title d-grid justify-content-center align-items-center">Registrazione</h2>
+          <h3 class="card-title d-flex justify-content-center">Registrazione</h3>
+          <a routerLink="../login" class="d-grid justify-content-center align-items-center">Già registrato? Effettua l'accesso premendo qui</a>
           <app-alert/>
-          <small>Dati personali</small>
+
           <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
             <!-- First name -->
             <div class="form-floating my-3">

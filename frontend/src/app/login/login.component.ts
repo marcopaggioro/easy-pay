@@ -2,7 +2,7 @@ import {Component, OnInit, ViewChild} from '@angular/core';
 import {AuthorizationService} from '../utilities/authorization.service';
 import {NgIf} from "@angular/common";
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
-import {Router} from '@angular/router';
+import {Router, RouterLink} from '@angular/router';
 import {APP_CONSTANTS} from '../app.constants';
 import {emailValidator} from '../utilities/email.validator';
 import {HttpErrorResponse} from '@angular/common/http';
@@ -13,7 +13,8 @@ import {AlertComponent} from '../utilities/alert.component';
   imports: [
     NgIf,
     ReactiveFormsModule,
-    AlertComponent
+    AlertComponent,
+    RouterLink
   ],
   templateUrl: './login.component.html'
 })

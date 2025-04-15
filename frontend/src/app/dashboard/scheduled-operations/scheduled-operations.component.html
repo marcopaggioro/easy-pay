@@ -4,8 +4,8 @@
       <div class="card-body">
         <app-alert/>
 
-        <h2 class="card-title">Creazione operazioni pianificate</h2>
-        <small>Operazioni fallite verranno ritentate finchè non andranno a buon fine</small>
+        <h2 class="card-title d-flex justify-content-center">Creazione operazioni pianificate</h2>
+        <hr/>
         <form [formGroup]="scheduledOperationForm" (ngSubmit)="createScheduledOperation()">
 
           <!-- Recipient Email -->
@@ -65,7 +65,7 @@
             </div>
           </div>
 
-          <button class="btn btn-primary w-100 mt-3" type="submit" id="submit"
+          <button class="btn btn-outline-dark w-100 mt-3" type="submit" id="submit"
                   [disabled]="scheduledOperationForm.invalid || this.loading">
             <span class="spinner-border spinner-border-sm me-1" aria-hidden="true" *ngIf="this.loading"></span>
             <span role="status">Crea</span>
@@ -80,15 +80,16 @@
   <div class="col col-md-10 col-lg-8 col-xl-6 col-xxl-5">
     <div class="card">
       <div class="card-body">
-        <h2 class="card-title">Operazioni pianificate</h2>
+        <h2 class="card-title d-flex justify-content-center">Operazioni pianificate</h2>
+        <hr/>
         <app-spinner></app-spinner>
 
         <div ngbAccordion *ngIf="this.scheduledOperations?.length || 0 > 0">
           @for (scheduledOperation of this.scheduledOperations; track scheduledOperation) {
             <div ngbAccordionItem>
               <h2 ngbAccordionHeader>
-                <button ngbAccordionButton
-                        [ngClass]="scheduledOperation.status == 'Fallita' ? 'bg-danger bg-opacity-10 p-2' : ''">
+                <button ngbAccordionButton class="bg-opacity-10"
+                        [ngClass]="scheduledOperation.status == 'Fallita' ? 'bg-danger' : 'bg-secondary'">
                   <div class="container row">
                     <div class="col-1 d-flex align-items-center justify-content-center">
                       <img class="img-fluid"
@@ -142,7 +143,7 @@
                       </li>
                     </ul>
                     <div class="d-flex justify-content-center">
-                      <button type="button" class="btn btn-danger"
+                      <button type="button" class="btn btn-outline-danger"
                               (click)="deleteScheduledOperation(scheduledOperation.id)">
                         Elimina
                       </button>

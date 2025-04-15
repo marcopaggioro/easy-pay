@@ -6,7 +6,7 @@ import {emailValidator} from '../utilities/email.validator';
 import {AlertComponent} from '../utilities/alert.component';
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {APP_CONSTANTS} from '../app.constants';
-import {Router} from '@angular/router';
+import {Router, RouterLink} from '@angular/router';
 
 @Component({
   selector: 'app-register',
@@ -14,7 +14,8 @@ import {Router} from '@angular/router';
     FormsModule,
     ReactiveFormsModule,
     NgIf,
-    AlertComponent
+    AlertComponent,
+    RouterLink
   ],
   templateUrl: './register.component.html'
 })

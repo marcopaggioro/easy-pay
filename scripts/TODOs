@@ -1,6 +1,0 @@
-Infrastructure:
-TODO script linux per build
-TODO commenti BE
-TODO commenti FE
-
-netstat -aon | findstr :9000

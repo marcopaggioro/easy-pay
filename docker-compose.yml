@@ -8,6 +8,9 @@ services:
       - POSTGRES_PASSWORD=easypay
     ports:
       - "5432:5432"
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "easypay", "-d", "easypay" ]
+      interval: 5s
     restart: unless-stopped
 
   easypay_backend:
@@ -18,14 +21,13 @@ services:
     ports:
       - "9000:9000"
     depends_on:
-      - easypay_database
+      easypay_database:
+        condition: service_healthy
     restart: unless-stopped
 
-#  easypay_frontend:
-#    container_name: easypay_frontend
-#    build: ./frontend
-#    ports:
-#      - "4200:4200"
-#    depends_on:
-#      - easypay_backend
-#    restart: unless-stopped
+  easypay_frontend:
+    container_name: easypay_frontend
+    build: ./frontend
+    ports:
+      - "4200:4200"
+    restart: unless-stopped

@@ -45,7 +45,12 @@ Produrre un rapporto che contenga:
   ritenuti più interessanti
 - Test funzionale dell’applicazione mediante screenshot
 
-# Avviare in locale
+# Elaborato
+
+È possibile visualizzare l'elaborato all'indirizzo
+[http://easypay.paggiorocloud.it/](http://easypay.paggiorocloud.it/)
+
+## Avvio in locale
 
 In un sistema Windows:
 
@@ -59,7 +64,7 @@ In un sistema Linux:
 script/start.sh
 ```
 
-# Inizializzare utenti
+## Inizializzare utenti
 
 È possibile inizializzare il sistema con la creazione di 3 utenti:
 

@@ -8,7 +8,8 @@ RUN npm install
 
 COPY . .
 
-RUN npm run build
+ARG BUILD_ENV="local"
+RUN if [ "$BUILD_ENV" = "remote" ]; then npm run build-remote; else npm run build; fi
 
 FROM joseluisq/static-web-server:2-alpine
 

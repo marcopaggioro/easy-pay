@@ -1,23 +1,23 @@
-const API_URL = "http://localhost:9000";
+import {environment} from '../environments/environment';
 
 export const APP_CONSTANTS = {
   // Endpoints
-  ENDPOINT_WS: API_URL + "/ws",
+  ENDPOINT_WS: environment.API_URL + "/ws",
   ENDPOINT_AVATAR: "https://api.dicebear.com/9.x/personas/svg?radius=50&backgroundColor=ffffff&seed=",
-  ENDPOINT_USER_REGISTER: API_URL + "/user",
-  ENDPOINT_USER_GET: API_URL + "/user",
-  ENDPOINT_USER_UPDATE: API_URL + "/user",
-  ENDPOINT_USER_LOGIN: API_URL + "/user/login",
-  ENDPOINT_USER_LOGIN_CHECK: API_URL + "/user/login/check",
-  ENDPOINT_USER_LOGOUT: API_URL + "/user/logout",
+  ENDPOINT_USER_REGISTER: environment.API_URL + "/user",
+  ENDPOINT_USER_GET: environment.API_URL + "/user",
+  ENDPOINT_USER_UPDATE: environment.API_URL + "/user",
+  ENDPOINT_USER_LOGIN: environment.API_URL + "/user/login",
+  ENDPOINT_USER_LOGIN_CHECK: environment.API_URL + "/user/login/check",
+  ENDPOINT_USER_LOGOUT: environment.API_URL + "/user/logout",
 
-  ENDPOINT_WALLET_GET: API_URL + "/wallet",
-  ENDPOINT_WALLET_GET_INTERACTED_CUSTOMERS: API_URL + "/wallet/interacted-customers",
-  ENDPOINT_WALLET_RECHARGE: API_URL + "/wallet/recharge",
-  ENDPOINT_WALLET_TRANSFER: API_URL + "/wallet/transfer",
-  ENDPOINT_WALLET_GET_SCHEDULE: API_URL + "/wallet/transfer/scheduler",
-  ENDPOINT_WALLET_CREATE_SCHEDULE: API_URL + "/wallet/transfer/scheduler",
-  ENDPOINT_WALLET_DELETE_SCHEDULE: API_URL + "/wallet/transfer/scheduler",
+  ENDPOINT_WALLET_GET: environment.API_URL + "/wallet",
+  ENDPOINT_WALLET_GET_INTERACTED_CUSTOMERS: environment.API_URL + "/wallet/interacted-customers",
+  ENDPOINT_WALLET_RECHARGE: environment.API_URL + "/wallet/recharge",
+  ENDPOINT_WALLET_TRANSFER: environment.API_URL + "/wallet/transfer",
+  ENDPOINT_WALLET_GET_SCHEDULE: environment.API_URL + "/wallet/transfer/scheduler",
+  ENDPOINT_WALLET_CREATE_SCHEDULE: environment.API_URL + "/wallet/transfer/scheduler",
+  ENDPOINT_WALLET_DELETE_SCHEDULE: environment.API_URL + "/wallet/transfer/scheduler",
 
   // Absolute paths
   PATH_ROOT: "/",

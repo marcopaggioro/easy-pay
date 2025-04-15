@@ -18,6 +18,7 @@ services:
     build: ./backend/target/docker/stage
     environment:
       "DB_HOST": "easypay_database"
+      "ALLOWED_ORIGIN": "http://localhost:8080"
     ports:
       - "9000:9000"
     depends_on:

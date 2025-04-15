@@ -8,6 +8,6 @@ export interface Operation {
   interactedFirstName: string;
   interactedLastName: string;
   interactedEmail: string;
-  instant: Date;
+  instant: number;
   amount: Decimal;
 }

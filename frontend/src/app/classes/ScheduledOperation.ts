@@ -4,7 +4,7 @@ export interface ScheduledOperation {
   id: string;
   recipientCustomerId: string;
   amount: Decimal;
-  when: Date;
+  when: number;
   description: string;
   interactedFirstName: string;
   interactedLastName: string;

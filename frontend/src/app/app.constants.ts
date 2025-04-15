@@ -1,4 +1,4 @@
-const API_URL: string = "http://localhost:9000";
+const API_URL = "http://localhost:9000";
 
 export const APP_CONSTANTS = {
   // Endpoints

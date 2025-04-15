@@ -7,7 +7,7 @@
              alt="user-avatar"/>
       </div>
       <div class="col-8 col-md-8 text-truncate">
-        @if (operation.senderCustomerId == operation.recipientCustomerId) {
+        @if (operation.senderCustomerId === operation.recipientCustomerId) {
           <h5><b>Ricarica wallet</b></h5>
         } @else {
           <h5><b>{{ operation.interactedFirstName + " " + operation.interactedLastName }}</b>

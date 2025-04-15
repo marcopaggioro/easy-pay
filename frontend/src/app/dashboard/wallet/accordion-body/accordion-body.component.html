@@ -10,8 +10,8 @@
       <li class="list-group-item">Data <code
         class="ps-2">{{ operation.instant | date:'dd/MM/YYYY HH:mm:ss' }}</code>
       </li>
-      @if (operation.senderCustomerId != operation.recipientCustomerId) {
-        @if (customerId == operation.senderCustomerId) {
+      @if (operation.senderCustomerId !== operation.recipientCustomerId) {
+        @if (customerId === operation.senderCustomerId) {
           <li class="list-group-item">Destinatario
             <code class="ps-2">{{ operation.interactedFirstName + " " + operation.interactedLastName }}</code>
           </li>
@@ -24,7 +24,7 @@
           <code class="ps-2">{{ operation.description }}</code>
         </li>
 
-        @if (customerId == operation.senderCustomerId) {
+        @if (customerId === operation.senderCustomerId) {
           <li class="list-group-item">Email
             <code class="ps-2" placement="bottom"
                   ngbTooltip="{{operation.recipientCustomerId}}">{{ operation.interactedEmail }}</code>

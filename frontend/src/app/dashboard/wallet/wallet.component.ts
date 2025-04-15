@@ -39,7 +39,7 @@ export class WalletComponent implements OnInit {
   customerId!: string;
   wallet!: Wallet;
   interactedCustomers!: InteractedCustomer[];
-  page: number = 1;
+  page = 1;
 
   constructor(protected authorizationService: AuthorizationService, private http: HttpClient, private router: Router, private webSocketService: WebSocketService) {
   }
@@ -52,7 +52,7 @@ export class WalletComponent implements OnInit {
 
     this.webSocketService.getWebSocketMessages().subscribe(
       (message) => {
-        if (message && message.type == APP_CONSTANTS.WS_WALLET_UPDATED) {
+        if (message?.type == APP_CONSTANTS.WS_WALLET_UPDATED) {
           this.getWallet();
           this.getInteractedUsers();
         }

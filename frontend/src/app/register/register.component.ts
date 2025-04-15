@@ -21,7 +21,7 @@ import {Router, RouterLink} from '@angular/router';
 })
 export class RegisterComponent implements OnInit {
   @ViewChild(AlertComponent) alert!: AlertComponent;
-  loading: boolean = false;
+  loading = false;
 
   constructor(private authorizationService: AuthorizationService, private http: HttpClient, private router: Router) {
   }

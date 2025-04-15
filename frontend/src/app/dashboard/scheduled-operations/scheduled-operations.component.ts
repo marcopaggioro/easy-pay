@@ -18,6 +18,7 @@ import {
 import {emailValidator} from '../../utilities/email.validator';
 import {WebSocketService} from '../../utilities/web-socket.service';
 import {maxTwoDecimalsValidator} from '../../utilities/maxTwoDecimals.validator';
+import {CreateScheduledOperationPayload} from '../../classes/payloads/CreateScheduledOperationPayload';
 
 @Component({
   selector: 'app-scheduled-operations',
@@ -42,15 +43,15 @@ import {maxTwoDecimalsValidator} from '../../utilities/maxTwoDecimals.validator'
 })
 export class ScheduledOperationsComponent implements OnInit {
   @ViewChild(AlertComponent) alert!: AlertComponent;
-  loading: boolean = false;
-  repeatToggle: boolean = false;
+  loading = false;
+  repeatToggle = false;
 
   scheduledOperations!: ScheduledOperation[];
 
   scheduledOperationForm = new FormGroup({
     recipientEmail: new FormControl('', [Validators.required, Validators.email, emailValidator()]),
     description: new FormControl('', Validators.required),
-    amount: new FormControl('', [Validators.required, Validators.min(0.01), maxTwoDecimalsValidator()]),
+    amount: new FormControl<number | null>(null, [Validators.required, Validators.min(0.01), maxTwoDecimalsValidator()]),
     dateTime: new FormControl('', Validators.required),
     repeatMonths: new FormControl('', Validators.min(1)),
     repeatDays: new FormControl('', Validators.min(1))
@@ -65,7 +66,7 @@ export class ScheduledOperationsComponent implements OnInit {
 
     this.webSocketService.getWebSocketMessages().subscribe(
       (message) => {
-        if (message && message.type == APP_CONSTANTS.WS_SCHEDULED_OPERATIONS_UPDATED) {
+        if (message?.type == APP_CONSTANTS.WS_SCHEDULED_OPERATIONS_UPDATED) {
           this.getScheduledOperations();
         }
       }
@@ -88,12 +89,12 @@ export class ScheduledOperationsComponent implements OnInit {
       return;
     }
 
-    const body = {
+    const body: CreateScheduledOperationPayload = {
       recipientEmail: this.scheduledOperationForm.controls.recipientEmail.value!,
       description: this.scheduledOperationForm.controls.description.value!,
       amount: this.scheduledOperationForm.controls.amount.value!,
       when: new Date(this.scheduledOperationForm.controls.dateTime.value!).toISOString()
-    } as any;
+    }
     if (this.repeatToggle) {
       const months = this.scheduledOperationForm.controls.repeatMonths.value || 0;
       const days = this.scheduledOperationForm.controls.repeatDays.value || 0;

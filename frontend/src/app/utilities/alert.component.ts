@@ -12,7 +12,7 @@ import {NgbAlert} from '@ng-bootstrap/ng-bootstrap';
 })
 export class AlertComponent {
   protected alertMessage?: string;
-  protected alertType: string = "success";
+  protected alertType = "success";
 
   success(message: string): void {
     this.alertType = "success";

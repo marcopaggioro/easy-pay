@@ -19,7 +19,7 @@ import {maxTwoDecimalsValidator} from '../../utilities/maxTwoDecimals.validator'
 })
 export class TransferComponent implements OnInit {
   @ViewChild(AlertComponent) alert!: AlertComponent;
-  loading: boolean = false;
+  loading = false;
 
   transferForm = new FormGroup({
     recipientEmail: new FormControl('', [Validators.required, Validators.email, emailValidator()]),

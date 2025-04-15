@@ -17,7 +17,7 @@ import {maxTwoDecimalsValidator} from '../../utilities/maxTwoDecimals.validator'
 })
 export class RechargeComponent {
   @ViewChild(AlertComponent) alert!: AlertComponent;
-  loading: boolean = false;
+  loading = false;
 
   rechargeForm = new FormGroup({
     amount: new FormControl('', [Validators.required, Validators.min(0.01), maxTwoDecimalsValidator()])

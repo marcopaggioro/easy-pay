@@ -5,13 +5,14 @@ import {BehaviorSubject, Observable, retry, shareReplay, throwError, timer} from
 import {APP_CONSTANTS} from '../app.constants';
 import {CookieService} from 'ngx-cookie-service';
 import {Router} from '@angular/router';
+import {WebSocketMessage} from '../classes/WebSocketMessage';
 
 @Injectable({
   providedIn: 'root'
 })
 export class WebSocketService {
-  private socket$!: WebSocketSubject<any>;
-  private messageSubject$ = new BehaviorSubject<any>(null);
+  private socket$!: WebSocketSubject<WebSocketMessage>;
+  private messageSubject$ = new BehaviorSubject<WebSocketMessage | null>(null);
 
   constructor(private cookieService: CookieService, private router: Router) {
   }
@@ -19,7 +20,7 @@ export class WebSocketService {
   createWebSocketConnection() {
     const customerId: string = this.cookieService.get(APP_CONSTANTS.CUSTOMER_ID_COOKIE_NAME);
     if (customerId) {
-      const webSocketConfig: WebSocketSubjectConfig<any> = {
+      const webSocketConfig: WebSocketSubjectConfig<WebSocketMessage> = {
         url: APP_CONSTANTS.ENDPOINT_WS,
         openObserver: {
           next: () => console.log("[WS] Connection established"),
@@ -36,7 +37,7 @@ export class WebSocketService {
       }
 
       // Create new connection
-      this.socket$ = webSocket(webSocketConfig);
+      this.socket$ = webSocket<WebSocketMessage>(webSocketConfig);
       this.socket$.pipe(
         retry({
             count: Infinity,
@@ -55,13 +56,13 @@ export class WebSocketService {
         ),
         shareReplay({bufferSize: 1, refCount: true})
       ).subscribe({
-        next: (msg) => this.messageSubject$.next(msg),
+        next: (message) => this.messageSubject$.next(message),
         error: (error) => console.error("[WS] Error", error)
       });
     }
   }
 
-  getWebSocketMessages(): Observable<any> {
+  getWebSocketMessages(): Observable<WebSocketMessage | null> {
     if (!this.socket$ || this.socket$.closed) {
       this.createWebSocketConnection();
     }

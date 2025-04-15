@@ -20,7 +20,7 @@ import {AlertComponent} from '../utilities/alert.component';
 })
 export class LoginComponent implements OnInit {
   @ViewChild(AlertComponent) alert!: AlertComponent;
-  loading: boolean = false;
+  loading = false;
 
   constructor(private authorizationService: AuthorizationService, private router: Router) {
   }

@@ -29,8 +29,8 @@ export class ProfileFieldComponent implements OnChanges {
 
   @Output() editResult = new EventEmitter<string | null>();
 
-  protected editing: boolean = false;
-  protected waitingResponse: boolean = false;
+  protected editing = false;
+  protected waitingResponse = false;
 
   protected formField = new FormControl(null, [Validators.required, ...this.additionalValidators]);
 

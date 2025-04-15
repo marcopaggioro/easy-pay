@@ -14,7 +14,7 @@ queste aziende adottano architetture API-based, che permettono l’integrazione 
 da parte di applicazioni web e mobile.
 
 Si richiede allo studente di sviluppare un’applicazione full-stack basata su API per un’impresa del settore finanziario.
-L’applicazione dovrà fornire un servizio significativo (es. gestione conti, simulazione investimenti, richiesta
+L’applicazione dovrà fornire un servizio significativo (es. Gestione conti, simulazione investimenti, richiesta
 prestiti, gestione polizze assicurative) e implementare un’architettura moderna con un backend RESTful e un’interfaccia
 utente intuitiva.
 
@@ -25,7 +25,7 @@ Lo studente sarà in grado di:
 - Implementare un'applicazione web utilizzando HTML, CSS e JavaScript per la parte front-end (qualsiasi framework va
   bene)
 - Utilizzare Python, Java o qualsiasi altro linguaggio per creare una semplice backe-nd API che gestisca i casi d’uso in
-  ambito finanziario selezionati, purchè object-oriented
+  ambito finanziario selezionati, purché object-oriented
 
 ## Elaborato
 

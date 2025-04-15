@@ -25,7 +25,7 @@ object UserRecord {
       "lastName" -> userRecord.lastName.asJson,
       "birthDate" -> userRecord.birthDate.asJson,
       "email" -> userRecord.email.asJson,
-      "lastEdit" -> userRecord.lastEdit.asJson
+      "lastEdit" -> userRecord.lastEdit.toEpochMilli.asJson
     )
   }
   val UserRecordInteractedEncoder: Encoder[UserRecord] = Encoder.instance { recipientUserRecord =>

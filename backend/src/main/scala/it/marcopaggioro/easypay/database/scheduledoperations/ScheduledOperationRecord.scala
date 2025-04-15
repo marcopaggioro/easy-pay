@@ -43,7 +43,7 @@ object ScheduledOperationRecord {
       "senderCustomerId" -> record.senderCustomerId.asJson,
       "recipientCustomerId" -> record.recipientCustomerId.asJson,
       "description" -> record.description.asJson,
-      "when" -> record.when.asJson,
+      "when" -> record.when.toEpochMilli.asJson,
       "amount" -> record.amount.asJson,
       "repeat" -> record.repeat.asJson,
       "status" -> record.status.asJson

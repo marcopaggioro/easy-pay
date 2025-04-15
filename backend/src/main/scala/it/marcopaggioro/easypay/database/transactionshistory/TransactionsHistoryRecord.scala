@@ -26,7 +26,7 @@ object TransactionsHistoryRecord {
       "senderCustomerId" -> record.senderCustomerId.asJson,
       "recipientCustomerId" -> record.recipientCustomerId.asJson,
       "description" -> record.description.asJson,
-      "instant" -> record.instant.asJson,
+      "instant" -> record.instant.toEpochMilli.asJson,
       "amount" -> record.amount.asJson
     )
   }

@@ -6,6 +6,7 @@ import {Router} from '@angular/router';
 import {APP_CONSTANTS} from '../app.constants';
 import {CookieService} from 'ngx-cookie-service';
 import {WebSocketService} from './web-socket.service';
+import {Authorization} from '../classes/Authorization';
 
 
 @Injectable({
@@ -20,26 +21,26 @@ export class AuthorizationService {
     return CryptoJS.SHA512(password).toString();
   }
 
-  setCustomerIdCookie(customerId: string): void {
-    this.cookieService.set(APP_CONSTANTS.CUSTOMER_ID_COOKIE_NAME, customerId);
+  setCustomerIdCookie(authorization: Authorization): void {
+    this.cookieService.set(APP_CONSTANTS.CUSTOMER_ID_COOKIE_NAME, authorization.customerId, {expires: new Date(authorization.expiration)});
   }
 
   register(firstName: string, lastName: string, birthDate: string, email: string, password: string): Observable<void> {
     const body = {firstName, lastName, birthDate, email, encryptedPassword: this.hashPassword(password)};
-    return this.http.post<string>(APP_CONSTANTS.ENDPOINT_USER_REGISTER, body, {
+    return this.http.post<Authorization>(APP_CONSTANTS.ENDPOINT_USER_REGISTER, body, {
       withCredentials: true,
       responseType: 'json'
-    }).pipe(map(customerId => this.setCustomerIdCookie(customerId)));
+    }).pipe(map(authorization => this.setCustomerIdCookie(authorization)));
   }
 
   login(email: string, password: string): Observable<void> {
-    return this.http.post<string>(APP_CONSTANTS.ENDPOINT_USER_LOGIN, {
+    return this.http.post<Authorization>(APP_CONSTANTS.ENDPOINT_USER_LOGIN, {
       email,
       encryptedPassword: this.hashPassword(password)
     }, {
       withCredentials: true,
       responseType: 'json'
-    }).pipe(map(customerId => this.setCustomerIdCookie(customerId)));
+    }).pipe(map(authorization => this.setCustomerIdCookie(authorization)));
   }
 
   logout(webSocketService: WebSocketService): void {
@@ -52,7 +53,7 @@ export class AuthorizationService {
     )
   }
 
-  isAlreadyLoggedIn(): Observable<boolean> {
+  isLoggedIn(): Observable<boolean> {
     return this.http.get(APP_CONSTANTS.ENDPOINT_USER_LOGIN_CHECK, {
       withCredentials: true,
       responseType: 'text'
@@ -62,8 +63,8 @@ export class AuthorizationService {
     );
   }
 
-  redirectIfAlreadyLoggedIn(): void {
-    this.isAlreadyLoggedIn().subscribe(
+  redirectIfLoggedIn(): void {
+    this.isLoggedIn().subscribe(
       isLogged => {
         if (isLogged) {
           this.router.navigate([APP_CONSTANTS.PATH_DASHBOARD]);

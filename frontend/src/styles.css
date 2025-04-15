@@ -5,6 +5,10 @@ html, body, main {
   height: 100%;
 }
 
+code {
+  color: black;
+}
+
 .pagination {
   --bs-pagination-color: var(--bs-secondary);
   --bs-pagination-hover-color: var(--bs-secondary);

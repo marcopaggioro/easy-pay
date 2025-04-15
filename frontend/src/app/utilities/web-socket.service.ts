@@ -1,9 +1,10 @@
 import {Injectable} from '@angular/core';
 import {WebSocketSubject, WebSocketSubjectConfig} from 'rxjs/internal/observable/dom/WebSocketSubject';
 import {webSocket} from 'rxjs/webSocket';
-import {Observable, retry, shareReplay, timer} from 'rxjs';
+import {Observable, retry, shareReplay, throwError, timer} from 'rxjs';
 import {APP_CONSTANTS} from '../app.constants';
 import {CookieService} from 'ngx-cookie-service';
+import {Router} from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
@@ -12,7 +13,7 @@ export class WebSocketService {
   private socket$!: WebSocketSubject<any>;
   private messages$!: Observable<any>;
 
-  constructor(private cookieService: CookieService) {
+  constructor(private cookieService: CookieService, private router: Router) {
   }
 
   createWebSocketConnection() {
@@ -28,12 +29,19 @@ export class WebSocketService {
       this.socket$ = webSocket(webSocketConfig);
       this.messages$ = this.socket$.pipe(
         retry({
-          count: Infinity,
-          delay: (_, retryAttempt) => {
-            console.log(`[WS] Reconnect attempt ${retryAttempt}`);
-            return timer(APP_CONSTANTS.INTERVAL_WS_RETRY);
+            count: Infinity,
+            delay: (_, retryAttempt) => {
+              const cookieExists: boolean = this.cookieService.check(APP_CONSTANTS.CUSTOMER_ID_COOKIE_NAME);
+              if (cookieExists) {
+                console.log(`[WS] Reconnect attempt ${retryAttempt}`);
+                return timer(APP_CONSTANTS.INTERVAL_WS_RETRY);
+              } else {
+                this.router.navigate([APP_CONSTANTS.PATH_ROOT]);
+                return throwError(() => new Error("Token expired"));
+              }
+            }
           }
-        }),
+        ),
         shareReplay({bufferSize: 1, refCount: true})
       );
     }

@@ -6,8 +6,9 @@
           <img class="img-fluid p-5" src="logo-black.png" alt="Logo"/>
 
           <h3 class="card-title d-flex justify-content-center">Autenticazione</h3>
-          <a routerLink="../register" class="d-grid justify-content-center align-items-center">Non ancora registrato?
-            Registrati premendo qui</a>
+          <a routerLink="../register" class="d-grid justify-content-center align-items-center">Non sei ancora
+            registrato?
+            Registrati</a>
           <app-alert/>
 
           <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">

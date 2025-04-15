@@ -31,7 +31,7 @@ export class LoginComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.authorizationService.redirectIfAlreadyLoggedIn();
+    this.authorizationService.redirectIfLoggedIn();
   }
 
   onSubmit(): void {

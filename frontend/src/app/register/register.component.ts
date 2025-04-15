@@ -35,7 +35,7 @@ export class RegisterComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.authorizationService.redirectIfAlreadyLoggedIn();
+    this.authorizationService.redirectIfLoggedIn();
   }
 
   onSubmit(): void {

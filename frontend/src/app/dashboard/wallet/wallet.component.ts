@@ -56,7 +56,7 @@ export class WalletComponent implements OnInit {
 
     this.webSocketService.getWebSocketMessages().subscribe(
       (message) => {
-        if (message.type == APP_CONSTANTS.WS_WALLET_UPDATED) {
+        if (message && message.type == APP_CONSTANTS.WS_WALLET_UPDATED) {
           this.getWallet();
           this.getInteractedUsers();
         }

@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {WebSocketSubject, WebSocketSubjectConfig} from 'rxjs/internal/observable/dom/WebSocketSubject';
 import {webSocket} from 'rxjs/webSocket';
-import {Observable, retry, shareReplay, throwError, timer} from 'rxjs';
+import {BehaviorSubject, Observable, retry, shareReplay, throwError, timer} from 'rxjs';
 import {APP_CONSTANTS} from '../app.constants';
 import {CookieService} from 'ngx-cookie-service';
 import {Router} from '@angular/router';
@@ -11,7 +11,7 @@ import {Router} from '@angular/router';
 })
 export class WebSocketService {
   private socket$!: WebSocketSubject<any>;
-  private messages$!: Observable<any>;
+  private messageSubject$ = new BehaviorSubject<any>(null);
 
   constructor(private cookieService: CookieService, private router: Router) {
   }
@@ -22,12 +22,22 @@ export class WebSocketService {
       const webSocketConfig: WebSocketSubjectConfig<any> = {
         url: APP_CONSTANTS.ENDPOINT_WS,
         openObserver: {
-          next: () => console.log("[WS] Connection established")
+          next: () => console.log("[WS] Connection established"),
+
         },
+        closeObserver: {
+          next: () => console.log("[WS] Connection closed")
+        }
       };
 
+      // Close previous connection
+      if (this.socket$ && !this.socket$.closed) {
+        this.socket$.complete();
+      }
+
+      // Create new connection
       this.socket$ = webSocket(webSocketConfig);
-      this.messages$ = this.socket$.pipe(
+      this.socket$.pipe(
         retry({
             count: Infinity,
             delay: (_, retryAttempt) => {
@@ -44,20 +54,22 @@ export class WebSocketService {
           }
         ),
         shareReplay({bufferSize: 1, refCount: true})
-      );
+      ).subscribe({
+        next: (msg) => this.messageSubject$.next(msg),
+        error: (error) => console.error("[WS] Error", error)
+      });
     }
   }
 
   getWebSocketMessages(): Observable<any> {
     if (!this.socket$ || this.socket$.closed) {
-      this.createWebSocketConnection()
+      this.createWebSocketConnection();
     }
-    return this.messages$;
+    return this.messageSubject$.asObservable();
   }
 
   close(): void {
     if (this.socket$) {
-      console.log("[WS] Closing connection")
       this.socket$.complete();
       this.socket$.unsubscribe();
     }

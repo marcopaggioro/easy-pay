@@ -4,7 +4,6 @@ TODO commenti BE
 TODO commenti FE
 
 Style:
-TODO scegliere palette colori
 TODO colore paginazione
 
 netstat -aon | findstr :9000

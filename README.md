@@ -1,4 +1,4 @@
-# EasyPay
+![EasyPay](frontend/public/logo-white.png "EasyPay")
 
 ## Cos'è
 

@@ -5,9 +5,7 @@ import {HttpClient} from '@angular/common/http';
 import {BehaviorSubject, tap} from 'rxjs';
 import {WebSocketService} from './web-socket.service';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable()
 export class UserDataService {
   private userDataSubject = new BehaviorSubject<UserData | null>(null);
   userData$ = this.userDataSubject.asObservable();

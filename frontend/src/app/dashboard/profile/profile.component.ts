@@ -16,6 +16,7 @@ import {emailValidator} from '../../utilities/email.validator';
     ProfileFieldComponent,
     DatePipe
   ],
+  providers: [UserDataService],
   templateUrl: './profile.component.html'
 })
 export class ProfileComponent implements OnInit {

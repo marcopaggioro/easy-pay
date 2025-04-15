@@ -1,6 +1,5 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
 import {ReactiveFormsModule, Validators} from '@angular/forms';
-import {SpinnerComponent} from '../../utilities/spinner.component';
 import {UserDataService} from '../../utilities/user-data.service';
 import {UserData} from '../../classes/UserData';
 import {AlertComponent} from '../../utilities/alert.component';

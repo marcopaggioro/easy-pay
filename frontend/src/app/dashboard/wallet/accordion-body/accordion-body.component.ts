@@ -16,7 +16,7 @@ import {Operation} from '../../../classes/Operation';
 export class AccordionBodyComponent {
   @Input() customerId!: string;
   @Input() operation!: Operation;
-  
+
 
   protected readonly Number = Number;
 }

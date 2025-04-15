@@ -3,7 +3,4 @@ TODO script linux per build
 TODO commenti BE
 TODO commenti FE
 
-Style:
-TODO colore paginazione
-
 netstat -aon | findstr :9000

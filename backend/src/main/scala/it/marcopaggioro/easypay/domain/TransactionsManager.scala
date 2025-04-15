@@ -11,8 +11,8 @@ import it.marcopaggioro.easypay.domain.classes.Domain.{DomainCommand, DomainEven
 import it.marcopaggioro.easypay.domain.classes.{Money, ScheduledOperation, Status}
 import it.marcopaggioro.easypay.utilities.ValidationUtilities.{
   differentCustomerIdsValidation,
-  validateDescription,
-  validateAmount
+  validateAmount,
+  validateDescription
 }
 
 import java.time.{Instant, Period}

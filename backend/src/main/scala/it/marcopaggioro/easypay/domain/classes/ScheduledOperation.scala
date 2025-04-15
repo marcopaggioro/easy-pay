@@ -7,10 +7,10 @@ import io.circe.generic.semiauto.deriveEncoder
 import it.marcopaggioro.easypay.domain.classes.Aliases.CustomerId
 import it.marcopaggioro.easypay.utilities.ValidationUtilities.{
   differentCustomerIdsValidation,
+  validateAmount,
   validateDescription,
   validateInstantInFuture,
-  validateMinimumPeriod,
-  validateAmount
+  validateMinimumPeriod
 }
 
 import java.time.temporal.ChronoUnit

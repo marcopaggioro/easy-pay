@@ -6,10 +6,10 @@ import io.circe.Decoder
 import it.marcopaggioro.easypay.domain.classes.userdata.Email
 import it.marcopaggioro.easypay.domain.classes.{Money, Validable}
 import it.marcopaggioro.easypay.utilities.ValidationUtilities.{
+  validateAmount,
   validateDescription,
   validateInstantInFuture,
-  validateMinimumPeriod,
-  validateAmount
+  validateMinimumPeriod
 }
 
 import java.time.{Instant, Period}

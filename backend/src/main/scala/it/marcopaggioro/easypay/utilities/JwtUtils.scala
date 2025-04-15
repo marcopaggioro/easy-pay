@@ -22,7 +22,7 @@ object JwtUtils extends LazyLogging {
   private lazy val TokenAlgorithm: JwtHmacAlgorithm = JwtAlgorithm.HS512
   private lazy val TokenEncryptionSecret = "super-secret-key"
   private lazy val TokenDuration: Duration = Duration.ofHours(1)
-  lazy val TokenCookieName: String = "EasyPayToken"
+  private lazy val TokenCookieName: String = "EasyPayToken"
   private lazy val TokenCustomerField: String = "customerId"
 
   case class JwtContent(customerId: CustomerId)

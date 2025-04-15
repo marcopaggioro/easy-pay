@@ -2,7 +2,7 @@ import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {SpinnerComponent} from "../../utilities/spinner.component";
 import {HttpClient} from '@angular/common/http';
 import {APP_CONSTANTS} from '../../app.constants';
-import {DecimalPipe, NgIf} from '@angular/common';
+import {DecimalPipe} from '@angular/common';
 import {
   NgbAccordionCollapse,
   NgbAccordionDirective,
@@ -22,7 +22,6 @@ import {AccordionBodyComponent} from './accordion-body/accordion-body.component'
   selector: 'app-wallet',
   imports: [
     SpinnerComponent,
-    NgIf,
     NgbAccordionDirective,
     NgbAccordionItem,
     NgbAccordionHeader,
@@ -36,13 +35,10 @@ import {AccordionBodyComponent} from './accordion-body/accordion-body.component'
   templateUrl: './wallet.component.html'
 })
 export class WalletComponent implements OnInit {
-  @ViewChild('historySpinner') historySpinner!: SpinnerComponent;
-  @ViewChild('interactedUsersSpinner') interactedUsersSpinner!: SpinnerComponent;
-
   @ViewChild('balancePlaceholder') balancePlaceholder!: ElementRef;
   customerId!: string;
-  wallet?: Wallet;
-  interactedCustomers: InteractedCustomer[] = [];
+  wallet!: Wallet;
+  interactedCustomers!: InteractedCustomer[];
   page: number = 1;
 
   constructor(protected userDataService: UserDataService, private http: HttpClient, private router: Router, private webSocketService: WebSocketService) {
@@ -72,20 +68,14 @@ export class WalletComponent implements OnInit {
     this.http.get<InteractedCustomer[]>(APP_CONSTANTS.ENDPOINT_WALLET_GET_INTERACTED_CUSTOMERS, {
       responseType: 'json',
       withCredentials: true
-    }).subscribe(interactedCustomers => {
-      this.interactedCustomers = interactedCustomers;
-      this.interactedUsersSpinner.hide();
-    });
+    }).subscribe(interactedCustomers => this.interactedCustomers = interactedCustomers);
   }
 
   getWallet(): void {
     this.http.get<Wallet>(APP_CONSTANTS.ENDPOINT_WALLET_GET, {
       params: {page: this.page},
       withCredentials: true
-    }).subscribe(wallet => {
-      this.wallet = wallet;
-      this.historySpinner.hide();
-    });
+    }).subscribe(wallet => this.wallet = wallet);
   }
 
   goToTransfer(email: string): void {

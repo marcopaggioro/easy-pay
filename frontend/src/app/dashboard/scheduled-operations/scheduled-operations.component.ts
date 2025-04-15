@@ -41,12 +41,11 @@ import {maxTwoDecimalsValidator} from '../../utilities/maxTwoDecimals.validator'
   templateUrl: './scheduled-operations.component.html'
 })
 export class ScheduledOperationsComponent implements OnInit {
-  @ViewChild(SpinnerComponent) spinner!: SpinnerComponent;
   @ViewChild(AlertComponent) alert!: AlertComponent;
   loading: boolean = false;
   repeatToggle: boolean = false;
 
-  scheduledOperations: ScheduledOperation[] = [];
+  scheduledOperations!: ScheduledOperation[];
 
   scheduledOperationForm = new FormGroup({
     recipientEmail: new FormControl('', [Validators.required, Validators.email, emailValidator()]),
@@ -79,7 +78,6 @@ export class ScheduledOperationsComponent implements OnInit {
       responseType: 'json'
     }).subscribe(scheduledOperations => {
       this.scheduledOperations = scheduledOperations;
-      this.spinner.hide();
     });
   }
 

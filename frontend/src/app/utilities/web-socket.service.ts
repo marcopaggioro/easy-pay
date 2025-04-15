@@ -9,18 +9,20 @@ import {CookieService} from 'ngx-cookie-service';
   providedIn: 'root'
 })
 export class WebSocketService {
-  private readonly socket$!: WebSocketSubject<any>;
-  private readonly messages$!: Observable<any>;
+  private socket$!: WebSocketSubject<any>;
+  private messages$!: Observable<any>;
 
   constructor(private cookieService: CookieService) {
+  }
+
+  createWebSocketConnection() {
     const customerId: string = this.cookieService.get(APP_CONSTANTS.CUSTOMER_ID_COOKIE_NAME);
     if (customerId) {
-      const url: string = `${APP_CONSTANTS.ENDPOINT_WS}/${customerId}`;
       const webSocketConfig: WebSocketSubjectConfig<any> = {
-        url,
+        url: APP_CONSTANTS.ENDPOINT_WS,
         openObserver: {
-          next: () => console.log("[WS] Connessione stabilita")
-        }
+          next: () => console.log("[WS] Connection established")
+        },
       };
 
       this.socket$ = webSocket(webSocketConfig);
@@ -28,7 +30,7 @@ export class WebSocketService {
         retry({
           count: Infinity,
           delay: (_, retryAttempt) => {
-            console.log(`[WS] Tentativo di riconnessione ${retryAttempt}`);
+            console.log(`[WS] Reconnect attempt ${retryAttempt}`);
             return timer(APP_CONSTANTS.INTERVAL_WS_RETRY);
           }
         }),
@@ -38,12 +40,17 @@ export class WebSocketService {
   }
 
   getWebSocketMessages(): Observable<any> {
+    if (!this.socket$ || this.socket$.closed) {
+      this.createWebSocketConnection()
+    }
     return this.messages$;
   }
 
   close(): void {
     if (this.socket$) {
+      console.log("[WS] Closing connection")
       this.socket$.complete();
+      this.socket$.unsubscribe();
     }
   }
 

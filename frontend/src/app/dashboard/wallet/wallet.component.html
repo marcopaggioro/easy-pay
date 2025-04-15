@@ -27,25 +27,27 @@
       <div class="card-body">
         <h4 class="card-title d-flex justify-content-center">Interagisci nuovamente</h4>
         <hr/>
-        <app-spinner #interactedUsersSpinner/>
-
-        @if (this.interactedCustomers.length > 0) {
-          <div class="list-group">
-            @for (interactedCustomer of this.interactedCustomers; track interactedCustomer.interactedCustomerId) {
-              <button href="#" class="list-group-item list-group-item-action bg-secondary bg-opacity-10"
-                      (click)="$event.preventDefault(); goToTransfer(interactedCustomer.interactedEmail)">
-                <div class="d-flex align-items-center">
-                  <img class="img-fluid rounded-circle me-3" style="width: 40px; height: 40px;"
-                       [src]="APP_CONSTANTS.ENDPOINT_AVATAR + interactedCustomer.interactedCustomerId"
-                       alt="user-avatar"/>
-                  <h5
-                    class="mb-1"> {{ interactedCustomer.interactedFirstName + " " + interactedCustomer.interactedLastName }}</h5>
-                </div>
-              </button>
-            }
-          </div>
+        @if (!this.interactedCustomers) {
+          <app-spinner/>
         } @else {
-          <small class="d-flex justify-content-center">Inizia a trasferire ora!</small>
+          @if (this.interactedCustomers.length > 0) {
+            <div class="list-group">
+              @for (interactedCustomer of this.interactedCustomers; track interactedCustomer.interactedCustomerId) {
+                <button href="#" class="list-group-item list-group-item-action bg-secondary bg-opacity-10"
+                        (click)="$event.preventDefault(); goToTransfer(interactedCustomer.interactedEmail)">
+                  <div class="d-flex align-items-center">
+                    <img class="img-fluid rounded-circle me-3" style="width: 40px; height: 40px;"
+                         [src]="APP_CONSTANTS.ENDPOINT_AVATAR + interactedCustomer.interactedCustomerId"
+                         alt="user-avatar"/>
+                    <h5
+                      class="mb-1"> {{ interactedCustomer.interactedFirstName + " " + interactedCustomer.interactedLastName }}</h5>
+                  </div>
+                </button>
+              }
+            </div>
+          } @else {
+            <small class="d-flex justify-content-center">Inizia a trasferire ora!</small>
+          }
         }
       </div>
 
@@ -59,23 +61,25 @@
       <div class="card-body">
         <h4 class="card-title d-flex justify-content-center">Operazioni recenti</h4>
         <hr/>
-        <app-spinner #historySpinner/>
-
-        @if (this.wallet?.history?.length || 0 > 0) {
-          <div ngbAccordion>
-            @for (operation of this.wallet?.history; track operation.transactionId) {
-              <div ngbAccordionItem>
-                <h2 ngbAccordionHeader>
-                  <app-accordion-button [operation]="operation" [customerId]="customerId"/>
-                </h2>
-                <div ngbAccordionCollapse>
-                  <app-accordion-body [operation]="operation" [customerId]="customerId"/>
-                </div>
-              </div>
-            }
-          </div>
+        @if (!this.wallet) {
+          <app-spinner/>
         } @else {
-          <small class="d-flex justify-content-center">Nessuna operazione recente</small>
+          @if (this.wallet.history.length > 0) {
+            <div ngbAccordion>
+              @for (operation of this.wallet?.history; track operation.transactionId) {
+                <div ngbAccordionItem>
+                  <h2 ngbAccordionHeader>
+                    <app-accordion-button [operation]="operation" [customerId]="customerId"/>
+                  </h2>
+                  <div ngbAccordionCollapse>
+                    <app-accordion-body [operation]="operation" [customerId]="customerId"/>
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <small class="d-flex justify-content-center">Nessuna operazione recente</small>
+          }
         }
 
         @if (wallet && wallet.historyCount > wallet.pageSize) {

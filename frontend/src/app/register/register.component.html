@@ -2,10 +2,11 @@
   <div class="row justify-content-center align-items-center h-100">
     <div class="col col-sm-8 col-lg-6 col-xl-4 col-xxl-3">
       <div class="card">
-        <div class="card-body">
-          <app-alert/>
+        <div class="card-body d-grid justify-content-center align-items-center">
+          <img class="img-fluid p-5" src="logo-black.png" alt="Logo"/>
 
-          <h2 class="card-title">Registrazione</h2>
+          <h2 class="card-title d-grid justify-content-center align-items-center">Registrazione</h2>
+          <app-alert/>
           <small>Dati personali</small>
           <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
             <!-- First name -->

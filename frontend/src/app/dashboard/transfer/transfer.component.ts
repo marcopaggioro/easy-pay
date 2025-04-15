@@ -6,6 +6,7 @@ import {APP_CONSTANTS} from '../../app.constants';
 import {AlertComponent} from '../../utilities/alert.component';
 import {emailValidator} from '../../utilities/email.validator';
 import {ActivatedRoute} from '@angular/router';
+import {maxTwoDecimalsValidator} from '../../utilities/maxTwoDecimals.validator';
 
 @Component({
   selector: 'app-transfer',
@@ -23,7 +24,7 @@ export class TransferComponent implements OnInit {
   transferForm = new FormGroup({
     recipientEmail: new FormControl('', [Validators.required, Validators.email, emailValidator()]),
     description: new FormControl('', Validators.required),
-    amount: new FormControl('', [Validators.required, Validators.min(0.01)]),
+    amount: new FormControl('', [Validators.required, Validators.min(0.01), maxTwoDecimalsValidator()])
   });
 
   constructor(private http: HttpClient, private route: ActivatedRoute) {

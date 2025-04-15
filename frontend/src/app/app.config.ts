@@ -4,7 +4,7 @@ import {provideRouter} from '@angular/router';
 import {routes} from './app.routes';
 import {provideHttpClient, withInterceptors} from '@angular/common/http';
 import {authorizationInterceptor} from './utilities/authorization.interceptor';
-import {registerLocaleData} from '@angular/common';
+import {IMAGE_CONFIG, registerLocaleData} from '@angular/common';
 import localeIt from '@angular/common/locales/it';
 
 registerLocaleData(localeIt, 'it');
@@ -16,6 +16,13 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withInterceptors([
       authorizationInterceptor
     ])),
-    {provide: LOCALE_ID, useValue: 'it'}
+    {provide: LOCALE_ID, useValue: 'it'},
+    {
+      provide: IMAGE_CONFIG,
+      useValue: {
+        disableImageSizeWarning: true,
+        disableImageLazyLoadWarning: true
+      }
+    }
   ]
 };

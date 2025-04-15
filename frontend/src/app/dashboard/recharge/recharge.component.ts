@@ -4,6 +4,7 @@ import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {NgIf} from '@angular/common';
 import {APP_CONSTANTS} from '../../app.constants';
 import {AlertComponent} from '../../utilities/alert.component';
+import {maxTwoDecimalsValidator} from '../../utilities/maxTwoDecimals.validator';
 
 @Component({
   selector: 'app-recharge',
@@ -19,7 +20,7 @@ export class RechargeComponent {
   loading: boolean = false;
 
   rechargeForm = new FormGroup({
-    amount: new FormControl('', [Validators.required, Validators.min(0.01)])
+    amount: new FormControl('', [Validators.required, Validators.min(0.01), maxTwoDecimalsValidator()])
   });
 
   constructor(private http: HttpClient) {

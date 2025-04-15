@@ -1,6 +1,9 @@
 <nav class="navbar bg-dark navbar-expand-lg bg-body-tertiary" data-bs-theme="dark">
   <div class="container">
-    <a class="navbar-brand" routerLink="./">EasyPay</a>
+    <a class="navbar-brand" routerLink="./">
+      <img src="logo-white.png" alt="Logo" width="100" class="pe-3">
+    </a>
+
     <button class="navbar-toggler" type="button" (click)="mobileNavBarCollapsed = !mobileNavBarCollapsed"
             data-bs-toggle="collapse" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
@@ -43,6 +46,6 @@
   </div>
 </nav>
 
-<div class="container-fluid pt-5">
+<div class="container-fluid py-5">
   <router-outlet/>
 </div>

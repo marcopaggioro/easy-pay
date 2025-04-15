@@ -17,6 +17,7 @@ import {
 } from '@ng-bootstrap/ng-bootstrap';
 import {emailValidator} from '../../utilities/email.validator';
 import {WebSocketService} from '../../utilities/web-socket.service';
+import {maxTwoDecimalsValidator} from '../../utilities/maxTwoDecimals.validator';
 
 @Component({
   selector: 'app-scheduled-operations',
@@ -50,7 +51,7 @@ export class ScheduledOperationsComponent implements OnInit {
   scheduledOperationForm = new FormGroup({
     recipientEmail: new FormControl('', [Validators.required, Validators.email, emailValidator()]),
     description: new FormControl('', Validators.required),
-    amount: new FormControl('', [Validators.required, Validators.min(0.01)]),
+    amount: new FormControl('', [Validators.required, Validators.min(0.01), maxTwoDecimalsValidator()]),
     dateTime: new FormControl('', Validators.required),
     repeatMonths: new FormControl('', Validators.min(1)),
     repeatDays: new FormControl('', Validators.min(1))

@@ -2,16 +2,13 @@ import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {SpinnerComponent} from "../../utilities/spinner.component";
 import {HttpClient} from '@angular/common/http';
 import {APP_CONSTANTS} from '../../app.constants';
-import {DatePipe, DecimalPipe, NgIf} from '@angular/common';
+import {DecimalPipe, NgIf} from '@angular/common';
 import {
-  NgbAccordionBody,
-  NgbAccordionButton,
   NgbAccordionCollapse,
   NgbAccordionDirective,
   NgbAccordionHeader,
   NgbAccordionItem,
-  NgbPagination,
-  NgbTooltip
+  NgbPagination
 } from '@ng-bootstrap/ng-bootstrap';
 import {UserDataService} from '../../utilities/user-data.service';
 import {Router, RouterLink} from '@angular/router';
@@ -29,12 +26,8 @@ import {AccordionBodyComponent} from './accordion-body/accordion-body.component'
     NgbAccordionDirective,
     NgbAccordionItem,
     NgbAccordionHeader,
-    NgbAccordionButton,
     NgbAccordionCollapse,
-    NgbAccordionBody,
-    DatePipe,
     DecimalPipe,
-    NgbTooltip,
     RouterLink,
     NgbPagination,
     AccordionButtonComponent,

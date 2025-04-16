@@ -1,0 +1,297 @@
+openapi: 3.0.4
+info:
+  title: EasyPay
+  description: |-
+    [Github repository](https://github.com/marcopaggioro/easy-pay)
+  contact:
+    email: marco.paggioro@studenti.unipegaso.it
+  version: 1.0.0
+servers:
+  - url: https://easypay-api.paggiorocloud.it
+tags:
+  - name: Wallet
+    description: Routes related to wallet
+  - name: User
+    description: Routes related to user
+paths:
+  /user/login/check:
+    get:
+      tags:
+        - User
+      summary: Check if client has a valid JWT token
+      responses:
+        '200':
+          description: User has a valid JWT
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /user/login:
+    post:
+      tags:
+        - User
+      summary: Login user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginPayload'
+      responses:
+        '200':
+          description: User logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        '400':
+          description: Invalid payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        '401':
+          description: Invalid credentials
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /user/logout:
+    post:
+      tags:
+        - User
+      summary: Logout user
+      responses:
+        '200':
+          description: User logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        '401':
+          description: Unauthorized
+
+  /user:
+    post:
+      tags:
+        - User
+      summary: Create an user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterPayload'
+      responses:
+        '200':
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        '400':
+          description: Invalid payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    get:
+      tags:
+        - User
+      summary: Get user data
+      responses:
+        '200':
+          description: Got user data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDataResponse"
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      tags:
+        - User
+      summary: Update user data
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserDataPayload'
+      responses:
+        '200':
+          description: User updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        '400':
+          description: Invalid payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+
+components:
+  schemas:
+    OkResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: true
+      required:
+        - ok
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Sometime went wrong"
+      required:
+        - error
+
+    LoginPayload:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: "marco.paggioro@studenti.unipegaso.it"
+        encryptedPassword:
+          type: string
+          description: SHA512 encrypted password
+          example: "2bbe0c48b91a7d1b8a6753a8b9cbe1db16b84379f3f91fe115621284df7a48f1cd71e9beb90ea614c7bd924250aa9e446a866725e685a65df5d139a5cd180dc9"
+      required:
+        - email
+        - encryptedPassword
+
+    LoginResponse:
+      type: object
+      properties:
+        customerId:
+          type: string
+          format: uuid
+          example: "0afe431b-4e19-4790-a3df-8ececd2a02d2"
+        expiration:
+          type: number
+          description: Millis from EPOCH
+          example: 1744797585000
+      required:
+        - customerId
+        - expiration
+
+    RegisterPayload:
+      type: object
+      properties:
+        firstName:
+          type: string
+          example: Marco
+        lastName:
+          type: string
+          example: Paggioro
+        birthDate:
+          type: string
+          format: date
+          example: 1998-06-01
+        email:
+          type: string
+          format: email
+          example: "marco.paggioro@studenti.unipegaso.it"
+        lastEdit:
+          type: number
+          description: Millis from EPOCH
+          example: 1744789213639
+      required:
+        - firstName
+        - lastName
+        - birthDate
+        - email
+        - lastEdit
+
+    UserDataResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "0afe431b-4e19-4790-a3df-8ececd2a02d2"
+        firstName:
+          type: string
+          example: Marco
+        lastName:
+          type: string
+          example: Paggioro
+        birthDate:
+          type: string
+          format: date
+          example: 1998-06-01
+        email:
+          type: string
+          format: email
+          example: "marco.paggioro@studenti.unipegaso.it"
+        lastEdit:
+          type: number
+          description: Millis from EPOCH
+          example: 1744789213639
+      required:
+        - id
+        - firstName
+        - lastName
+        - birthDate
+        - email
+        - lastEdit
+
+    UpdateUserDataPayload:
+      type: object
+      properties:
+        firstName:
+          type: string
+          example: Marco
+        lastName:
+          type: string
+          example: Paggioro
+        birthDate:
+          type: string
+          format: date
+          example: 1998-06-01
+        email:
+          type: string
+          format: email
+          example: "marco.paggioro@studenti.unipegaso.it"

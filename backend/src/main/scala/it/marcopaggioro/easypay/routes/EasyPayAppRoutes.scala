@@ -78,7 +78,7 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
     completeWithJson(generateJsonError(error), statusCode)
   }
 
-  private def completeWithOK(): StandardRoute = completeWithJson(Json.Null)
+  private def completeWithOK(): StandardRoute = completeWithJson(Json.obj("ok" -> true.asJson))
 
   private def completeWithToken(customerId: CustomerId): Route = {
     val httpCookie: HttpCookie = JwtUtils.getSignedJwtCookie(customerId)
@@ -227,7 +227,7 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
             )
           },
           path("interacted-customers") {
-            get {
+            get { // GET /wallet/interacted-customers
               getInteractedCustomers(customerId)
             }
           },

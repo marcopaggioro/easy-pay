@@ -9,7 +9,6 @@ services:
     healthcheck:
       test: [ "CMD", "pg_isready", "-U", "easypay", "-d", "easypay" ]
       interval: 5s
-    restart: unless-stopped
 
   easypay_backend:
     container_name: easypay_backend
@@ -22,11 +21,9 @@ services:
     depends_on:
       easypay_database:
         condition: service_healthy
-    restart: unless-stopped
 
   easypay_frontend:
     container_name: easypay_frontend
     build: ./frontend
     ports:
       - "8080:80"
-    restart: unless-stopped

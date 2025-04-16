@@ -14,7 +14,7 @@ object AppConfig {
   lazy val romeZoneId: ZoneId = ZoneId.of("Europe/Rome")
   lazy val startingBalance: Money = Money(10)
   lazy val historyPageSize: Int = 10
-  lazy val interactedUsersSize: Int = 10
+  lazy val interactedUsersSize: Int = 3
   lazy val minScheduledOperationPeriod: Period = Period.ofDays(1)
 
   // Timeouts

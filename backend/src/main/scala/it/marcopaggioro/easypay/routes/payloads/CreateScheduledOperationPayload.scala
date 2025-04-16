@@ -1,4 +1,4 @@
-package it.marcopaggioro.easypay.routes.payloads.scheduledoperation
+package it.marcopaggioro.easypay.routes.payloads
 
 import cats.data.ValidatedNel
 import cats.implicits.toTraverseOps

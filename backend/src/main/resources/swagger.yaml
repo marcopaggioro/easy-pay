@@ -242,11 +242,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /wallet:
+  /wallet/balance:
     get:
       tags:
         - Wallet
-      summary: Get wallet
+      summary: Get wallet balance
       parameters:
         - name: Origin
           in: header
@@ -254,22 +254,56 @@ paths:
           schema:
             type: string
           description: Header CORS Origin
-        - name: page
-          in: query
-          description: Page number of operation history
-          required: false
-          schema:
-            type: integer
-            format: int32
       security:
         - EasyPayAuth: [ ]
       responses:
         '200':
-          description: Got wallet
+          description: Got wallet balance
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/WalletResponse"
+                type: number
+                example: 123.45
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /wallet/operations:
+    post:
+      tags:
+        - Wallet
+      summary: Get wallet operations
+      parameters:
+        - name: Origin
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Header CORS Origin
+      security:
+        - EasyPayAuth: [ ]
+      responses:
+        '200':
+          description: Got wallet operations
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WalletOperationsResponse"
+        '400':
+          description: Invalid payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         '401':
           description: Unauthorized
           content:
@@ -721,12 +755,9 @@ components:
         - instant
         - amount
 
-    WalletResponse:
+    WalletOperationsResponse:
       type: object
       properties:
-        balance:
-          type: number
-          example: 123.45
         pageSize:
           type: number
           example: 1
@@ -738,7 +769,6 @@ components:
           items:
             $ref: '#/components/schemas/WalletOperation'
       required:
-        - balance
         - pageSize
         - historyCount
         - history

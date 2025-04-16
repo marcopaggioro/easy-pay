@@ -1,13 +1,13 @@
 package it.marcopaggioro.easypay.routes
 
-import akka.actor.typed.scaladsl.AskPattern._
+import akka.actor.typed.scaladsl.AskPattern.*
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, ActorSystem, Scheduler, SupervisorStrategy}
-import akka.http.scaladsl.model._
+import akka.http.scaladsl.model.*
 import akka.http.scaladsl.model.headers.HttpCookie
 import akka.http.scaladsl.model.ws.{Message, TextMessage}
-import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server._
+import akka.http.scaladsl.server.Directives.*
+import akka.http.scaladsl.server.*
 import akka.http.scaladsl.server.directives.BasicDirectives.extractRequest
 import akka.http.scaladsl.settings.CorsSettings
 import akka.http.scaladsl.unmarshalling.{FromEntityUnmarshaller, Unmarshaller}
@@ -20,7 +20,7 @@ import akka.util.ByteString
 import akka.{Done, NotUsed}
 import cats.data.Validated
 import io.circe.Encoder.encodeSeq
-import io.circe._
+import io.circe.*
 import io.circe.jawn.decode
 import io.circe.syntax.EncoderOps
 import it.marcopaggioro.easypay.AppConfig
@@ -28,8 +28,9 @@ import it.marcopaggioro.easypay.AppConfig.askTimeout
 import it.marcopaggioro.easypay.EasyPayApp.{completeWithError, completeWithJson, generateJsonError}
 import it.marcopaggioro.easypay.actor.WebSocketsManagerActor.WebSocketsManagerActorCommand
 import it.marcopaggioro.easypay.actor.{TransactionsManagerActor, UsersManagerActor, WebSocketsManagerActor}
-import it.marcopaggioro.easypay.database.PostgresProfile._
-import it.marcopaggioro.easypay.database.PostgresProfile.api._
+import it.marcopaggioro.easypay.database.PostgresProfile.*
+import it.marcopaggioro.easypay.database.PostgresProfile.api.*
+import it.marcopaggioro.easypay.database.PostgresProfile.InstantMapper
 import it.marcopaggioro.easypay.database.scheduledoperations.ScheduledOperationRecord.ScheduledOperationUserJoinEncoder
 import it.marcopaggioro.easypay.database.scheduledoperations.{ScheduledOperationRecord, ScheduledOperationsTable}
 import it.marcopaggioro.easypay.database.transactionshistory.TransactionsHistoryRecord.TransactionUserJoinEncoder
@@ -45,11 +46,17 @@ import it.marcopaggioro.easypay.domain.classes.{Money, ScheduledOperation, Valid
 import it.marcopaggioro.easypay.domain.{TransactionsManager, UsersManager}
 import it.marcopaggioro.easypay.routes.EasyPayAppRoutes.circeUnmarshaller
 import it.marcopaggioro.easypay.routes.payloads.LoginPayload.LoginPayloadDecoder
-import it.marcopaggioro.easypay.routes.payloads.scheduledoperation.CreateScheduledOperationPayload
-import it.marcopaggioro.easypay.routes.payloads.{LoginPayload, TransferMoneyPayload, UpdateUserDataPayload}
+import it.marcopaggioro.easypay.routes.payloads.{
+  CreateScheduledOperationPayload,
+  GetOperationsPayload,
+  LoginPayload,
+  TransferMoneyPayload,
+  UpdateUserDataPayload
+}
 import it.marcopaggioro.easypay.utilities.{JwtUtils, ValidationUtilities}
 import slick.jdbc.JdbcBackend.Database
 
+import java.time.Instant
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
 import scala.util.{Failure, Success, Try}
@@ -223,10 +230,17 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
               getInteractedCustomers(customerId)
             }
           },
-          pathEndOrSingleSlash {
-            get { // GET /wallet
-              parameters("page".as[Int].optional) { maybePage =>
-                getWallet(customerId, maybePage.map(_ - 1).getOrElse(0))
+          path("balance") {
+            get { // GET /wallet/balance
+              getBalance(customerId)
+            }
+          },
+          path("operations") {
+            post { // POST /wallet/operations
+              entity(as[GetOperationsPayload]) { payload =>
+                checkPayloadIsValid(payload) {
+                  getOperations(customerId, payload)
+                }
               }
             }
           }
@@ -439,11 +453,8 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
     }
   }
 
-  private def getWallet(customerId: CustomerId, pageNumber: Int)(implicit
-      system: ActorSystem[Nothing],
-      uri: Uri
-  ): Route = {
-    val getBalance = database.run {
+  private def getBalance(customerId: CustomerId)(implicit system: ActorSystem[Nothing], uri: Uri): Route = {
+    val getBalance: Future[Money] = database.run {
       UsersBalanceTable.Table
         .filter(record => record.customerId === customerId)
         .map(_.balance)
@@ -452,8 +463,28 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
         .map(_.getOrElse(Money(0)))
     }
 
+    onComplete(getBalance) {
+      case Failure(throwable) =>
+        system.log.error(s"Failure while getting balance", throwable)
+        completeWithError(StatusCodes.InternalServerError, ValidationUtilities.GenericError)
+
+      case Success(balance) =>
+        completeWithJson(balance.asJson)
+    }
+  }
+
+  private def getOperations(customerId: CustomerId, payload: GetOperationsPayload)(implicit
+      system: ActorSystem[Nothing],
+      uri: Uri
+  ): Route = {
     val baseHistoryQuery = TransactionsHistoryTable.Table
       .filter(record => record.senderCustomerId === customerId || record.recipientCustomerId === customerId)
+      .filterOpt(payload.maybeStartDate) { case (record, startDate) =>
+        record.instant >= LiteralColumn(startDate)(InstantMapper)
+      }
+      .filterOpt(payload.maybeEndDate) { case (record, endDate) =>
+        record.instant <= LiteralColumn(endDate)(InstantMapper)
+      }
       .join(UsersTable.Table)
       .on { case (transactionRecord, userRecord) =>
         Case
@@ -466,7 +497,7 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
       baseHistoryQuery.result.map(_.size)
     }
 
-    val offset: Int = pageNumber * AppConfig.historyPageSize
+    val offset: Int = (payload.page - 1) * AppConfig.historyPageSize
     val getHistory: Future[Seq[(TransactionsHistoryRecord, UserRecord)]] = database.run {
       baseHistoryQuery
         .sortBy(_._1.instant.desc)
@@ -476,11 +507,9 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
     }
 
     val result: Future[Json] = for {
-      balance <- getBalance
       historyCount <- getHistoryCount
       history <- getHistory
     } yield Json.obj(
-      "balance" -> balance.asJson,
       "pageSize" -> AppConfig.historyPageSize.asJson,
       "historyCount" -> historyCount.asJson,
       "history" -> history.asJson(encodeSeq(TransactionUserJoinEncoder))
@@ -488,7 +517,7 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
 
     onComplete(result) {
       case Failure(throwable) =>
-        system.log.error(s"Failure while getting wallet", throwable)
+        system.log.error(s"Failure while getting operations", throwable)
         completeWithError(StatusCodes.InternalServerError, ValidationUtilities.GenericError)
 
       case Success(json) =>
@@ -569,7 +598,7 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
 
       case Validated.Invalid(errors) =>
         val errorsFlattened: String = errors.toList.mkString(", ")
-        system.log.warn(s"Invalid payload in $uri: errorsFlattened")
+        system.log.warn(s"Invalid payload in $uri: $errorsFlattened")
         completeWithError(StatusCodes.BadRequest, errorsFlattened)
     }
 

@@ -1,15 +1,17 @@
 package it.marcopaggioro.easypay.utilities
 
+import akka.actor.typed.ActorSystem
 import akka.http.javadsl.model.headers.SameSite
 import akka.http.scaladsl.model.headers.HttpCookie
 import akka.http.scaladsl.model.{DateTime, StatusCodes, Uri}
 import akka.http.scaladsl.server.Directive1
-import akka.http.scaladsl.server.Directives.{complete, optionalCookie, provide}
+import akka.http.scaladsl.server.Directives.{optionalCookie, provide}
 import com.typesafe.scalalogging.LazyLogging
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.jawn.decode
 import io.circe.syntax.EncoderOps
 import io.circe.{Decoder, Encoder}
+import it.marcopaggioro.easypay.EasyPayApp.completeWithError
 import it.marcopaggioro.easypay.domain.classes.Aliases.CustomerId
 import pdi.jwt.algorithms.JwtHmacAlgorithm
 import pdi.jwt.{JwtAlgorithm, JwtCirce, JwtClaim, JwtOptions}
@@ -60,24 +62,26 @@ object JwtUtils extends LazyLogging {
     JwtOptions(signature = true, expiration = true, notBefore = true)
   )
 
-  private def withAuthCookie(implicit uri: Uri): Directive1[HttpCookie] = optionalCookie(TokenCookieName).flatMap {
-    case Some(cookie) =>
-      provide(cookie.toCookie)
+  private def withAuthCookie(implicit uri: Uri, system: ActorSystem[Nothing]): Directive1[HttpCookie] =
+    optionalCookie(TokenCookieName).flatMap {
+      case Some(cookie) =>
+        provide(cookie.toCookie)
 
-    case None =>
-      logger.warn(s"Received request without token in ${uri.path.toString()}")
-      complete(StatusCodes.Unauthorized)
-  }
-
-  def withCustomerIdFromToken(implicit uri: Uri): Directive1[CustomerId] = withAuthCookie.flatMap { cookie =>
-    decodeToken(cookie.value).flatMap(jwtClaim => decode[JwtContent](jwtClaim.content).toTry) match {
-      case Failure(exception) =>
-        logger.warn(s"Invalid or expired token in ${uri.path.toString()}", exception)
-        complete(StatusCodes.Unauthorized)
-
-      case Success(jwtContent) =>
-        provide(jwtContent.customerId)
+      case None =>
+        logger.warn(s"Received request without token in ${uri.path.toString()}")
+        completeWithError(StatusCodes.Unauthorized, "Token non trovato")
     }
+
+  def withCustomerIdFromToken(implicit uri: Uri, system: ActorSystem[Nothing]): Directive1[CustomerId] = withAuthCookie.flatMap {
+    cookie =>
+      decodeToken(cookie.value).flatMap(jwtClaim => decode[JwtContent](jwtClaim.content).toTry) match {
+        case Failure(exception) =>
+          logger.warn(s"Invalid or expired token in ${uri.path.toString()}", exception)
+          completeWithError(StatusCodes.Unauthorized, "Token invalido o scaduto")
+
+        case Success(jwtContent) =>
+          provide(jwtContent.customerId)
+      }
   }
 
 }

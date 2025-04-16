@@ -4,8 +4,13 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior, SupervisorStrategy}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.ServerBinding
+import akka.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCode, StatusCodes, Uri}
+import akka.http.scaladsl.server.Directives.complete
+import akka.http.scaladsl.server.StandardRoute
 import akka.serialization.jackson.CborSerializable
 import buildinfo.BuildInfo
+import io.circe.Json
+import io.circe.syntax.EncoderOps
 import it.marcopaggioro.easypay.actor.WebSocketsManagerActor
 import it.marcopaggioro.easypay.actor.WebSocketsManagerActor.WebSocketsManagerActorCommand
 import it.marcopaggioro.easypay.actor.projection.{TransactionsProjectorActor, UsersManagerProjectorActor}
@@ -21,6 +26,14 @@ object EasyPayApp {
   sealed trait AppCommand extends CborSerializable
   private final case class ServerStarted(serverBinding: ServerBinding) extends AppCommand
   private final case class ServerStartupFailed(cause: Throwable) extends AppCommand
+
+  val generateJsonError: String => Json = error => Json.obj("error" -> error.asJson)
+  def completeWithJson(json: Json, statusCode: StatusCode = StatusCodes.OK): StandardRoute =
+    complete(statusCode, HttpEntity(ContentTypes.`application/json`, json.noSpaces))
+  def completeWithError(statusCode: StatusCode, error: String)(implicit uri: Uri, system: ActorSystem[Nothing]): StandardRoute = {
+    system.log.warn(s"Replying with error in uri (${uri.path.toString()}): [$error]")
+    completeWithJson(generateJsonError(error), statusCode)
+  }
 
   private def startProjectors(webSocketManagerActorRef: ActorRef[WebSocketsManagerActorCommand], database: Database)(implicit
       system: ActorSystem[Nothing]

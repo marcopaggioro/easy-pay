@@ -34,7 +34,8 @@
                 fieldValueVisualizer="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"
                 httpFieldName="encryptedPassword" fieldPlaceholder="Password" inputType="password"
                 (editResult)="handleEditResult($event)"
-                [additionalValidators]="[Validators.minLength(APP_CONSTANTS.PASSWORD_MIN_LENGHT)]"></tr>
+                [additionalValidators]="[Validators.minLength(APP_CONSTANTS.PASSWORD_MIN_LENGHT)]"
+                [fieldTransformation]="authorizationService.hashPassword"></tr>
 
             <tr>
               <th scope="row">Ultima modifica</th>

@@ -21,18 +21,19 @@ export class ProfileFieldComponent implements OnChanges {
 
   @Input() fieldLabel!: string;
   @Input() httpFieldName!: string;
-  @Input() fieldValue!: any;
+  @Input() fieldValue?: string;
   @Input() fieldValueVisualizer?: string | null;
   @Input() fieldPlaceholder!: string;
   @Input() inputType!: string;
   @Input() additionalValidators: ValidatorFn[] = [];
+  @Input() fieldTransformation?: (input: string) => string;
 
   @Output() editResult = new EventEmitter<string | null>();
 
   protected editing = false;
   protected waitingResponse = false;
 
-  protected formField = new FormControl(null, [Validators.required, ...this.additionalValidators]);
+  protected formField = new FormControl<string>('', [Validators.required, ...this.additionalValidators]);
 
   constructor(private http: HttpClient) {
   }
@@ -52,7 +53,10 @@ export class ProfileFieldComponent implements OnChanges {
       if (!this.waitingResponse) {
         this.waitingResponse = true;
 
-        const body = {[this.httpFieldName]: this.formField.value!}
+        const body = {
+          [this.httpFieldName]: this.fieldTransformation ? this.fieldTransformation(this.formField.value!) : this.formField.value!
+        };
+
         this.http.patch(APP_CONSTANTS.ENDPOINT_USER_UPDATE, body, {
           withCredentials: true,
           responseType: 'json'
@@ -66,7 +70,7 @@ export class ProfileFieldComponent implements OnChanges {
             this.editResult.emit(httpErrorResponse?.error?.error || APP_CONSTANTS.MESSAGE_GENERIC_ERROR);
             this.editing = false;
             this.waitingResponse = false;
-            this.formField.setValue(this.fieldValue);
+            this.formField.setValue(this.fieldValue || '');
           }
         });
       }

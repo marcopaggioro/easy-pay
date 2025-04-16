@@ -291,6 +291,12 @@ paths:
           description: Header CORS Origin
       security:
         - EasyPayAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WalletOperationsPayload'
       responses:
         '200':
           description: Got wallet operations
@@ -754,6 +760,30 @@ components:
         - recipientCustomerId
         - instant
         - amount
+
+    WalletOperationsPayload:
+      type: object
+      properties:
+        page:
+          type: number
+          example: 1
+        email:
+          type: string
+          format: email
+          example: "marco.paggioro@studenti.unipegaso.it"
+        fullName:
+          type: string
+          example: "Mario Rossi"
+        start:
+          type: number
+          description: Millis from EPOCH
+          example: 1744789213639
+        end:
+          type: number
+          description: Millis from EPOCH
+          example: 1744789213639
+      required:
+        - page
 
     WalletOperationsResponse:
       type: object

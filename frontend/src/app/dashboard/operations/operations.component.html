@@ -11,6 +11,22 @@
             <div class="row">
               <div class="col-6">
                 <div class="form-floating my-1">
+                  <input type="text" class="form-control" id="fullName" placeholder
+                         [formControl]="operationsForm.controls.fullName"
+                         [class.is-invalid]="operationsForm.controls.fullName.dirty && operationsForm.controls.fullName.invalid">
+                  <label for="fullName">Nome completo</label>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="form-floating my-1">
+                  <input type="email" class="form-control" id="email" placeholder
+                         [formControl]="operationsForm.controls.email"
+                         [class.is-invalid]="operationsForm.controls.email.dirty && operationsForm.controls.email.invalid">
+                  <label for="email">Email</label>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="form-floating my-1">
                   <input type="datetime-local" class="form-control" id="startDate" placeholder
                          [formControl]="operationsForm.controls.startDate"
                          [class.is-invalid]="operationsForm.controls.startDate.dirty && operationsForm.controls.startDate.invalid">

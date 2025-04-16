@@ -53,6 +53,7 @@ export class OperationsComponent implements OnInit {
   operationsForm = new FormGroup({
     name: new FormControl<string | null>(null),
     email: new FormControl<string | null>(null, [Validators.email, emailValidator()]),
+    fullName: new FormControl<string | null>(null),
     startDate: new FormControl<Date | null>(null),
     endDate: new FormControl<Date | null>(null)
   });
@@ -83,6 +84,8 @@ export class OperationsComponent implements OnInit {
 
     const body: GetWalletOperationsPayload = {
       page: this.page,
+      ...(this.operationsForm.value.email ? {email: this.operationsForm.value.email} : {}),
+      ...(this.operationsForm.value.fullName ? {fullName: this.operationsForm.value.fullName} : {}),
       ...(this.operationsForm.value.startDate ? {start: new Date(this.operationsForm.value.startDate).toISOString()} : {}),
       ...(this.operationsForm.value.endDate ? {end: new Date(this.operationsForm.value.endDate).toISOString()} : {}),
     };

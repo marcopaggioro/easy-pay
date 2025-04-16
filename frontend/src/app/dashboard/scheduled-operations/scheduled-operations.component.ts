@@ -90,14 +90,14 @@ export class ScheduledOperationsComponent implements OnInit {
     }
 
     const body: CreateScheduledOperationPayload = {
-      recipientEmail: this.scheduledOperationForm.controls.recipientEmail.value!,
-      description: this.scheduledOperationForm.controls.description.value!,
-      amount: this.scheduledOperationForm.controls.amount.value!,
-      when: new Date(this.scheduledOperationForm.controls.dateTime.value!).toISOString()
+      recipientEmail: this.scheduledOperationForm.value.recipientEmail!,
+      description: this.scheduledOperationForm.value.description!,
+      amount: this.scheduledOperationForm.value.amount!,
+      when: new Date(this.scheduledOperationForm.value.dateTime!).toISOString()
     }
     if (this.repeatToggle) {
-      const months = this.scheduledOperationForm.controls.repeatMonths.value || 0;
-      const days = this.scheduledOperationForm.controls.repeatDays.value || 0;
+      const months = this.scheduledOperationForm.value.repeatMonths || 0;
+      const days = this.scheduledOperationForm.value.repeatDays || 0;
       body.repeat = `P${months}M${days}D`;
     }
 

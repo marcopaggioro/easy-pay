@@ -10,28 +10,28 @@
 
           <!-- Recipient Email -->
           <div class="form-floating my-3">
-            <input type="email" class="form-control" id="email" placeholder="mario.rossi@gmail.com"
+            <input type="email" class="form-control" id="email" placeholder
                    [formControl]="scheduledOperationForm.controls.recipientEmail"
                    [class.is-invalid]="scheduledOperationForm.controls.recipientEmail.dirty && scheduledOperationForm.controls.recipientEmail.invalid"/>
             <label for="email">Email</label>
           </div>
           <!-- Description -->
           <div class="form-floating my-3">
-            <textarea class="form-control" id="description" placeholder="Descrizione"
+            <textarea class="form-control" id="description" placeholder
                       [formControl]="scheduledOperationForm.controls.description"
                       [class.is-invalid]="scheduledOperationForm.controls.description.dirty && scheduledOperationForm.controls.description.invalid"></textarea>
             <label for="description">Descrizione</label>
           </div>
           <!-- Amount -->
           <div class="form-floating my-3">
-            <input type="number" class="form-control" id="amount" placeholder="amount"
+            <input type="number" class="form-control" id="amount" placeholder
                    [formControl]="scheduledOperationForm.controls.amount"
                    [class.is-invalid]="scheduledOperationForm.controls.amount.dirty && scheduledOperationForm.controls.amount.invalid">
             <label for="amount">Importo</label>
           </div>
           <!-- Date time -->
           <div class="form-floating my-3">
-            <input type="datetime-local" class="form-control" id="dateTime" placeholder="dateTime"
+            <input type="datetime-local" class="form-control" id="dateTime" placeholder
                    [formControl]="scheduledOperationForm.controls.dateTime"
                    [class.is-invalid]="scheduledOperationForm.controls.dateTime.dirty && scheduledOperationForm.controls.dateTime.invalid">
             <label for="dateTime">Data dell'operazione</label>
@@ -48,7 +48,7 @@
             <div class="row">
               <div class="col-6">
                 <div class="form-floating my-3">
-                  <input type="number" class="form-control" id="repeatMonths" placeholder="0"
+                  <input type="number" class="form-control" id="repeatMonths" placeholder
                          [formControl]="scheduledOperationForm.controls.repeatMonths"
                          [class.is-invalid]="scheduledOperationForm.controls.repeatMonths.dirty && scheduledOperationForm.controls.repeatMonths.invalid">
                   <label for="repeatMonths">Mesi</label>
@@ -56,7 +56,7 @@
               </div>
               <div class="col-6">
                 <div class="form-floating my-3">
-                  <input type="number" class="form-control" id="repeatDays" placeholder="0"
+                  <input type="number" class="form-control" id="repeatDays" placeholder
                          [formControl]="scheduledOperationForm.controls.repeatDays"
                          [class.is-invalid]="scheduledOperationForm.controls.repeatDays.dirty && scheduledOperationForm.controls.repeatDays.invalid">
                   <label for="repeatDays">Giorni</label>

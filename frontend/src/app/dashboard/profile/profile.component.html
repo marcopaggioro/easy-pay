@@ -22,23 +22,23 @@
             </tr>
 
             <tr app-profile-field fieldLabel="Nome" [fieldValue]="userData?.firstName" httpFieldName="firstName"
-                fieldPlaceholder="Mario" inputType="text" (editResult)="handleEditResult($event)">>
+                inputType="text" (editResult)="handleEditResult($event)">>
             </tr>
 
             <tr app-profile-field fieldLabel="Cognome" [fieldValue]="userData?.lastName" httpFieldName="lastName"
-                fieldPlaceholder="Rossi" inputType="text" (editResult)="handleEditResult($event)"></tr>
+                inputType="text" (editResult)="handleEditResult($event)"></tr>
 
             <tr app-profile-field fieldLabel="Data di nascita" [fieldValue]="userData?.birthDate"
                 [fieldValueVisualizer]="userData?.birthDate | date: 'dd/MM/YYYY'"
                 httpFieldName="birthDate" inputType="date" (editResult)="handleEditResult($event)"></tr>
 
             <tr app-profile-field fieldLabel="Email" [fieldValue]="userData?.email" httpFieldName="email"
-                fieldPlaceholder="mario.rossi@gmail.com" inputType="email" (editResult)="handleEditResult($event)"
+                inputType="email" (editResult)="handleEditResult($event)"
                 [additionalValidators]="[emailValidator()]"></tr>
 
             <tr app-profile-field fieldLabel="Password"
                 fieldValueVisualizer="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"
-                httpFieldName="encryptedPassword" fieldPlaceholder="Password" inputType="password"
+                httpFieldName="encryptedPassword" inputType="password"
                 (editResult)="handleEditResult($event)"
                 [additionalValidators]="[Validators.minLength(APP_CONSTANTS.PASSWORD_MIN_LENGHT)]"
                 [fieldTransformation]="authorizationService.hashPassword"></tr>

@@ -4,7 +4,6 @@
       <div class="card-body">
         <h2 class="card-title d-flex justify-content-center">{{ cardTitle }}</h2>
         <hr/>
-        <!--TODO fixare tutti i place holders-->
         @if (completeNavigation) {
           <h4 class="d-flex align-items-center justify-content-center">Filtri</h4>
           <app-alert/>
@@ -12,7 +11,7 @@
             <div class="row">
               <div class="col-6">
                 <div class="form-floating my-1">
-                  <input type="datetime-local" class="form-control" id="startDate" placeholder=""
+                  <input type="datetime-local" class="form-control" id="startDate" placeholder
                          [formControl]="operationsForm.controls.startDate"
                          [class.is-invalid]="operationsForm.controls.startDate.dirty && operationsForm.controls.startDate.invalid">
                   <label for="startDate">Data di inizio</label>
@@ -20,7 +19,7 @@
               </div>
               <div class="col-6">
                 <div class="form-floating my-1">
-                  <input type="datetime-local" class="form-control" id="endDate" placeholder=""
+                  <input type="datetime-local" class="form-control" id="endDate" placeholder
                          [formControl]="operationsForm.controls.endDate"
                          [class.is-invalid]="operationsForm.controls.endDate.dirty && operationsForm.controls.endDate.invalid">
                   <label for="endDate">Data di fine</label>

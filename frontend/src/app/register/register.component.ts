@@ -45,11 +45,11 @@ export class RegisterComponent implements OnInit {
       return;
     }
 
-    this.authorizationService.register(this.registerForm.controls.firstName.value!,
-      this.registerForm.controls.lastName.value!,
-      this.registerForm.controls.birthDate.value!,
-      this.registerForm.controls.email.value!,
-      this.registerForm.controls.password.value!).subscribe({
+    this.authorizationService.register(this.registerForm.value.firstName!,
+      this.registerForm.value.lastName!,
+      this.registerForm.value.birthDate!,
+      this.registerForm.value.email!,
+      this.registerForm.value.password!).subscribe({
       next: () => this.router.navigate([APP_CONSTANTS.PATH_DASHBOARD]),
       error: (httpErrorResponse: HttpErrorResponse) => {
         this.alert.error(httpErrorResponse?.error?.error || APP_CONSTANTS.MESSAGE_GENERIC_ERROR);

@@ -23,7 +23,6 @@ export class ProfileFieldComponent implements OnChanges {
   @Input() httpFieldName!: string;
   @Input() fieldValue?: string;
   @Input() fieldValueVisualizer?: string | null;
-  @Input() fieldPlaceholder!: string;
   @Input() inputType!: string;
   @Input() additionalValidators: ValidatorFn[] = [];
   @Input() fieldTransformation?: (input: string) => string;

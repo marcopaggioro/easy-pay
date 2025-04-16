@@ -81,12 +81,10 @@ export class OperationsComponent implements OnInit {
       return;
     }
 
-    //TODO rivedere
-    const {startDate, endDate} = this.operationsForm.value;
     const body: GetWalletOperationsPayload = {
       page: this.page,
-      ...(startDate ? {start: new Date(startDate).toISOString()} : {}),
-      ...(endDate ? {end: new Date(endDate).toISOString()} : {}),
+      ...(this.operationsForm.value.startDate ? {start: new Date(this.operationsForm.value.startDate).toISOString()} : {}),
+      ...(this.operationsForm.value.endDate ? {end: new Date(this.operationsForm.value.endDate).toISOString()} : {}),
     };
     this.http.post<WalletOperations>(APP_CONSTANTS.ENDPOINT_WALLET_OPERATIONS, body, {
       withCredentials: true

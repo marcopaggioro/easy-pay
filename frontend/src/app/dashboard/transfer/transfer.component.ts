@@ -43,9 +43,9 @@ export class TransferComponent implements OnInit {
     }
 
     const body = {
-      recipientEmail: this.transferForm.controls.recipientEmail.value!,
-      description: this.transferForm.controls.description.value!,
-      amount: this.transferForm.controls.amount.value!
+      recipientEmail: this.transferForm.value.recipientEmail!,
+      description: this.transferForm.value.description!,
+      amount: this.transferForm.value.amount!
     }
     this.http.post(APP_CONSTANTS.ENDPOINT_WALLET_TRANSFER, body, {
       withCredentials: true,

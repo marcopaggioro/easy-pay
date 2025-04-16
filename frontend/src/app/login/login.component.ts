@@ -41,7 +41,7 @@ export class LoginComponent implements OnInit {
       return;
     }
 
-    this.authorizationService.login(this.loginForm.controls.email.value!, this.loginForm.controls.password.value!).subscribe({
+    this.authorizationService.login(this.loginForm.value.email!, this.loginForm.value.password!).subscribe({
       next: () => this.router.navigate([APP_CONSTANTS.PATH_DASHBOARD]),
       error: (httpErrorResponse: HttpErrorResponse) => {
         this.alert.error(httpErrorResponse?.error?.error || APP_CONSTANTS.MESSAGE_GENERIC_ERROR);

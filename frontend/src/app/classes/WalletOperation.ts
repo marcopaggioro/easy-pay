@@ -1,6 +1,6 @@
 import Decimal from 'decimal.js';
 
-export interface Operation {
+export interface WalletOperation {
   transactionId: string;
   senderCustomerId: string;
   recipientCustomerId: string;

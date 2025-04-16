@@ -1,59 +1,39 @@
-import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {SpinnerComponent} from "../../utilities/spinner.component";
 import {HttpClient} from '@angular/common/http';
 import {APP_CONSTANTS} from '../../app.constants';
 import {DecimalPipe} from '@angular/common';
-import {
-  NgbAccordionCollapse,
-  NgbAccordionDirective,
-  NgbAccordionHeader,
-  NgbAccordionItem,
-  NgbPagination
-} from '@ng-bootstrap/ng-bootstrap';
 import {Router, RouterLink} from '@angular/router';
-import {Wallet} from '../../classes/Wallet';
 import {WebSocketService} from '../../utilities/web-socket.service';
 import {InteractedCustomer} from '../../classes/InteractedCustomer';
-import {AccordionButtonComponent} from './accordion-button/accordion-button.component';
-import {AccordionBodyComponent} from './accordion-body/accordion-body.component';
-import {AuthorizationService} from '../../utilities/authorization.service';
+import {OperationsComponent} from '../operations/operations.component';
+import Decimal from 'decimal.js';
 
 @Component({
   selector: 'app-wallet',
   imports: [
     SpinnerComponent,
-    NgbAccordionDirective,
-    NgbAccordionItem,
-    NgbAccordionHeader,
-    NgbAccordionCollapse,
     DecimalPipe,
     RouterLink,
-    NgbPagination,
-    AccordionButtonComponent,
-    AccordionBodyComponent
+    OperationsComponent
   ],
   templateUrl: './wallet.component.html'
 })
 export class WalletComponent implements OnInit {
-  @ViewChild('balancePlaceholder') balancePlaceholder!: ElementRef;
-  customerId!: string;
-  wallet!: Wallet;
   interactedCustomers!: InteractedCustomer[];
-  page = 1;
+  balance!: Decimal;
 
-  constructor(protected authorizationService: AuthorizationService, private http: HttpClient, private router: Router, private webSocketService: WebSocketService) {
+  constructor(private http: HttpClient, private router: Router, private webSocketService: WebSocketService) {
   }
 
   ngOnInit(): void {
-    this.getWallet();
+    this.getBalance();
     this.getInteractedUsers();
-
-    this.customerId = this.authorizationService.getCustomerIdCookie();
 
     this.webSocketService.getWebSocketMessages().subscribe(
       (message) => {
         if (message?.type == APP_CONSTANTS.WS_WALLET_UPDATED) {
-          this.getWallet();
+          this.getBalance();
           this.getInteractedUsers();
         }
       }
@@ -67,11 +47,8 @@ export class WalletComponent implements OnInit {
     }).subscribe(interactedCustomers => this.interactedCustomers = interactedCustomers);
   }
 
-  getWallet(): void {
-    this.http.get<Wallet>(APP_CONSTANTS.ENDPOINT_WALLET_GET, {
-      params: {page: this.page},
-      withCredentials: true
-    }).subscribe(wallet => this.wallet = wallet);
+  getBalance(): void {
+    this.http.get<Decimal>(APP_CONSTANTS.ENDPOINT_WALLET_BALANCE, {withCredentials: true}).subscribe(balance => this.balance = balance);
   }
 
   goToTransfer(email: string): void {

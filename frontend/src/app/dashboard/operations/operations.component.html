@@ -1,0 +1,83 @@
+<div class="row justify-content-center">
+  <div [ngClass]="cardClasses">
+    <div class="card">
+      <div class="card-body">
+        <h2 class="card-title d-flex justify-content-center">{{ cardTitle }}</h2>
+        <hr/>
+        <!--TODO fixare tutti i place holders-->
+        @if (completeNavigation) {
+          <h4 class="d-flex align-items-center justify-content-center">Filtri</h4>
+          <app-alert/>
+          <form [formGroup]="operationsForm" (ngSubmit)="getOperations()">
+            <div class="row">
+              <div class="col-6">
+                <div class="form-floating my-1">
+                  <input type="datetime-local" class="form-control" id="startDate" placeholder=""
+                         [formControl]="operationsForm.controls.startDate"
+                         [class.is-invalid]="operationsForm.controls.startDate.dirty && operationsForm.controls.startDate.invalid">
+                  <label for="startDate">Data di inizio</label>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="form-floating my-1">
+                  <input type="datetime-local" class="form-control" id="endDate" placeholder=""
+                         [formControl]="operationsForm.controls.endDate"
+                         [class.is-invalid]="operationsForm.controls.endDate.dirty && operationsForm.controls.endDate.invalid">
+                  <label for="endDate">Data di fine</label>
+                </div>
+              </div>
+            </div>
+
+            <button class="btn btn-outline-dark w-100 mt-3" type="submit" id="submit"
+                    [disabled]="operationsForm.invalid || this.loading">
+              <span class="spinner-border spinner-border-sm me-1" aria-hidden="true" *ngIf="this.loading"></span>
+              <span role="status">Applica filtri</span>
+            </button>
+          </form>
+
+          <hr/>
+        }
+        @if (!operations) {
+          <app-spinner/>
+        } @else {
+          @if (operations.history.length > 0) {
+            <div ngbAccordion>
+              @for (operation of operations.history; track operation.transactionId) {
+                <div ngbAccordionItem>
+                  <h2 ngbAccordionHeader>
+                    <app-accordion-button [operation]="operation" [customerId]="customerId"/>
+                  </h2>
+                  <div ngbAccordionCollapse>
+                    <app-accordion-body [operation]="operation" [customerId]="customerId"/>
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <small class="d-flex justify-content-center">Nessuna operazione trovata</small>
+          }
+        }
+
+        @if (operations) {
+          @if (completeNavigation) {
+            @if (operations.historyCount > operations.pageSize) {
+              <div class="d-flex justify-content-center align-items-center mt-3">
+                <ngb-pagination [(page)]="page"
+                                [pageSize]="operations.pageSize"
+                                [collectionSize]="operations.historyCount"
+                                [maxSize]="5"
+                                [rotate]="true"
+                                (pageChange)="this.getOperations()"
+                                [directionLinks]="false"/>
+              </div>
+            }
+          } @else {
+            <div class="d-flex align-items-center justify-content-center mt-3">
+              <button type="button" class="btn btn-outline-dark" routerLink="../operations">Lista completa</button>
+            </div>
+          }
+        }
+      </div>
+    </div>
+  </div>
+</div>

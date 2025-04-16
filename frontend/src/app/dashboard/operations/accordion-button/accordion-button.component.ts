@@ -1,5 +1,5 @@
 import {Component, Input, OnChanges} from '@angular/core';
-import {Operation} from '../../../classes/Operation';
+import {WalletOperation} from '../../../classes/WalletOperation';
 import {DatePipe, DecimalPipe, NgClass} from '@angular/common';
 import {NgbAccordionButton} from '@ng-bootstrap/ng-bootstrap';
 import {APP_CONSTANTS} from '../../../app.constants';
@@ -16,7 +16,7 @@ import {APP_CONSTANTS} from '../../../app.constants';
 })
 export class AccordionButtonComponent implements OnChanges {
   @Input() customerId!: string;
-  @Input() operation!: Operation;
+  @Input() operation!: WalletOperation;
   protected otherCustomerId!: string;
   protected operationClass!: string;
 

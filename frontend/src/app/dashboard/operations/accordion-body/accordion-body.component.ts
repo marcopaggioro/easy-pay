@@ -1,7 +1,7 @@
 import {Component, Input} from '@angular/core';
 import {DatePipe, DecimalPipe} from "@angular/common";
 import {NgbAccordionBody, NgbTooltip} from "@ng-bootstrap/ng-bootstrap";
-import {Operation} from '../../../classes/Operation';
+import {WalletOperation} from '../../../classes/WalletOperation';
 
 @Component({
   selector: 'app-accordion-body',
@@ -15,7 +15,7 @@ import {Operation} from '../../../classes/Operation';
 })
 export class AccordionBodyComponent {
   @Input() customerId!: string;
-  @Input() operation!: Operation;
+  @Input() operation!: WalletOperation;
 
 
   protected readonly Number = Number;

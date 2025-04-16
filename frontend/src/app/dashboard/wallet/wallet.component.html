@@ -1,4 +1,4 @@
-<div class="row justify-content-center">
+<div class="row justify-content-center mb-4">
   <div class="col-12 col-md-6 col-lg-5 col-xl-4 col-xxl-3">
     <div class="card">
       <div class="card-body">
@@ -6,8 +6,8 @@
           <h4 class="card-title card-title d-flex justify-content-center">Saldo del wallet</h4>
           <hr/>
           <h1 class="placeholder-glow mb-3 d-grid justify-content-center">
-            @if (wallet) {
-              {{ Number(this.wallet!.balance) | number:'1.2-2' }}&euro;
+            @if (this.balance) {
+              {{ Number(this.balance) | number:'1.2-2' }}&euro;
             } @else {
               <span class="placeholder rounded">10000000,00</span>
             }
@@ -55,45 +55,5 @@
   </div>
 </div>
 
-<div class="row justify-content-center">
-  <div class="col-md-12 col-lg-10 col-xl-8 col-xxl-6">
-    <div class="card mt-5">
-      <div class="card-body">
-        <h4 class="card-title d-flex justify-content-center">Operazioni recenti</h4>
-        <hr/>
-        @if (!this.wallet) {
-          <app-spinner/>
-        } @else {
-          @if (this.wallet.history.length > 0) {
-            <div ngbAccordion>
-              @for (operation of this.wallet.history; track operation.transactionId) {
-                <div ngbAccordionItem>
-                  <h2 ngbAccordionHeader>
-                    <app-accordion-button [operation]="operation" [customerId]="customerId"/>
-                  </h2>
-                  <div ngbAccordionCollapse>
-                    <app-accordion-body [operation]="operation" [customerId]="customerId"/>
-                  </div>
-                </div>
-              }
-            </div>
-          } @else {
-            <small class="d-flex justify-content-center">Nessuna operazione recente</small>
-          }
-        }
-
-        @if (wallet && wallet.historyCount > wallet.pageSize) {
-          <div class="d-flex justify-content-center align-items-center mt-3">
-            <ngb-pagination [(page)]="page"
-                            [pageSize]="wallet.pageSize"
-                            [collectionSize]="wallet.historyCount"
-                            [maxSize]="5"
-                            [rotate]="true"
-                            (pageChange)="this.getWallet()"
-                            [directionLinks]="false"/>
-          </div>
-        }
-      </div>
-    </div>
-  </div>
-</div>
+<app-operations cardTitle="Operazioni recenti" [completeNavigation]="false"
+                cardClasses="col-md-12 col-lg-10 col-xl-8 col-xxl-6"/>

@@ -25,7 +25,7 @@ export class ProfileComponent implements OnInit {
   @ViewChild(AlertComponent) alert!: AlertComponent;
   userData?: UserData;
 
-  constructor(protected userDataService: UserDataService, protected authorizationService: AuthorizationService) {
+  constructor(private userDataService: UserDataService, protected authorizationService: AuthorizationService) {
   }
 
   ngOnInit(): void {
@@ -47,5 +47,4 @@ export class ProfileComponent implements OnInit {
   protected readonly emailValidator = emailValidator;
   protected readonly Validators = Validators;
   protected readonly APP_CONSTANTS = APP_CONSTANTS;
-  protected readonly authorizationInterceptor = authorizationInterceptor;
 }

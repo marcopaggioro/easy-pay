@@ -24,4 +24,8 @@ export class AlertComponent {
     this.alertMessage = message;
   }
 
+  hide(): void {
+    this.alertMessage = undefined;
+  }
+
 }

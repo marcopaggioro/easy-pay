@@ -45,8 +45,8 @@ export class ScheduledOperationsComponent implements OnInit {
   @ViewChild(AlertComponent) alert!: AlertComponent;
   loading = false;
   repeatToggle = false;
-
   scheduledOperations!: ScheduledOperation[];
+  deletingOperations: string[] = [];
 
   scheduledOperationForm = new FormGroup({
     recipientEmail: new FormControl('', [Validators.required, Validators.email, emailValidator()]),
@@ -121,12 +121,19 @@ export class ScheduledOperationsComponent implements OnInit {
   }
 
   deleteScheduledOperation(scheduledOperationId: string): void {
+    this.deletingOperations.push(scheduledOperationId);
     this.http.delete(`${APP_CONSTANTS.ENDPOINT_WALLET_DELETE_SCHEDULE}/${scheduledOperationId}`, {
       withCredentials: true,
       responseType: 'json'
     }).subscribe({
-      next: () => this.alert.success(APP_CONSTANTS.MESSAGE_SUCCESSFUL),
-      error: (httpErrorResponse: HttpErrorResponse) => this.alert.error(httpErrorResponse?.error?.error || APP_CONSTANTS.MESSAGE_GENERIC_ERROR)
+      next: () => {
+        this.deletingOperations.filter(operationId => operationId !== scheduledOperationId);
+        this.alert.success(APP_CONSTANTS.MESSAGE_SUCCESSFUL)
+      },
+      error: (httpErrorResponse: HttpErrorResponse) => {
+        this.deletingOperations.filter(operationId => operationId !== scheduledOperationId);
+        this.alert.error(httpErrorResponse?.error?.error || APP_CONSTANTS.MESSAGE_GENERIC_ERROR)
+      }
     });
   }
 

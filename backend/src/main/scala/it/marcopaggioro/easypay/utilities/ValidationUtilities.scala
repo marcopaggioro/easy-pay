@@ -23,10 +23,14 @@ object ValidationUtilities {
     )
 
   private lazy val minAge: Int = 16
+  private lazy val maxAge: Int = 110
   def validateBirthDate(date: LocalDate): ValidatedNel[String, Unit] =
     condNel(date.isBefore(LocalDate.now()), (), "La data di nascita non può essere nel futuro")
       .andThen(_ =>
         condNel(Period.between(date, LocalDate.now()).getYears >= minAge, (), s"E' richiesta un'età minima di $minAge anni")
+      )
+      .andThen(_ =>
+        condNel(Period.between(date, LocalDate.now()).getYears <= maxAge, (), s"E' consentita un'età massima di $maxAge anni")
       )
 
   private lazy val maxAmount = 10000

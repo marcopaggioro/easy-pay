@@ -14,11 +14,9 @@ import com.typesafe.scalalogging.LazyLogging
 import it.marcopaggioro.easypay.actor.WebSocketsManagerActor.WebSocketsManagerActorCommand
 import it.marcopaggioro.easypay.actor.{UsersManagerActor, WebSocketsManagerActor}
 import it.marcopaggioro.easypay.database.PlainJdbcSession
-import it.marcopaggioro.easypay.database.PostgresProfile._
-import it.marcopaggioro.easypay.database.PostgresProfile.api._
+import it.marcopaggioro.easypay.database.PostgresProfile.api.*
 import it.marcopaggioro.easypay.database.users.{UserRecord, UsersTable}
-import it.marcopaggioro.easypay.domain.UsersManager._
-import it.marcopaggioro.easypay.domain.classes.WebSocketMessage
+import it.marcopaggioro.easypay.domain.UsersManager.*
 import it.marcopaggioro.easypay.domain.classes.WebSocketMessage.UserDataUpdated
 import slick.jdbc.JdbcBackend.Database
 
@@ -72,6 +70,12 @@ private class UsersManagerProjectorActor(
               .filter(_.customerId === customerId)
               .map(record => (record.email, record.lastEdit))
               .update((email, instant))
+
+          case PasswordChanged(customerId, _, instant) =>
+            UsersTable.Table
+              .filter(_.customerId === customerId)
+              .map(_.lastEdit)
+              .update(instant)
         }
       }
       .map(_.sum)

@@ -166,6 +166,209 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /wallet:
+    get:
+      tags:
+        - Wallet
+      summary: Get wallet
+      parameters:
+        - name: page
+          in: query
+          description: Page number of operation history
+          required: false
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Got wallet
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WalletResponse"
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /wallet/interacted-customers:
+    get:
+      tags:
+        - Wallet
+      summary: Get recent interacted customers
+      responses:
+        '200':
+          description: Got recent interacted customers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InteractedCustomer"
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /wallet/recharge:
+    post:
+      tags:
+        - Wallet
+      summary: Recharge wallet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: number
+              example: 123.45
+      responses:
+        '200':
+          description: Wallet recharged
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /wallet/transfer:
+    post:
+      tags:
+        - Wallet
+      summary: Transfer money
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferMoneyPayload'
+      responses:
+        '200':
+          description: Money transferred
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        '400':
+          description: Invalid payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        '401':
+          description: Unauthorized
+        '404':
+          description: Recipient customer email not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /wallet/scheduler:
+    get:
+      tags:
+        - Wallet
+      summary: Get scheduled operations
+      responses:
+        '200':
+          description: Scheduled operation deleted
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ScheduledOperation'
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      tags:
+        - Wallet
+      summary: Create scheduled operations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateScheduledOperationPayload'
+      responses:
+        '200':
+          description: Scheduled operation created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        '400':
+          description: Invalid payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /wallet/scheduler/{scheduledOperationId}:
+    delete:
+      tags:
+        - Wallet
+      summary: Delete a scheduled operation
+      parameters:
+        - name: scheduledOperationId
+          in: path
+          description: Scheduled operation id
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: "0afe431b-4e19-4790-a3df-8ececd2a02d2"
+      responses:
+        '200':
+          description: Scheduled operation deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 
 components:
   schemas:
@@ -183,7 +386,7 @@ components:
       properties:
         error:
           type: string
-          example: "Sometime went wrong"
+          example: "Something went wrong"
       required:
         - error
 
@@ -295,3 +498,203 @@ components:
           type: string
           format: email
           example: "marco.paggioro@studenti.unipegaso.it"
+
+    WalletOperation:
+      type: object
+      properties:
+        interactedCustomerId:
+          type: string
+          format: uuid
+          example: "0afe431b-4e19-4790-a3df-8ececd2a02d2"
+        interactedFirstName:
+          type: string
+          example: Marco
+        interactedLastName:
+          type: string
+          example: Paggioro
+        interactedEmail:
+          type: string
+          format: email
+          example: "marco.paggioro@studenti.unipegaso.it"
+        transactionId:
+          type: string
+          format: uuid
+          example: "0afe431b-4e19-4790-a3df-8ececd2a02d2"
+        senderCustomerId:
+          type: string
+          format: uuid
+          example: "0afe431b-4e19-4790-a3df-8ececd2a02d2"
+        recipientCustomerId:
+          type: string
+          format: uuid
+          example: "0afe431b-4e19-4790-a3df-8ececd2a02d2"
+        description:
+          type: string
+          example: "Pizza"
+        instant:
+          type: number
+          description: Millis from EPOCH
+          example: 1744789213639
+        amount:
+          type: number
+          example: 123.45
+      required:
+        - interactedCustomerId
+        - interactedFirstName
+        - interactedLastName
+        - interactedEmail
+        - transactionId
+        - senderCustomerId
+        - recipientCustomerId
+        - instant
+        - amount
+
+    WalletResponse:
+      type: object
+      properties:
+        balance:
+          type: number
+          example: 123.45
+        pageSize:
+          type: number
+          example: 1
+        historyCount:
+          type: number
+          example: 80
+        history:
+          type: array
+          items:
+            $ref: '#/components/schemas/WalletOperation'
+      required:
+        - balance
+        - pageSize
+        - historyCount
+        - history
+
+    InteractedCustomer:
+      type: object
+      properties:
+        interactedCustomerId:
+          type: string
+          format: uuid
+          example: "0afe431b-4e19-4790-a3df-8ececd2a02d2"
+        interactedFirstName:
+          type: string
+          example: Marco
+        interactedLastName:
+          type: string
+          example: Paggioro
+        interactedEmail:
+          type: string
+          format: email
+          example: "marco.paggioro@studenti.unipegaso.it"
+      required:
+        - interactedCustomerId
+        - interactedFirstName
+        - interactedLastName
+        - interactedEmail
+
+    TransferMoneyPayload:
+      type: object
+      properties:
+        recipientEmail:
+          type: string
+          format: email
+          example: "marco.paggioro@studenti.unipegaso.it"
+        amount:
+          type: number
+          example: 123.45
+        description:
+          type: string
+          example: "Pizza"
+      required:
+        - recipientEmail
+        - amount
+        - description
+        - interactedEmail
+
+    ScheduledOperation:
+      type: object
+      properties:
+        interactedCustomerId:
+          type: string
+          format: uuid
+          example: "0afe431b-4e19-4790-a3df-8ececd2a02d2"
+        interactedFirstName:
+          type: string
+          example: Marco
+        interactedLastName:
+          type: string
+          example: Paggioro
+        interactedEmail:
+          type: string
+          format: email
+          example: "marco.paggioro@studenti.unipegaso.it"
+        id:
+          type: string
+          format: uuid
+          example: "0afe431b-4e19-4790-a3df-8ececd2a02d2"
+        senderCustomerId:
+          type: string
+          format: uuid
+          example: "0afe431b-4e19-4790-a3df-8ececd2a02d2"
+        recipientCustomerId:
+          type: string
+          format: uuid
+          example: "0afe431b-4e19-4790-a3df-8ececd2a02d2"
+        description:
+          type: string
+          example: "Pizza"
+        when:
+          type: number
+          description: Millis from EPOCH
+          example: 1744789213639
+        amount:
+          type: number
+          example: 123.45
+        repeat:
+          type: string
+          example: "1 Giorno"
+        status:
+          type: string
+          example: "In attesa"
+      required:
+        - interactedCustomerId
+        - interactedFirstName
+        - interactedLastName
+        - interactedEmail
+        - id
+        - senderCustomerId
+        - recipientCustomerId
+        - description
+        - when
+        - amount
+        - status
+
+    CreateScheduledOperationPayload:
+      type: object
+      properties:
+        recipientEmail:
+          type: string
+          format: email
+          example: "marco.paggioro@studenti.unipegaso.it"
+        description:
+          type: string
+          example: "Pizza"
+        when:
+          type: number
+          description: Millis from EPOCH
+          example: 1744789213639
+        amount:
+          type: number
+          example: 123.45
+        repeat:
+          type: string
+          description: Period Java-parsable string
+          example: "P1M1D"
+      required:
+        - recipientEmail
+        - description
+        - when
+        - amount
+

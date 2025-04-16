@@ -1,4 +1,4 @@
-import {Component, Input} from '@angular/core';
+import {Component, Input, OnChanges} from '@angular/core';
 import {Operation} from '../../../classes/Operation';
 import {DatePipe, DecimalPipe, NgClass} from '@angular/common';
 import {NgbAccordionButton} from '@ng-bootstrap/ng-bootstrap';
@@ -14,17 +14,22 @@ import {APP_CONSTANTS} from '../../../app.constants';
   ],
   templateUrl: './accordion-button.component.html'
 })
-export class AccordionButtonComponent {
+export class AccordionButtonComponent implements OnChanges {
   @Input() customerId!: string;
   @Input() operation!: Operation;
+  protected otherCustomerId!: string;
+  protected operationClass!: string;
 
-  operationClass(): string {
+  ngOnChanges(): void {
     if (this.operation.senderCustomerId === this.operation.recipientCustomerId) {
-      return 'bg-info';
+      this.otherCustomerId = this.operation.senderCustomerId;
+      this.operationClass = 'text-success';
     } else if (this.customerId === this.operation.senderCustomerId) {
-      return 'bg-danger';
+      this.otherCustomerId = this.operation.recipientCustomerId;
+      this.operationClass = 'text-danger';
     } else {
-      return 'bg-success';
+      this.otherCustomerId = this.operation.senderCustomerId;
+      this.operationClass = 'text-success';
     }
   }
 

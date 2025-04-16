@@ -1,9 +1,9 @@
-<button ngbAccordionButton class="bg-opacity-10 p-2" [ngClass]="operationClass()">
+<button ngbAccordionButton class="bg-opacity-10 p-2 bg-secondary bg-opacity-10">
   <div class="container-fluid">
     <div class="row">
       <div class="col-2 col-md-1 d-flex align-items-center justify-content-center">
         <img class="img-fluid"
-             [src]="APP_CONSTANTS.ENDPOINT_AVATAR + operation.recipientCustomerId"
+             [src]="APP_CONSTANTS.ENDPOINT_AVATAR + otherCustomerId"
              alt="user-avatar"/>
       </div>
       <div class="col-8 col-md-8 text-truncate">
@@ -18,9 +18,9 @@
       </div>
       <div class="col-2 col-md-3 d-flex align-items-center justify-content-end">
         @if (operation.senderCustomerId !== operation.recipientCustomerId && customerId === operation.senderCustomerId) {
-          <h5>-{{ Number(operation.amount) | number:'1.2-2' }}&euro;</h5>
+          <h5 [ngClass]="operationClass">-{{ Number(operation.amount) | number:'1.2-2' }}&euro;</h5>
         } @else {
-          <h5>{{ Number(operation.amount) | number:'1.2-2' }}&euro;</h5>
+          <h5 [ngClass]="operationClass">{{ Number(operation.amount) | number:'1.2-2' }}&euro;</h5>
         }
       </div>
     </div>

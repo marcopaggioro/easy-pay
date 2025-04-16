@@ -505,6 +505,7 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
         .on { case (scheduledRecord, userRecord) =>
           scheduledRecord.recipientCustomerId === userRecord.customerId
         }
+        .sortBy(_._1.when)
         .result
     }
 

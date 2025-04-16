@@ -4,9 +4,6 @@
       <li class="list-group-item">Transazione
         <code class="ps-2">{{ operation.transactionId }}</code>
       </li>
-      <li class="list-group-item">Importo
-        <code class="ps-2">{{ Number(operation.amount) | number:'1.2-2' }}&euro;</code>
-      </li>
       <li class="list-group-item">Data <code
         class="ps-2">{{ operation.instant | date:'dd/MM/YYYY HH:mm:ss' }}</code>
       </li>
@@ -15,26 +12,32 @@
           <li class="list-group-item">Destinatario
             <code class="ps-2">{{ operation.interactedFirstName + " " + operation.interactedLastName }}</code>
           </li>
+          <li class="list-group-item">Email
+            <code class="ps-2" placement="bottom"
+                  ngbTooltip="{{operation.recipientCustomerId}}">{{ operation.interactedEmail }}</code>
+          </li>
+          <li class="list-group-item">Importo
+            <code class="ps-2">-{{ Number(operation.amount) | number:'1.2-2' }}&euro;</code>
+          </li>
         } @else {
           <li class="list-group-item">Mittente
             <code class="ps-2">{{ operation.interactedFirstName + " " + operation.interactedLastName }}</code>
+          </li>
+          <li class="list-group-item">Email
+            <code class="ps-2" placement="bottom"
+                  ngbTooltip="{{operation.senderCustomerId}}">{{ operation.interactedEmail }}</code>
+          </li>
+          <li class="list-group-item">Importo
+            <code class="ps-2">{{ Number(operation.amount) | number:'1.2-2' }}&euro;</code>
           </li>
         }
         <li class="list-group-item">Descrizione
           <code class="ps-2">{{ operation.description }}</code>
         </li>
-
-        @if (customerId === operation.senderCustomerId) {
-          <li class="list-group-item">Email
-            <code class="ps-2" placement="bottom"
-                  ngbTooltip="{{operation.recipientCustomerId}}">{{ operation.interactedEmail }}</code>
-          </li>
-        } @else {
-          <li class="list-group-item">Email
-            <code class="ps-2" placement="bottom"
-                  ngbTooltip="{{operation.senderCustomerId}}">{{ operation.interactedEmail }}</code>
-          </li>
-        }
+      } @else {
+        <li class="list-group-item">Importo
+          <code class="ps-2">{{ Number(operation.amount) | number:'1.2-2' }}&euro;</code>
+        </li>
       }
     </ul>
   </ng-template>

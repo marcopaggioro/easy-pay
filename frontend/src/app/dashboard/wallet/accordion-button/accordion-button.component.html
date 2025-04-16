@@ -17,7 +17,11 @@
         <small class="m-0 ps-1">{{ operation.instant | date:'dd MMMM HH:mm' }}</small>
       </div>
       <div class="col-2 col-md-3 d-flex align-items-center justify-content-end">
-        <h5>{{ Number(operation.amount) | number:'1.2-2' }}&euro;</h5>
+        @if (operation.senderCustomerId !== operation.recipientCustomerId && customerId === operation.senderCustomerId) {
+          <h5>-{{ Number(operation.amount) | number:'1.2-2' }}&euro;</h5>
+        } @else {
+          <h5>{{ Number(operation.amount) | number:'1.2-2' }}&euro;</h5>
+        }
       </div>
     </div>
   </div>

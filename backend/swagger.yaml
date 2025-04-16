@@ -19,6 +19,15 @@ paths:
       tags:
         - User
       summary: Check if client has a valid JWT token
+      parameters:
+        - name: Origin
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Header CORS Origin
+      security:
+        - EasyPayAuth: [ ]
       responses:
         '200':
           description: User has a valid JWT
@@ -28,6 +37,10 @@ paths:
                 $ref: "#/components/schemas/OkResponse"
         '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         '500':
           description: Internal server error
           content:
@@ -40,6 +53,13 @@ paths:
       tags:
         - User
       summary: Login user
+      parameters:
+        - name: Origin
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Header CORS Origin
       requestBody:
         required: true
         content:
@@ -61,6 +81,10 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
         '401':
           description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         '500':
           description: Internal server error
           content:
@@ -73,6 +97,15 @@ paths:
       tags:
         - User
       summary: Logout user
+      parameters:
+        - name: Origin
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Header CORS Origin
+      security:
+        - EasyPayAuth: [ ]
       responses:
         '200':
           description: User logged out
@@ -82,12 +115,25 @@ paths:
                 $ref: "#/components/schemas/OkResponse"
         '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
   /user:
     post:
       tags:
         - User
       summary: Create an user
+      parameters:
+        - name: Origin
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Header CORS Origin
+      security:
+        - EasyPayAuth: [ ]
       requestBody:
         required: true
         content:
@@ -109,6 +155,10 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
         '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         '500':
           description: Internal server error
           content:
@@ -119,6 +169,15 @@ paths:
       tags:
         - User
       summary: Get user data
+      parameters:
+        - name: Origin
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Header CORS Origin
+      security:
+        - EasyPayAuth: [ ]
       responses:
         '200':
           description: Got user data
@@ -128,6 +187,10 @@ paths:
                 $ref: "#/components/schemas/UserDataResponse"
         '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         '500':
           description: Internal server error
           content:
@@ -138,6 +201,15 @@ paths:
       tags:
         - User
       summary: Update user data
+      parameters:
+        - name: Origin
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Header CORS Origin
+      security:
+        - EasyPayAuth: [ ]
       requestBody:
         required: true
         content:
@@ -159,6 +231,10 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
         '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         '500':
           description: Internal server error
           content:
@@ -172,6 +248,12 @@ paths:
         - Wallet
       summary: Get wallet
       parameters:
+        - name: Origin
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Header CORS Origin
         - name: page
           in: query
           description: Page number of operation history
@@ -179,6 +261,8 @@ paths:
           schema:
             type: integer
             format: int32
+      security:
+        - EasyPayAuth: [ ]
       responses:
         '200':
           description: Got wallet
@@ -188,6 +272,10 @@ paths:
                 $ref: "#/components/schemas/WalletResponse"
         '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         '500':
           description: Internal server error
           content:
@@ -200,6 +288,15 @@ paths:
       tags:
         - Wallet
       summary: Get recent interacted customers
+      parameters:
+        - name: Origin
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Header CORS Origin
+      security:
+        - EasyPayAuth: [ ]
       responses:
         '200':
           description: Got recent interacted customers
@@ -211,6 +308,10 @@ paths:
                   $ref: "#/components/schemas/InteractedCustomer"
         '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         '500':
           description: Internal server error
           content:
@@ -223,6 +324,15 @@ paths:
       tags:
         - Wallet
       summary: Recharge wallet
+      parameters:
+        - name: Origin
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Header CORS Origin
+      security:
+        - EasyPayAuth: [ ]
       requestBody:
         required: true
         content:
@@ -239,6 +349,10 @@ paths:
                 $ref: "#/components/schemas/OkResponse"
         '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         '500':
           description: Internal server error
           content:
@@ -251,6 +365,15 @@ paths:
       tags:
         - Wallet
       summary: Transfer money
+      parameters:
+        - name: Origin
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Header CORS Origin
+      security:
+        - EasyPayAuth: [ ]
       requestBody:
         required: true
         content:
@@ -272,6 +395,10 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
         '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         '404':
           description: Recipient customer email not found
           content:
@@ -290,6 +417,15 @@ paths:
       tags:
         - Wallet
       summary: Get scheduled operations
+      parameters:
+        - name: Origin
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Header CORS Origin
+      security:
+        - EasyPayAuth: [ ]
       responses:
         '200':
           description: Scheduled operation deleted
@@ -301,6 +437,10 @@ paths:
                   $ref: '#/components/schemas/ScheduledOperation'
         '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         '500':
           description: Internal server error
           content:
@@ -311,6 +451,15 @@ paths:
       tags:
         - Wallet
       summary: Create scheduled operations
+      parameters:
+        - name: Origin
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Header CORS Origin
+      security:
+        - EasyPayAuth: [ ]
       requestBody:
         required: true
         content:
@@ -332,6 +481,10 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
         '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         '500':
           description: Internal server error
           content:
@@ -345,6 +498,12 @@ paths:
         - Wallet
       summary: Delete a scheduled operation
       parameters:
+        - name: Origin
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Header CORS Origin
         - name: scheduledOperationId
           in: path
           description: Scheduled operation id
@@ -353,6 +512,8 @@ paths:
             type: string
             format: uuid
             example: "0afe431b-4e19-4790-a3df-8ececd2a02d2"
+      security:
+        - EasyPayAuth: [ ]
       responses:
         '200':
           description: Scheduled operation deleted
@@ -362,6 +523,10 @@ paths:
                 $ref: "#/components/schemas/LoginResponse"
         '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         '500':
           description: Internal server error
           content:
@@ -371,6 +536,13 @@ paths:
 
 
 components:
+  securitySchemes:
+    EasyPayAuth:
+      type: apiKey
+      in: header
+      name: EasyPayToken
+      description: JWT token
+
   schemas:
     OkResponse:
       type: object
@@ -697,4 +869,5 @@ components:
         - description
         - when
         - amount
-
+          
+        

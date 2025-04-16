@@ -83,3 +83,19 @@ In un sistema Linux:
 ```bash
 script/initialize.sh
 ```
+
+## API
+
+Per visualizzare la documentazione Swagger relativa alle API è possibile visitare la URL locale o
+la [URL remota](https://easypay-api.paggiorocloud.it/swagger):
+
+```http request
+http://localhost:9000/swagger
+```
+
+È, inoltre, possibile visualizzarle tale configurazione più user-friendly visitando la pagina
+dello [Swagger Client UI](https://petstore.swagger.io/) e inserendo la URL remota del file swagger:
+
+```http request
+https://easypay-api.paggiorocloud.it/swagger
+```

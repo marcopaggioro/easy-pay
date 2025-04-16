@@ -78,9 +78,9 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
     }
   }
 
-  private val exceptionHandler: Uri => ExceptionHandler = uri =>
+  private val exceptionHandler: Uri => ExceptionHandler = implicit uri =>
     ExceptionHandler { case throwable =>
-      completeWithError(StatusCodes.InternalServerError, throwable.getMessage)(uri)
+      completeWithError(StatusCodes.InternalServerError, throwable.getMessage)
     }
 
   private val rejectionHandler: RejectionHandler = RejectionHandler.default.mapRejectionResponse(response =>
@@ -100,7 +100,7 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
           concat(
             path("check") {
               get { // GET /user/login/check
-                JwtUtils.withCustomerIdFromToken(uri) { customerId =>
+                JwtUtils.withCustomerIdFromToken() { customerId =>
                   completeWithOK()
                 }
               }
@@ -133,12 +133,12 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
               }
             },
             get { // GET /user
-              JwtUtils.withCustomerIdFromToken(uri) { customerId =>
+              JwtUtils.withCustomerIdFromToken() { customerId =>
                 getUser(customerId)
               }
             },
             patch { // PATCH /user
-              JwtUtils.withCustomerIdFromToken(uri) { customerId =>
+              JwtUtils.withCustomerIdFromToken() { customerId =>
                 entity(as[UpdateUserDataPayload]) { payload =>
                   checkPayloadIsValid(payload) {
                     askToActor[UsersManagerCommand, Done](
@@ -163,7 +163,7 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
     }
 
   private lazy val WalletRoutes: Uri => Route = implicit uri =>
-    JwtUtils.withCustomerIdFromToken(uri) { customerId =>
+    JwtUtils.withCustomerIdFromToken() { customerId =>
       pathPrefix("wallet") {
         concat(
           path("recharge") {
@@ -252,7 +252,7 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
   }
 
   private val WebSocketRoutes: Uri => Route = implicit uri =>
-    JwtUtils.withCustomerIdFromToken(uri) { customerId =>
+    JwtUtils.withCustomerIdFromToken() { customerId =>
       path("ws") {
         handleWebSocketMessages(webSocketFlow(customerId))
       }
@@ -262,16 +262,21 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
     implicit val uri: Uri = request.uri
     system.log.debug(s"Received ${request.method.value} ${request.uri.path.toString()}")
 
-    cors() {
-      handleErrors(request.uri) {
-        concat(
-          UserRoutes(uri),
-          WalletRoutes(uri),
-          WebSocketRoutes(uri),
-          pathEndOrSingleSlash(complete("Server up and running"))
-        )
+    concat(
+      path("swagger") {
+        getFromResource("swagger.yaml", ContentTypes.`text/plain(UTF-8)`)
+      },
+      cors() {
+        handleErrors(request.uri) {
+          concat(
+            UserRoutes(uri),
+            WalletRoutes(uri),
+            WebSocketRoutes(uri),
+            pathEndOrSingleSlash(complete("Server up and running"))
+          )
+        }
       }
-    }
+    )
   }
 
   private def askToActor[C, R](actorRef: ActorRef[C], command: ActorRef[StatusReply[R]] => C, onSuccess: R => Route)(implicit

@@ -65,6 +65,7 @@ export class ProfileFieldComponent implements OnChanges {
             this.editResult.emit(null);
             this.editing = false;
             this.waitingResponse = false;
+            this.formField.setValue(this.fieldValue || '');
           },
           error: (httpErrorResponse: HttpErrorResponse) => {
             this.editResult.emit(httpErrorResponse?.error?.error || APP_CONSTANTS.MESSAGE_GENERIC_ERROR);

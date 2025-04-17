@@ -66,8 +66,8 @@
           </div>
 
           <button class="btn btn-outline-dark w-100 mt-3" type="submit" id="submit"
-                  [disabled]="scheduledOperationForm.invalid || this.loading">
-            <span class="spinner-border spinner-border-sm me-1" aria-hidden="true" *ngIf="this.loading"></span>
+                  [disabled]="scheduledOperationForm.invalid || loading">
+            <span class="spinner-border spinner-border-sm me-1" aria-hidden="true" *ngIf="loading"></span>
             <span role="status">Crea</span>
           </button>
         </form>
@@ -85,9 +85,9 @@
         @if (!scheduledOperations) {
           <app-spinner></app-spinner>
         } @else {
-          @if (this.scheduledOperations.length > 0) {
+          @if (scheduledOperations.length > 0) {
             <div ngbAccordion>
-              @for (scheduledOperation of this.scheduledOperations; track scheduledOperation.id) {
+              @for (scheduledOperation of scheduledOperations; track scheduledOperation.id) {
                 <div ngbAccordionItem>
                   <h2 ngbAccordionHeader>
                     <button ngbAccordionButton class="bg-opacity-10"

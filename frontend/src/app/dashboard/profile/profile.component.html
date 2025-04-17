@@ -8,7 +8,7 @@
         <hr/>
         <div class="d-flex align-items-center justify-content-center mb-2">
           <img class="img-fluid col-4 col-sm-3 col-md-2"
-               [src]="APP_CONSTANTS.ENDPOINT_AVATAR + this.userData"
+               [src]="APP_CONSTANTS.ENDPOINT_AVATAR + userData?.id"
                alt="user-avatar"/>
         </div>
 
@@ -17,7 +17,7 @@
             <tbody>
             <tr>
               <th scope="row">ID</th>
-              <td><code>{{ this.userData?.id }}</code></td>
+              <td><code>{{ userData?.id }}</code></td>
               <td></td>
             </tr>
 
@@ -45,7 +45,7 @@
 
             <tr>
               <th scope="row">Ultima modifica</th>
-              <td><code>{{ this.userData?.lastEdit | date: 'dd MMMM HH:mm' }}</code></td>
+              <td><code>{{ userData?.lastEdit | date: 'dd MMMM HH:mm' }}</code></td>
               <td></td>
             </tr>
 

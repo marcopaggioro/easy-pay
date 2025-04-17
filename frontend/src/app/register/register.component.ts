@@ -58,4 +58,5 @@ export class RegisterComponent implements OnInit {
     });
   }
 
+  protected readonly APP_CONSTANTS = APP_CONSTANTS;
 }

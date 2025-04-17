@@ -1,3 +1,5 @@
+import {PaymentCard} from './PaymentCard';
+
 export interface UserData {
   id: string;
   firstName: string;
@@ -5,4 +7,5 @@ export interface UserData {
   birthDate: string;
   email: string;
   lastEdit: number;
+  paymentCards: PaymentCard[];
 }

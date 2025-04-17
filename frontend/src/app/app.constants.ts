@@ -12,6 +12,8 @@ export const APP_CONSTANTS = {
   ENDPOINT_USER_LOGIN_CHECK: environment.API_URL + "/user/login/check",
   ENDPOINT_USER_LOGOUT: environment.API_URL + "/user/logout",
   ENDPOINT_USER_REFRESH_TOKEN: environment.API_URL + "/user/refresh-token",
+  ENDPOINT_USER_CREATE_PAYMENT_CARD: environment.API_URL + "/user/payment-card",
+  ENDPOINT_USER_DELETE_PAYMENT_CARD: environment.API_URL + "/user/payment-card",
 
   ENDPOINT_WALLET_BALANCE: environment.API_URL + "/wallet/balance",
   ENDPOINT_WALLET_OPERATIONS: environment.API_URL + "/wallet/operations",
@@ -25,6 +27,7 @@ export const APP_CONSTANTS = {
   // Absolute paths
   PATH_ROOT: "/",
   PATH_LOGIN: "/login",
+  PATH_REGISTER: "/register",
   PATH_DASHBOARD: "/dashboard",
   PATH_TRANSFER: "/dashboard/transfer",
 

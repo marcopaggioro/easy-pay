@@ -101,7 +101,7 @@ export class ScheduledOperationsComponent implements OnInit {
       body.repeat = `P${months}M${days}D`;
     }
 
-    this.http.put(APP_CONSTANTS.ENDPOINT_WALLET_CREATE_SCHEDULE, body, {
+    this.http.post(APP_CONSTANTS.ENDPOINT_WALLET_CREATE_SCHEDULE, body, {
       withCredentials: true,
       responseType: 'json'
     }).subscribe({
@@ -127,11 +127,11 @@ export class ScheduledOperationsComponent implements OnInit {
       responseType: 'json'
     }).subscribe({
       next: () => {
-        this.deletingOperations.filter(operationId => operationId !== scheduledOperationId);
+        this.deletingOperations.filter(value => value !== scheduledOperationId);
         this.alert.success(APP_CONSTANTS.MESSAGE_SUCCESSFUL)
       },
       error: (httpErrorResponse: HttpErrorResponse) => {
-        this.deletingOperations.filter(operationId => operationId !== scheduledOperationId);
+        this.deletingOperations.filter(value => value !== scheduledOperationId);
         this.alert.error(httpErrorResponse?.error?.error || APP_CONSTANTS.MESSAGE_GENERIC_ERROR)
       }
     });

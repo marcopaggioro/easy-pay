@@ -8,6 +8,7 @@ import {RechargeComponent} from './dashboard/recharge/recharge.component';
 import {ProfileComponent} from './dashboard/profile/profile.component';
 import {ScheduledOperationsComponent} from './dashboard/scheduled-operations/scheduled-operations.component';
 import {OperationsComponent} from './dashboard/operations/operations.component';
+import {PaymentCardsComponent} from './dashboard/payment-cards/payment-cards.component';
 
 export const routes: Routes = [
   {path: "register", component: RegisterComponent},
@@ -18,9 +19,10 @@ export const routes: Routes = [
       {path: "wallet", component: WalletComponent},
       {path: "operations", component: OperationsComponent},
       {path: "transfer", component: TransferComponent},
+      {path: "scheduled", component: ScheduledOperationsComponent},
       {path: "recharge", component: RechargeComponent},
-      {path: "profile", component: ProfileComponent},
-      {path: "scheduled", component: ScheduledOperationsComponent}
+      {path: "payment-cards", component: PaymentCardsComponent},
+      {path: "profile", component: ProfileComponent}
     ]
   },
   {path: "**", redirectTo: "login"}

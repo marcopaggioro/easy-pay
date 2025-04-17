@@ -30,8 +30,8 @@
           </div>
 
           <button class="btn btn-outline-dark w-100 py-2" type="submit" id="submit"
-                  [disabled]="transferForm.invalid || this.loading">
-            <span class="spinner-border spinner-border-sm me-1" aria-hidden="true" *ngIf="this.loading"></span>
+                  [disabled]="transferForm.invalid || loading">
+            <span class="spinner-border spinner-border-sm me-1" aria-hidden="true" *ngIf="loading"></span>
             <span role="status">Trasferisci</span>
           </button>
         </form>

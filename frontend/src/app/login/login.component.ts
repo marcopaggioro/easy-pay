@@ -50,4 +50,5 @@ export class LoginComponent implements OnInit {
     });
   }
 
+  protected readonly APP_CONSTANTS = APP_CONSTANTS;
 }

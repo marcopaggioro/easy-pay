@@ -7,7 +7,6 @@ import {ProfileFieldComponent} from './profile-field/profile-field.component';
 import {DatePipe} from '@angular/common';
 import {APP_CONSTANTS} from '../../app.constants';
 import {emailValidator} from '../../utilities/email.validator';
-import {authorizationInterceptor} from '../../utilities/authorization.interceptor';
 import {AuthorizationService} from '../../utilities/authorization.service';
 
 @Component({
@@ -18,7 +17,6 @@ import {AuthorizationService} from '../../utilities/authorization.service';
     ProfileFieldComponent,
     DatePipe
   ],
-  providers: [UserDataService],
   templateUrl: './profile.component.html'
 })
 export class ProfileComponent implements OnInit {

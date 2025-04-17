@@ -32,6 +32,7 @@ export class AuthorizationService {
     });
   }
 
+  //TODO refresh user data on register
   register(firstName: string, lastName: string, birthDate: string, email: string, password: string): Observable<void> {
     const body = {firstName, lastName, birthDate, email, encryptedPassword: this.hashPassword(password)};
     return this.http.post<Authorization>(APP_CONSTANTS.ENDPOINT_USER_REGISTER, body, {
@@ -40,6 +41,7 @@ export class AuthorizationService {
     }).pipe(map(authorization => this.setCustomerIdCookie(authorization)));
   }
 
+  //TODO refresh user data on login
   login(email: string, password: string): Observable<void> {
     return this.http.post<Authorization>(APP_CONSTANTS.ENDPOINT_USER_LOGIN, {
       email,

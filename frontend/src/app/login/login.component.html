@@ -6,9 +6,9 @@
           <img class="img-fluid p-5" src="logo-black.png" alt="Logo"/>
 
           <h3 class="card-title d-flex justify-content-center">Autenticazione</h3>
-          <a routerLink="../register" class="d-grid justify-content-center align-items-center">Non sei ancora
-            registrato?
-            Registrati</a>
+          <a [routerLink]="APP_CONSTANTS.PATH_REGISTER" class="d-grid justify-content-center align-items-center">
+            Non sei ancora registrato? Registrati
+          </a>
           <app-alert/>
 
           <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
@@ -28,8 +28,8 @@
             </div>
 
             <button class="btn btn-primary w-100 py-2" type="submit" id="submit"
-                    [disabled]="loginForm.invalid || this.loading">
-              <span class="spinner-border spinner-border-sm me-1" aria-hidden="true" *ngIf="this.loading"></span>
+                    [disabled]="loginForm.invalid || loading">
+              <span class="spinner-border spinner-border-sm me-1" aria-hidden="true" *ngIf="loading"></span>
               <span role="status">Accedi</span>
             </button>
           </form>

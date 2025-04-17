@@ -6,21 +6,40 @@
 
         <h2 class="card-title d-flex justify-content-center">Ricarica wallet</h2>
         <hr/>
-        <form [formGroup]="rechargeForm" (ngSubmit)="onSubmit()">
-          <!-- Amount -->
-          <div class="form-floating my-3">
-            <input type="number" class="form-control" id="amount" placeholder
-                   [formControl]="rechargeForm.controls.amount"
-                   [class.is-invalid]="rechargeForm.controls.amount.dirty && rechargeForm.controls.amount.invalid">
-            <label for="amount">Importo</label>
-          </div>
+        @if (paymentCards && paymentCards.length > 0) {
+          <form [formGroup]="rechargeForm" (ngSubmit)="onSubmit()">
+            <!-- Card ID -->
+            <div class="form-floating">
+              <select class="form-select form-control" id="cardId" aria-label="Floating label select example"
+                      [formControl]="rechargeForm.controls.cardId"
+                      [class.is-invalid]="rechargeForm.controls.cardId.dirty && rechargeForm.controls.cardId.invalid">
+                @for (paymentCard of paymentCards; track paymentCard.cardId) {
+                  <option [value]="paymentCard.cardId">{{ paymentCard.cardNumber }}</option>
+                }
+              </select>
+              <label for="cardId">Carta di pagamento</label>
+            </div>
+            <!-- Amount -->
+            <div class="form-floating my-3">
+              <input type="number" class="form-control" id="amount" placeholder
+                     [formControl]="rechargeForm.controls.amount"
+                     [class.is-invalid]="rechargeForm.controls.amount.dirty && rechargeForm.controls.amount.invalid">
+              <label for="amount">Importo</label>
+            </div>
 
-          <button class="btn btn-outline-dark w-100 py-2" type="submit" id="submit"
-                  [disabled]="rechargeForm.invalid || this.loading">
-            <span class="spinner-border spinner-border-sm me-1" aria-hidden="true" *ngIf="this.loading"></span>
-            <span role="status">Ricarica</span>
-          </button>
-        </form>
+            <button class="btn btn-outline-dark w-100 py-2" type="submit" id="submit"
+                    [disabled]="rechargeForm.invalid || loading">
+              <span class="spinner-border spinner-border-sm me-1" aria-hidden="true" *ngIf="loading"></span>
+              <span role="status">Ricarica</span>
+            </button>
+          </form>
+        } @else {
+          <small class="d-flex justify-content-center">Per poter effettuare una ricarica è necessaria almeno una carta
+            di pagamento collegata al conto</small>
+          <div class="d-flex align-items-center justify-content-center mt-3">
+            <button type="button" class="btn btn-outline-dark" routerLink="../payment-cards">Vai alle carte</button>
+          </div>
+        }
       </div>
     </div>
   </div>

@@ -62,8 +62,10 @@ export class WebSocketService {
     }
   }
 
+  //TODO perchè due connection al load della pagina
+  //TODO non ricrea la connection
   getWebSocketMessages(): Observable<WebSocketMessage | null> {
-    if (!this.socket$ || this.socket$.closed) {
+    if (!this.socket$ || !this.socket$.closed) {
       this.createWebSocketConnection();
     }
     return this.messageSubject$.asObservable();

@@ -1,0 +1,105 @@
+<div class="row justify-content-center">
+  <div class="col col-md-10 col-lg-8 col-xl-6 col-xxl-5">
+    <div class="card">
+      <div class="card-body">
+        <app-alert/>
+
+        <h2 class="card-title d-flex justify-content-center">Inserimento carte di pagamento</h2>
+        <hr/>
+        <form [formGroup]="paymentCardForm" (ngSubmit)="createPaymentCard()">
+          <div class="row">
+
+            <!-- Full name -->
+            <div class="col-6">
+              <div class="form-floating my-1">
+                <input type="text" class="form-control" id="fullName" placeholder
+                       [formControl]="paymentCardForm.controls.fullName"
+                       [class.is-invalid]="paymentCardForm.controls.fullName.dirty && paymentCardForm.controls.fullName.invalid"/>
+                <label for="fullName">Nome completo</label>
+              </div>
+            </div>
+            <!-- Card number -->
+            <div class="col-6">
+              <div class="form-floating my-1">
+                <input type="number" class="form-control" id="cardNumber" placeholder
+                       [formControl]="paymentCardForm.controls.cardNumber"
+                       [class.is-invalid]="paymentCardForm.controls.cardNumber.dirty && paymentCardForm.controls.cardNumber.invalid">
+                <label for="expiration">Numero della carta</label>
+              </div>
+            </div>
+            <!-- Expiration -->
+            <div class="col-6">
+              <div class="form-floating my-1">
+                <input type="month" class="form-control" id="expiration" placeholder
+                       [formControl]="paymentCardForm.controls.expiration"
+                       [class.is-invalid]="paymentCardForm.controls.expiration.dirty && paymentCardForm.controls.expiration.invalid">
+                <label for="expiration">Scadenza</label>
+              </div>
+            </div>
+            <!-- Security code -->
+            <div class="col-6">
+              <div class="form-floating my-1">
+                <input type="text" class="form-control" id="securityCode" placeholder
+                       [formControl]="paymentCardForm.controls.securityCode"
+                       [class.is-invalid]="paymentCardForm.controls.securityCode.dirty && paymentCardForm.controls.securityCode.invalid">
+                <label for="securityCode">CVV</label>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn btn-outline-dark w-100 mt-3" type="submit" id="submit"
+                  [disabled]="paymentCardForm.invalid || loading">
+            <span class="spinner-border spinner-border-sm me-1" aria-hidden="true" *ngIf="loading"></span>
+            <span role="status">Crea</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row justify-content-center my-5">
+  <div class="col col-md-10 col-lg-8 col-xl-6 col-xxl-5">
+    <div class="card">
+      <div class="card-body">
+        <h2 class="card-title d-flex justify-content-center">Carte di pagamento</h2>
+        <hr/>
+        @if (!paymentCards) {
+          <app-spinner></app-spinner>
+        } @else {
+          @if (paymentCards.length > 0) {
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                <tr>
+                  <th scope="col">Nome completo</th>
+                  <th scope="col">Numero della carta</th>
+                  <th scope="col">Scadenza</th>
+                  <th scope="col"></th>
+                </tr>
+                </thead>
+                <tbody>
+                  @for (paymentCard of paymentCards; track paymentCard.cardId) {
+                    <tr>
+                      <td>{{ paymentCard.fullName }}</td>
+                      <td><code>{{ paymentCard.cardNumber }}</code></td>
+                      <td>{{ paymentCard.expiration }}</td>
+                      <td>
+                        <button type="button" class="btn btn-outline-danger btn-sm"
+                                (click)="deletePaymentCard(paymentCard.cardId)">
+                          <i class="bi bi-trash-fill"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <small class="d-flex justify-content-center">Nessuna carta di pagamento</small>
+          }
+        }
+      </div>
+    </div>
+  </div>
+</div>

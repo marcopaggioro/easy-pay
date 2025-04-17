@@ -6,8 +6,8 @@
           <h4 class="card-title card-title d-flex justify-content-center">Saldo del wallet</h4>
           <hr/>
           <h1 class="placeholder-glow mb-3 d-grid justify-content-center">
-            @if (this.balance) {
-              {{ Number(this.balance) | number:'1.2-2' }}&euro;
+            @if (balance) {
+              {{ Number(balance) | number:'1.2-2' }}&euro;
             } @else {
               <span class="placeholder rounded">10000000,00</span>
             }
@@ -27,12 +27,12 @@
       <div class="card-body">
         <h4 class="card-title d-flex justify-content-center">Interagisci nuovamente</h4>
         <hr/>
-        @if (!this.interactedCustomers) {
+        @if (!interactedCustomers) {
           <app-spinner/>
         } @else {
-          @if (this.interactedCustomers.length > 0) {
+          @if (interactedCustomers.length > 0) {
             <div class="list-group">
-              @for (interactedCustomer of this.interactedCustomers; track interactedCustomer.interactedCustomerId) {
+              @for (interactedCustomer of interactedCustomers; track interactedCustomer.interactedCustomerId) {
                 <button href="#" class="list-group-item list-group-item-action bg-secondary bg-opacity-10"
                         (click)="$event.preventDefault(); goToTransfer(interactedCustomer.interactedEmail)">
                   <div class="d-flex align-items-center">

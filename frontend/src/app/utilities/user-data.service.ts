@@ -4,16 +4,21 @@ import {APP_CONSTANTS} from '../app.constants';
 import {HttpClient} from '@angular/common/http';
 import {BehaviorSubject, tap} from 'rxjs';
 import {WebSocketService} from './web-socket.service';
+import {Router} from '@angular/router';
 
-@Injectable()
+@Injectable({
+  providedIn: 'root'
+})
 export class UserDataService {
   private userDataSubject = new BehaviorSubject<UserData | null>(null);
   userData$ = this.userDataSubject.asObservable();
 
-  constructor(private http: HttpClient, private webSocketService: WebSocketService) {
-    this.getUserData();
+  constructor(private http: HttpClient, webSocketService: WebSocketService, router: Router) {
+    if (!router.url.includes(APP_CONSTANTS.PATH_LOGIN) && !router.url.includes(APP_CONSTANTS.PATH_REGISTER)) {
+      this.getUserData();
+    }
 
-    this.webSocketService.getWebSocketMessages().subscribe(
+    webSocketService.getWebSocketMessages().subscribe(
       (message) => {
         if (message?.type == APP_CONSTANTS.WS_USER_DATA_UPDATED) {
           this.getUserData();
@@ -22,7 +27,7 @@ export class UserDataService {
     );
   }
 
-  private getUserData(): void {
+  getUserData(): void {
     this.http.get<UserData>(APP_CONSTANTS.ENDPOINT_USER_GET, {withCredentials: true, responseType: 'json'})
       .pipe(
         tap(userData => this.userDataSubject.next(userData))

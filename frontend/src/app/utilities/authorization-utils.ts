@@ -89,4 +89,14 @@ export class AuthorizationUtils {
       }
     )
   }
+
+  static redirectIfNotLoggedIn(router: Router, http: HttpClient): void {
+    this.isLoggedIn(http).subscribe(
+      isLogged => {
+        if (!isLogged) {
+          router.navigate([APP_CONSTANTS.PATH_LOGIN]);
+        }
+      }
+    )
+  }
 }

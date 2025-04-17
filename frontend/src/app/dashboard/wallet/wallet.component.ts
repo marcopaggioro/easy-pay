@@ -2,7 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {SpinnerComponent} from "../../utilities/spinner.component";
 import {HttpClient} from '@angular/common/http';
 import {APP_CONSTANTS} from '../../app.constants';
-import {DecimalPipe} from '@angular/common';
+import {DecimalPipe, NgClass} from '@angular/common';
 import {Router, RouterLink} from '@angular/router';
 import {WebSocketService} from '../../utilities/web-socket.service';
 import {InteractedCustomer} from '../../classes/InteractedCustomer';
@@ -15,13 +15,14 @@ import Decimal from 'decimal.js';
     SpinnerComponent,
     DecimalPipe,
     RouterLink,
-    OperationsComponent
+    OperationsComponent,
+    NgClass
   ],
   templateUrl: './wallet.component.html'
 })
 export class WalletComponent implements OnInit {
   interactedCustomers!: InteractedCustomer[];
-  balance!: Decimal;
+  balance?: Decimal;
 
   constructor(private http: HttpClient, private router: Router, private webSocketService: WebSocketService) {
   }
@@ -48,7 +49,11 @@ export class WalletComponent implements OnInit {
   }
 
   getBalance(): void {
-    this.http.get<Decimal>(APP_CONSTANTS.ENDPOINT_WALLET_BALANCE, {withCredentials: true}).subscribe(balance => this.balance = balance);
+    this.http.get<Decimal>(APP_CONSTANTS.ENDPOINT_WALLET_BALANCE, {withCredentials: true})
+      .subscribe(balance => {
+        console.log(balance)
+        this.balance = balance
+      });
   }
 
   goToTransfer(email: string): void {

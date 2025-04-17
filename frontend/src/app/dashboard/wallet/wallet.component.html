@@ -6,11 +6,10 @@
           <h4 class="card-title card-title d-flex justify-content-center">Saldo del wallet</h4>
           <hr/>
           <h1 class="placeholder-glow mb-3 d-grid justify-content-center">
-            @if (balance) {
-              {{ Number(balance) | number:'1.2-2' }}&euro;
-            } @else {
-              <span class="placeholder rounded">10000000,00</span>
-            }
+            <span
+              [ngClass]="{'placeholder rounded' : balance === undefined}">
+              {{ balance != undefined ? (Number(balance) | number:'1.2-2') : 10000000.00 }}&euro;
+            </span>
           </h1>
         </div>
         <div class="d-flex align-items-center justify-content-center">

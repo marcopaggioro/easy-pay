@@ -86,7 +86,8 @@
                       <td>{{ paymentCard.expiration }}</td>
                       <td>
                         <button type="button" class="btn btn-outline-danger btn-sm"
-                                (click)="deletePaymentCard(paymentCard.cardId)">
+                                (click)="deletePaymentCard(paymentCard.cardId)"
+                                [disabled]="deletingPaymentCards.includes(paymentCard.cardId)">
                           <i class="bi bi-trash-fill"></i>
                         </button>
                       </td>

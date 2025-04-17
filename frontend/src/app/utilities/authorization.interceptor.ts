@@ -10,8 +10,8 @@ export const authorizationInterceptor: HttpInterceptorFn = (request, next) => {
 
   return next(request).pipe(
     catchError((error: HttpErrorResponse) => {
-      if (error.status === 401) {
-        if (!request.url.includes(APP_CONSTANTS.ENDPOINT_USER_LOGIN_CHECK) && !request.url.includes(APP_CONSTANTS.ENDPOINT_USER_REFRESH_TOKEN)) {
+      if (error.status === 401 && !request.url.includes(APP_CONSTANTS.ENDPOINT_USER_LOGIN_CHECK)) {
+        if (!request.url.includes(APP_CONSTANTS.ENDPOINT_USER_REFRESH_TOKEN)) {
           console.log("Refreshing token");
           return http.post<void>(APP_CONSTANTS.ENDPOINT_USER_REFRESH_TOKEN, {}, {
             withCredentials: true,

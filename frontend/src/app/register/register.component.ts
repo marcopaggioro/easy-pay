@@ -4,7 +4,7 @@ import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} fr
 import {NgIf} from '@angular/common';
 import {emailValidator} from '../utilities/validators/email.validator';
 import {AlertComponent} from '../utilities/alert.component';
-import {HttpClient, HttpErrorResponse} from '@angular/common/http';
+import {HttpErrorResponse} from '@angular/common/http';
 import {APP_CONSTANTS} from '../app.constants';
 import {Router, RouterLink} from '@angular/router';
 
@@ -23,7 +23,7 @@ export class RegisterComponent implements OnInit {
   @ViewChild(AlertComponent) alert!: AlertComponent;
   loading = false;
 
-  constructor(private authorizationService: AuthorizationService, private http: HttpClient, private router: Router) {
+  constructor(private authorizationService: AuthorizationService, private router: Router) {
   }
 
   registerForm = new FormGroup({

@@ -64,7 +64,6 @@ export class WebSocketService {
 
   getWebSocketMessages(): Observable<WebSocketMessage | null> {
     if (!this.socket$ || this.socket$.closed) {
-      console.log("creating")
       this.createWebSocketConnection();
     }
     return this.messageSubject$.asObservable();

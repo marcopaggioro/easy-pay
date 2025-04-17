@@ -15,6 +15,9 @@ export class WebSocketService {
   private messageSubject$ = new BehaviorSubject<WebSocketMessage | null>(null);
 
   constructor(private cookieService: CookieService, private router: Router) {
+    if (router.url.includes(APP_CONSTANTS.PATH_DASHBOARD)) {
+      this.createWebSocketConnection();
+    }
   }
 
   createWebSocketConnection() {
@@ -63,9 +66,6 @@ export class WebSocketService {
   }
 
   getWebSocketMessages(): Observable<WebSocketMessage | null> {
-    if (!this.socket$ || this.socket$.closed) {
-      this.createWebSocketConnection();
-    }
     return this.messageSubject$.asObservable();
   }
 

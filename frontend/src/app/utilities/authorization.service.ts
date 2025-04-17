@@ -7,6 +7,7 @@ import {APP_CONSTANTS} from '../app.constants';
 import {CookieService} from 'ngx-cookie-service';
 import {WebSocketService} from './web-socket.service';
 import {Authorization} from '../classes/Authorization';
+import {UserDataService} from './user-data.service';
 
 
 @Injectable({
@@ -14,7 +15,7 @@ import {Authorization} from '../classes/Authorization';
 })
 export class AuthorizationService {
 
-  constructor(private http: HttpClient, private router: Router, private cookieService: CookieService) {
+  constructor(private http: HttpClient, private router: Router, private cookieService: CookieService, private webSocketService: WebSocketService, private userDataService: UserDataService) {
   }
 
   hashPassword(password: string): string {
@@ -32,16 +33,18 @@ export class AuthorizationService {
     });
   }
 
-  //TODO refresh user data on register
   register(firstName: string, lastName: string, birthDate: string, email: string, password: string): Observable<void> {
     const body = {firstName, lastName, birthDate, email, encryptedPassword: this.hashPassword(password)};
     return this.http.post<Authorization>(APP_CONSTANTS.ENDPOINT_USER_REGISTER, body, {
       withCredentials: true,
       responseType: 'json'
-    }).pipe(map(authorization => this.setCustomerIdCookie(authorization)));
+    }).pipe(map(authorization => {
+      this.setCustomerIdCookie(authorization);
+      this.userDataService.getUserData();
+      this.webSocketService.createWebSocketConnection();
+    }));
   }
 
-  //TODO refresh user data on login
   login(email: string, password: string): Observable<void> {
     return this.http.post<Authorization>(APP_CONSTANTS.ENDPOINT_USER_LOGIN, {
       email,
@@ -49,7 +52,11 @@ export class AuthorizationService {
     }, {
       withCredentials: true,
       responseType: 'json'
-    }).pipe(map(authorization => this.setCustomerIdCookie(authorization)));
+    }).pipe(map(authorization => {
+      this.setCustomerIdCookie(authorization);
+      this.userDataService.getUserData();
+      this.webSocketService.createWebSocketConnection();
+    }));
   }
 
   logout(webSocketService: WebSocketService): void {

@@ -14,7 +14,7 @@ export class UserDataService {
   userData$ = this.userDataSubject.asObservable();
 
   constructor(private http: HttpClient, webSocketService: WebSocketService, router: Router) {
-    if (!router.url.includes(APP_CONSTANTS.PATH_LOGIN) && !router.url.includes(APP_CONSTANTS.PATH_REGISTER)) {
+    if (router.url.includes(APP_CONSTANTS.PATH_DASHBOARD)) {
       this.getUserData();
     }
 

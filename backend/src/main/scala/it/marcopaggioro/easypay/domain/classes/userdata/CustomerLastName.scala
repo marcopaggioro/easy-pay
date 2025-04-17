@@ -12,7 +12,7 @@ case class CustomerLastName private (value: String) extends Validable[CustomerLa
   override def validate(): ValidatedNel[String, CustomerLastName] =
     condNel(value.nonEmpty, this, "Il cognome non può essere vuoto")
       .andThen(_ => condNel(value.length <= maxLength, this, s"Il cognome può essere lungo al massimo $maxLength caratteri"))
-      .andThen(_ => condNel(value.matches(noNumbersRegex), this, "Il cognome non può contenere numeri"))
+      .andThen(_ => condNel(noNumbersRegex.matches(value), this, "Il cognome non può contenere numeri"))
 
 }
 

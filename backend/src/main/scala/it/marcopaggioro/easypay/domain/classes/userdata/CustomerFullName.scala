@@ -14,7 +14,7 @@ case class CustomerFullName private (value: String) extends Validable[CustomerFu
       .andThen(_ =>
         condNel(value.length <= maxLength, this, s"Il nome completo può essere lungo al massimo $maxLength caratteri")
       )
-      .andThen(_ => condNel(value.matches(noNumbersRegex), this, "Il nome completo non può contenere numeri"))
+      .andThen(_ => condNel(noNumbersRegex.matches(value), this, "Il nome completo non può contenere numeri"))
 
 }
 

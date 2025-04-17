@@ -26,7 +26,10 @@ export class AuthorizationService {
   }
 
   setCustomerIdCookie(authorization: Authorization): void {
-    this.cookieService.set(APP_CONSTANTS.CUSTOMER_ID_COOKIE_NAME, authorization.customerId, {expires: new Date(authorization.expiration)});
+    this.cookieService.set(APP_CONSTANTS.CUSTOMER_ID_COOKIE_NAME, authorization.customerId, {
+      path: "/",
+      expires: new Date(authorization.expiration)
+    });
   }
 
   register(firstName: string, lastName: string, birthDate: string, email: string, password: string): Observable<void> {

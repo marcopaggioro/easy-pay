@@ -23,17 +23,19 @@ object JwtUtils extends LazyLogging {
 
   private lazy val TokenAlgorithm: JwtHmacAlgorithm = JwtAlgorithm.HS512
   private lazy val TokenEncryptionSecret = "super-secret-key"
-  private lazy val TokenDuration: Duration = Duration.ofHours(1)
+  private lazy val TokenDuration: Duration = Duration.ofMinutes(5)
+  private lazy val RefreshTokenDuration: Duration = Duration.ofDays(7)
   private lazy val TokenCookieName: String = "EasyPayToken"
+  lazy val RefreshTokenCookieName: String = "EasyPayRefreshToken"
   private lazy val TokenCustomerField: String = "customerId"
 
   case class JwtContent(customerId: CustomerId)
   implicit val JwtContentDecoder: Decoder[JwtContent] = deriveDecoder[JwtContent]
   implicit val JwtContentEncoder: Encoder[JwtContent] = deriveEncoder[JwtContent]
 
-  private def generateSignedClaim(customerId: CustomerId, expiration: DateTime): String = {
+  private def generateSignedClaim(customerId: CustomerId, duration: Duration): String = {
     val jwtClaim: JwtClaim = JwtClaim(
-      expiration = Some(Instant.now.plus(TokenDuration).getEpochSecond),
+      expiration = Some(Instant.now.plus(duration).getEpochSecond),
       issuedAt = Some(Instant.now.getEpochSecond),
       content = JwtContent(customerId).asJson.noSpaces
     )
@@ -46,14 +48,25 @@ object JwtUtils extends LazyLogging {
     secure = true,
     httpOnly = true,
     path = Some("/")
-  ).withSameSite(SameSite.None)
+  ).withSameSite(SameSite.Strict)
 
-  def getSignedJwtCookie(customerId: CustomerId): HttpCookie = {
-    val expirationDate = DateTime.now.plus(TokenDuration.toMillis)
+  lazy val baseRefreshCookie: HttpCookie = HttpCookie(
+    name = RefreshTokenCookieName,
+    value = "",
+    secure = true,
+    httpOnly = true,
+    path = Some("/user/refresh-token")
+  ).withSameSite(SameSite.Strict)
+
+  def getSignedJwtCookie(customerId: CustomerId, duration: Duration = TokenDuration): HttpCookie =
     baseCookie
-      .withValue(generateSignedClaim(customerId, expirationDate))
-      .withExpires(expirationDate)
-  }
+      .withValue(generateSignedClaim(customerId, duration))
+      .withExpires(DateTime.now.plus(duration.toMillis))
+
+  def getSignedRefreshJwtCookie(customerId: CustomerId): HttpCookie =
+    baseRefreshCookie
+      .withValue(generateSignedClaim(customerId, RefreshTokenDuration))
+      .withExpires(DateTime.now.plus(RefreshTokenDuration.toMillis))
 
   private def decodeToken(token: String): Try[JwtClaim] = JwtCirce.decode(
     token,
@@ -62,8 +75,8 @@ object JwtUtils extends LazyLogging {
     JwtOptions(signature = true, expiration = true, notBefore = true)
   )
 
-  private def withAuthCookie(implicit uri: Uri, system: ActorSystem[Nothing]): Directive1[HttpCookie] =
-    optionalCookie(TokenCookieName).flatMap {
+  private def withAuthCookie(cookieName: String)(implicit uri: Uri, system: ActorSystem[Nothing]): Directive1[HttpCookie] =
+    optionalCookie(cookieName).flatMap {
       case Some(cookie) =>
         provide(cookie.toCookie)
 
@@ -72,16 +85,17 @@ object JwtUtils extends LazyLogging {
         completeWithError(StatusCodes.Unauthorized, "Token non trovato")
     }
 
-  def withCustomerIdFromToken(implicit uri: Uri, system: ActorSystem[Nothing]): Directive1[CustomerId] = withAuthCookie.flatMap {
-    cookie =>
-      decodeToken(cookie.value).flatMap(jwtClaim => decode[JwtContent](jwtClaim.content).toTry) match {
-        case Failure(exception) =>
-          logger.warn(s"Invalid or expired token in ${uri.path.toString()}", exception)
-          completeWithError(StatusCodes.Unauthorized, "Token invalido o scaduto")
+  def withCustomerIdFromToken(
+      cookieName: String = TokenCookieName
+  )(implicit uri: Uri, system: ActorSystem[Nothing]): Directive1[CustomerId] = withAuthCookie(cookieName).flatMap { cookie =>
+    decodeToken(cookie.value).flatMap(jwtClaim => decode[JwtContent](jwtClaim.content).toTry) match {
+      case Failure(exception) =>
+        logger.warn(s"Invalid or expired token in ${uri.path.toString()}", exception)
+        completeWithError(StatusCodes.Unauthorized, "Token invalido o scaduto")
 
-        case Success(jwtContent) =>
-          provide(jwtContent.customerId)
-      }
+      case Success(jwtContent) =>
+        provide(jwtContent.customerId)
+    }
   }
 
 }

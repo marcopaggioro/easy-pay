@@ -11,6 +11,7 @@ export const APP_CONSTANTS = {
   ENDPOINT_USER_LOGIN: environment.API_URL + "/user/login",
   ENDPOINT_USER_LOGIN_CHECK: environment.API_URL + "/user/login/check",
   ENDPOINT_USER_LOGOUT: environment.API_URL + "/user/logout",
+  ENDPOINT_USER_REFRESH_TOKEN: environment.API_URL + "/user/refresh-token",
 
   ENDPOINT_WALLET_BALANCE: environment.API_URL + "/wallet/balance",
   ENDPOINT_WALLET_OPERATIONS: environment.API_URL + "/wallet/operations",

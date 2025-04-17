@@ -92,6 +92,38 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /user/refresh-token:
+    post:
+      tags:
+        - User
+      summary: Refresh JWT token
+      parameters:
+        - name: Origin
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Header CORS Origin
+      responses:
+        '200':
+          description: JWT token refreshed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        '401':
+          description: Invalid current refresh token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /user/logout:
     post:
       tags:

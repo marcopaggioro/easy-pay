@@ -8,8 +8,9 @@ import cats.data.{NonEmptyList, Validated, ValidatedNel}
 import cats.implicits.toTraverseOps
 import it.marcopaggioro.easypay.domain.classes.Aliases.CustomerId
 import it.marcopaggioro.easypay.domain.classes.Domain.{DomainCommand, DomainEvent, DomainState}
+import it.marcopaggioro.easypay.domain.classes.userdata.paymentcard.PaymentCard
 import it.marcopaggioro.easypay.domain.classes.userdata.{CustomerFirstName, CustomerLastName, Email, EncryptedPassword, UserData}
-import it.marcopaggioro.easypay.utilities.ValidationUtilities.validateBirthDate
+import it.marcopaggioro.easypay.utilities.ValidationUtilities.{validateBirthDate, validateCardExpiration}
 
 import java.time.{Instant, LocalDate}
 import java.util.UUID
@@ -48,6 +49,18 @@ object UsersManager {
 
     def emailNotAlreadyExistsValidation(state: UsersManagerState, email: Email): ValidatedNel[String, Unit] =
       condNel(!state.usersEmails.contains(email), (), s"Email ${email.value} già esistente")
+
+    def cardIdExistsValidation(state: UsersManagerState, customerId: CustomerId, cardId: Int): ValidatedNel[String, PaymentCard] =
+      customerIdExistsValidation(state, customerId)
+        .andThen(userData =>
+          userData.paymentCards.get(cardId) match {
+            case Some(paymentCard) =>
+              validNel(paymentCard)
+
+            case None =>
+              invalidNel("Carta non esistente")
+          }
+        )
   }
 
   // -----
@@ -162,7 +175,6 @@ object UsersManager {
       case Some(currentUserData) => state.copy(users = state.users.updated(customerId, currentUserData.copy(email = email)))
       case None                  => state
     }
-
   }
 
   case class PasswordChanged(
@@ -175,7 +187,69 @@ object UsersManager {
         state.copy(users = state.users.updated(customerId, currentUserData.copy(encryptedPassword = encryptedPassword)))
       case None => state
     }
+  }
 
+  // -----
+  case class AddPaymentCard(customerId: CustomerId, paymentCard: PaymentCard)(val replyTo: ActorRef[StatusReply[Done]])
+      extends UsersManagerCommand {
+    override def validate(state: UsersManagerState): ValidatedNel[String, Unit] =
+      paymentCard
+        .validate()
+        .andThen(_ => customerIdExistsValidation(state, customerId))
+        .map(_ => ())
+
+    override protected def generateEvents(state: UsersManagerState): List[UsersManagerEvent] = {
+      val cardId: Int = state.users.get(customerId) match {
+        case Some(userData) =>
+          userData.paymentCards.keys.maxOption.getOrElse(0) + 1
+
+        case None => 0
+      }
+      List(
+        PaymentCardAdded(customerId, cardId, paymentCard)
+      )
+    }
+  }
+
+  case class PaymentCardAdded(
+      override val customerId: CustomerId,
+      cardId: Int,
+      paymentCard: PaymentCard,
+      override val instant: Instant = Instant.now()
+  ) extends UsersManagerEvent {
+    override def applyTo(state: UsersManagerState): UsersManagerState = state.users.get(customerId) match {
+      case Some(currentUserData) =>
+        state.copy(users =
+          state.users
+            .updated(customerId, currentUserData.copy(paymentCards = currentUserData.paymentCards.updated(cardId, paymentCard)))
+        )
+      case None => state
+    }
+  }
+
+  // -----
+  case class DeletePaymentCard(customerId: CustomerId, cardId: Int)(val replyTo: ActorRef[StatusReply[Done]])
+      extends UsersManagerCommand {
+    override def validate(state: UsersManagerState): ValidatedNel[String, Unit] =
+      cardIdExistsValidation(state, customerId, cardId).map(_ => ())
+
+    override protected def generateEvents(state: UsersManagerState): List[UsersManagerEvent] = List(
+      PaymentCardDeleted(customerId, cardId)
+    )
+  }
+
+  case class PaymentCardDeleted(
+      override val customerId: CustomerId,
+      cardId: Int,
+      override val instant: Instant = Instant.now()
+  ) extends UsersManagerEvent {
+    override def applyTo(state: UsersManagerState): UsersManagerState = state.users.get(customerId) match {
+      case Some(currentUserData) =>
+        state.copy(users =
+          state.users.updated(customerId, currentUserData.copy(paymentCards = currentUserData.paymentCards.removed(cardId)))
+        )
+      case None => state
+    }
   }
 
   // -----
@@ -193,6 +267,15 @@ object UsersManager {
 
     override def validate(state: UsersManagerState): ValidatedNel[String, Unit] =
       validateAndGetCustomerId(state).map(_ => ())
+  }
+
+  // -----
+  case class CheckPaymentCard(customerId: CustomerId, cardId: Int)(
+      val replyTo: ActorRef[StatusReply[Done]]
+  ) extends UsersManagerCommand {
+    override def validate(state: UsersManagerState): ValidatedNel[String, Unit] =
+      cardIdExistsValidation(state, customerId, cardId)
+        .andThen(paymentCard => validateCardExpiration(paymentCard.expiration))
   }
 
 }

@@ -6,10 +6,11 @@ import it.marcopaggioro.easypay.AppConfig
 import it.marcopaggioro.easypay.domain.classes.Aliases.CustomerId
 import it.marcopaggioro.easypay.domain.classes.Money
 
-import java.time.{Instant, LocalDate, Period}
+import java.time.{Instant, LocalDate, Period, YearMonth}
 
 object ValidationUtilities {
 
+  lazy val PayloadError: String = "Payload invalido"
   lazy val GenericError: String = "Errore generico"
 
   private lazy val maxDescriptionLength: Int = 500
@@ -37,6 +38,12 @@ object ValidationUtilities {
   def validateAmount(amount: Money): ValidatedNel[String, Unit] =
     condNel(amount.value > 0, (), "L'importo deve essere maggiore di 0")
       .andThen(_ => condNel(amount.value <= maxAmount, (), s"L'importo massimo per operazione è di $maxAmount"))
+
+  def validateCardId(cardId: Int): ValidatedNel[String, Unit] =
+    condNel(cardId >= 0, (), "Identificativo della carta non valido")
+
+  def validateCardExpiration(expiration: YearMonth): ValidatedNel[String, Unit] =
+    condNel(!expiration.isBefore(YearMonth.now()), (), "Carta scaduta")
 
   def validateInstantInFuture(instant: Instant): ValidatedNel[String, Unit] =
     condNel(instant.isAfter(Instant.now()), (), "La data deve essere nel futuro")

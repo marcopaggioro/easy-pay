@@ -34,12 +34,14 @@ import it.marcopaggioro.easypay.database.scheduledoperations.ScheduledOperationR
 import it.marcopaggioro.easypay.database.scheduledoperations.{ScheduledOperationRecord, ScheduledOperationsTable}
 import it.marcopaggioro.easypay.database.transactionshistory.TransactionsHistoryRecord.TransactionUserJoinEncoder
 import it.marcopaggioro.easypay.database.transactionshistory.{TransactionsHistoryRecord, TransactionsHistoryTable}
+import it.marcopaggioro.easypay.database.userpaymentcards.{UserPaymentCardRecord, UsersPaymentCardsTable}
 import it.marcopaggioro.easypay.database.users.UserRecord.{UserRecordEncoder, UserRecordInteractedEncoder}
 import it.marcopaggioro.easypay.database.users.{UserRecord, UsersTable}
 import it.marcopaggioro.easypay.database.usersbalance.UsersBalanceTable
 import it.marcopaggioro.easypay.domain.TransactionsManager.TransactionsManagerCommand
 import it.marcopaggioro.easypay.domain.UsersManager.UsersManagerCommand
 import it.marcopaggioro.easypay.domain.classes.Aliases.{CustomerId, ScheduledOperationId}
+import it.marcopaggioro.easypay.domain.classes.userdata.paymentcard.PaymentCard
 import it.marcopaggioro.easypay.domain.classes.userdata.{Email, UserData}
 import it.marcopaggioro.easypay.domain.classes.{Money, ScheduledOperation, Validable}
 import it.marcopaggioro.easypay.domain.{TransactionsManager, UsersManager}
@@ -49,6 +51,7 @@ import it.marcopaggioro.easypay.routes.payloads._
 import it.marcopaggioro.easypay.utilities.{JwtUtils, ValidationUtilities}
 import slick.jdbc.JdbcBackend.Database
 
+import java.time.Instant
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
 import scala.util.{Failure, Success, Try}
@@ -76,7 +79,7 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
     val refreshJwtHttpCookie: HttpCookie = JwtUtils.getSignedRefreshJwtCookie(customerId)
     setCookie(jwtHttpCookie, refreshJwtHttpCookie) {
       completeWithJson(
-        Json.obj("customerId" -> customerId.asJson, "expiration" -> refreshJwtHttpCookie.expires.map(_.clicks).asJson)
+        Json.obj("customerId" -> customerId.asJson, "expiration" -> Instant.now().plus(JwtUtils.RefreshTokenDuration).asJson)
       )
     }
   }
@@ -133,6 +136,36 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
             }
           }
         },
+        pathPrefix("payment-card") {
+          concat(
+            path(IntNumber) { cardId =>
+              delete { // DELETE /user/payment-card/{cardId}
+                JwtUtils.withCustomerIdFromToken()() { customerId =>
+                  askToActor[UsersManagerCommand, Done](
+                    usersManagerActorRef,
+                    UsersManager.DeletePaymentCard(customerId, cardId)(_),
+                    _ => completeWithOK()
+                  )
+                }
+              }
+            },
+            pathEndOrSingleSlash {
+              post { // POST /user/payment-card
+                JwtUtils.withCustomerIdFromToken()() { customerId =>
+                  entity(as[PaymentCard]) { paymentCard =>
+                    checkPayloadIsValid(paymentCard) {
+                      askToActor[UsersManagerCommand, Done](
+                        usersManagerActorRef,
+                        UsersManager.AddPaymentCard(customerId, paymentCard)(_),
+                        _ => completeWithOK()
+                      )
+                    }
+                  }
+                }
+              }
+            }
+          )
+        },
         pathEndOrSingleSlash {
           concat(
             post { // POST /user
@@ -178,12 +211,10 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
         concat(
           path("recharge") {
             post { // POST /wallet/recharge
-              entity(as[Money]) { amount =>
-                askToActor[TransactionsManagerCommand, Done](
-                  transactionsManagerActorRef,
-                  TransactionsManager.RechargeWallet(UUID.randomUUID(), customerId, amount)(_),
-                  _ => completeWithOK()
-                )
+              entity(as[RechargeWalletPayload]) { payload =>
+                checkPayloadIsValid(payload) {
+                  rechargeWallet(customerId, payload)
+                }
               }
             }
           },
@@ -192,7 +223,7 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
               pathPrefix("scheduler") {
                 concat(
                   path(JavaUUID) { scheduledOperationId =>
-                    delete { // DELETE /wallet/transfer/schedule/{scheduledOperationId}
+                    delete { // DELETE /wallet/transfer/scheduler/{scheduledOperationId}
                       askToActor[TransactionsManagerCommand, Done](
                         transactionsManagerActorRef,
                         TransactionsManager.DeleteScheduledOperation(customerId, scheduledOperationId)(_),
@@ -202,10 +233,10 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
                   },
                   pathEndOrSingleSlash {
                     concat(
-                      get { // GET /wallet/transfer/schedule
+                      get { // GET /wallet/transfer/scheduler
                         getScheduledOperations(customerId)
                       },
-                      put { // PUT /wallet/transfer/schedule
+                      post { // POST /wallet/transfer/scheduler
                         entity(as[CreateScheduledOperationPayload]) { payload =>
                           checkPayloadIsValid(payload) {
                             createScheduledOperation(customerId, payload)
@@ -410,7 +441,19 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
           .headOption
       }
 
-    onComplete(getUser) {
+    val getUserPaymentCards: Future[Seq[UserPaymentCardRecord]] = database
+      .run {
+        UsersPaymentCardsTable.Table
+          .filter(record => record.customerId === customerId)
+          .result
+      }
+
+    val result: Future[Option[Json]] = for {
+      maybeUser <- getUser
+      paymentCards <- getUserPaymentCards
+    } yield maybeUser.map(user => user.asJson.deepMerge(Json.obj("paymentCards" -> paymentCards.asJson)))
+
+    onComplete(result) {
       case Failure(throwable) =>
         system.log.error(s"Failure while getting user", throwable)
         completeWithError(StatusCodes.InternalServerError, ValidationUtilities.GenericError)
@@ -418,8 +461,8 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
       case Success(None) =>
         completeWithError(StatusCodes.NotFound, s"Cliente $customerId non trovato")
 
-      case Success(Some(userRecord)) =>
-        completeWithJson(userRecord.asJson)
+      case Success(Some(json)) =>
+        completeWithJson(json)
     }
   }
 
@@ -500,7 +543,7 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
       .filterOpt(payload.maybeFullName) { case ((_, record), fullName) =>
         record.customerId =!= customerId && (record.firstName.asColumnOf[String] ++ LiteralColumn(" ") ++ record.lastName
           .asColumnOf[String]).toLowerCase
-          .like(s"%${fullName.toLowerCase}%")
+          .like(s"%${fullName.value.toLowerCase}%")
       }
 
     val getHistoryCount: Future[Int] = database.run {
@@ -532,6 +575,28 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
 
       case Success(json) =>
         completeWithJson(json)
+    }
+  }
+
+  private def rechargeWallet(customerId: CustomerId, payload: RechargeWalletPayload)(implicit
+      system: ActorSystem[Nothing],
+      uri: Uri
+  ): Route = {
+    val cardExistsAndNotExpired: Future[Done] = usersManagerActorRef.askWithStatus[Done](
+      UsersManager.CheckPaymentCard(customerId, payload.cardId)(_)
+    )
+
+    val rechargeWallet: Future[Done] = transactionsManagerActorRef.askWithStatus[Done](
+      TransactionsManager.RechargeWallet(UUID.randomUUID(), customerId, payload.amount)(_)
+    )
+
+    onComplete(cardExistsAndNotExpired.flatMap(_ => rechargeWallet)) {
+      case Failure(throwable) =>
+        system.log.error(s"Failure while recharging wallet", throwable)
+        completeWithError(StatusCodes.InternalServerError, ValidationUtilities.GenericError)
+
+      case Success(_) =>
+        completeWithOK()
     }
   }
 

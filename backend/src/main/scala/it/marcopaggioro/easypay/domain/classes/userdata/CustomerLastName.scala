@@ -4,10 +4,9 @@ import cats.data.Validated.condNel
 import cats.data.ValidatedNel
 import io.circe.{Decoder, Encoder}
 import it.marcopaggioro.easypay.domain.classes.Validable
+import it.marcopaggioro.easypay.domain.classes.userdata.CustomerLastName.maxLength
 
 case class CustomerLastName private (value: String) extends Validable[CustomerLastName] {
-
-  private lazy val maxLength: Int = 50
 
   override def validate(): ValidatedNel[String, CustomerLastName] =
     condNel(value.nonEmpty, this, "Il cognome non può essere vuoto")
@@ -16,6 +15,7 @@ case class CustomerLastName private (value: String) extends Validable[CustomerLa
 }
 
 object CustomerLastName {
+  lazy val maxLength: Int = 50
 
   private def capitalizeSingleWords(value: String): String = value.split("\\s+").map(_.capitalize).mkString(" ")
 

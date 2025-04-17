@@ -2,7 +2,7 @@ package it.marcopaggioro.easypay.database
 
 import com.github.tminglei.slickpg._
 import it.marcopaggioro.easypay.domain.classes.Money
-import it.marcopaggioro.easypay.domain.classes.userdata.{CustomerFirstName, CustomerLastName, Email}
+import it.marcopaggioro.easypay.domain.classes.userdata.{CustomerFirstName, CustomerFullName, CustomerLastName, Email}
 import slick.ast.BaseTypedType
 import slick.jdbc.JdbcType
 
@@ -50,6 +50,11 @@ object PostgresProfile extends PostgresProfile {
   implicit val CustomerLastNameMapper: JdbcType[CustomerLastName] = MappedColumnType.base[CustomerLastName, String](
     lastName => lastName.value,
     value => CustomerLastName(value)
+  )
+
+  implicit val CustomerFullNameMapper: JdbcType[CustomerFullName] = MappedColumnType.base[CustomerFullName, String](
+    fullName => fullName.value,
+    value => CustomerFullName(value)
   )
 
   implicit val MoneyMapper: JdbcType[Money] = MappedColumnType.base[Money, BigDecimal](

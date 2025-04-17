@@ -4,6 +4,7 @@ import cats.data.ValidatedNel
 import io.circe.syntax.EncoderOps
 import io.circe.{Decoder, Encoder, Json}
 import it.marcopaggioro.easypay.domain.classes.Validable
+import it.marcopaggioro.easypay.domain.classes.userdata.paymentcard.PaymentCard
 import it.marcopaggioro.easypay.utilities.ValidationUtilities.validateBirthDate
 
 import java.time.LocalDate
@@ -13,7 +14,8 @@ case class UserData(
     lastName: CustomerLastName,
     birthDate: LocalDate,
     email: Email,
-    encryptedPassword: EncryptedPassword
+    encryptedPassword: EncryptedPassword,
+    paymentCards: Map[Int, PaymentCard] = Map.empty
 ) extends Validable[UserData] {
   override def validate(): ValidatedNel[String, UserData] = email
     .validate()

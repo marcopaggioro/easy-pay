@@ -274,6 +274,106 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /user/payment-card:
+    post:
+      tags:
+        - Wallet
+      summary: Add payment card
+      parameters:
+        - name: Origin
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Header CORS Origin
+      security:
+        - EasyPayAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fullName:
+                  type: string
+                  example: Marco Paggioro
+                cardNumber:
+                  type: number
+                  example: 1234123412341234
+                expiration:
+                  type: string
+                  example: 2025-12
+              required:
+                - fullName
+                - cardNumber
+      responses:
+        '200':
+          description: Payment card added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        '400':
+          description: Invalid payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /user/payment-card/{cardId}:
+    delete:
+      tags:
+        - Wallet
+      summary: Delete a payment card
+      parameters:
+        - name: Origin
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Header CORS Origin
+        - name: cardId
+          in: path
+          description: Card id
+          required: true
+          schema:
+            type: integer
+            example: 1
+      security:
+        - EasyPayAuth: [ ]
+      responses:
+        '200':
+          description: Payment card deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /wallet/balance:
     get:
       tags:
@@ -410,8 +510,17 @@ paths:
         content:
           application/json:
             schema:
-              type: number
-              example: 123.45
+              type: object
+              properties:
+                cardId:
+                  type: integer
+                  example: 1
+                amount:
+                  type: number
+                  example: 123.45
+              required:
+                - cardId
+                - amount
       responses:
         '200':
           description: Wallet recharged
@@ -419,6 +528,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/OkResponse"
+        '400':
+          description: Invalid payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         '401':
           description: Unauthorized
           content:
@@ -519,7 +634,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-    put:
+    post:
       tags:
         - Wallet
       summary: Create scheduled operations
@@ -592,7 +707,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/LoginResponse"
+                $ref: "#/components/schemas/OkResponse"
         '401':
           description: Unauthorized
           content:
@@ -692,6 +807,31 @@ components:
         - email
         - lastEdit
 
+    PaymentCard:
+      type: object
+      properties:
+        cardId:
+          type: integer
+          example: 1
+        fullName:
+          type: string
+          example: Marco Paggioro
+        cardNumber:
+          type: string
+          example: XXXX-XXXX-XXXX-1234
+        expiration:
+          type: string
+          example: 2025-12
+        securityCode:
+          type: number
+          example: 123
+      required:
+        - cardId
+        - fullName
+        - cardNumber
+        - expiration
+        - securityCode
+
     UserDataResponse:
       type: object
       properties:
@@ -717,6 +857,10 @@ components:
           type: number
           description: Millis from EPOCH
           example: 1744789213639
+        paymentCards:
+          type: array
+          items:
+            $ref: '#/components/schemas/PaymentCard'
       required:
         - id
         - firstName

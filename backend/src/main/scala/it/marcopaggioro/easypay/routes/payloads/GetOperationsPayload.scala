@@ -5,14 +5,14 @@ import cats.data.ValidatedNel
 import cats.implicits.toTraverseOps
 import io.circe.Decoder
 import it.marcopaggioro.easypay.domain.classes.Validable
-import it.marcopaggioro.easypay.domain.classes.userdata.Email
+import it.marcopaggioro.easypay.domain.classes.userdata.{CustomerFullName, Email}
 
 import java.time.Instant
 
 case class GetOperationsPayload(
     page: Int,
     maybeEmail: Option[Email],
-    maybeFullName: Option[String],
+    maybeFullName: Option[CustomerFullName],
     maybeStartDate: Option[Instant],
     maybeEndDate: Option[Instant]
 ) extends Validable[GetOperationsPayload] {
@@ -21,9 +21,7 @@ case class GetOperationsPayload(
     (),
     "Il numero della pagina deve essere maggiore di 0"
   ).andThen(_ => maybeEmail.traverse(_.validate()))
-    .andThen(_ =>
-      maybeFullName.traverse(fullName => condNel(fullName.trim.nonEmpty, (), "Il nome completo non può essere vuoto"))
-    )
+    .andThen(_ => maybeFullName.traverse(_.validate()))
     .andThen(_ =>
       maybeStartDate.traverse(startDate =>
         condNel(startDate.isBefore(Instant.now()), (), "La data di inizio non può essere nel futuro").andThen(_ =>
@@ -42,7 +40,7 @@ object GetOperationsPayload {
     for {
       maybePage <- cursor.get[Option[Int]]("page")
       maybeEmail <- cursor.get[Option[Email]]("email")
-      maybeFullName <- cursor.get[Option[String]]("fullName")
+      maybeFullName <- cursor.get[Option[CustomerFullName]]("fullName")
       maybeStartDate <- cursor.get[Option[Instant]]("start")
       maybeEndDate <- cursor.get[Option[Instant]]("end")
     } yield GetOperationsPayload(maybePage.getOrElse(1), maybeEmail, maybeFullName, maybeStartDate, maybeEndDate)

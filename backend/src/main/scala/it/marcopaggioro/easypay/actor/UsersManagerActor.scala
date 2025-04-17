@@ -9,7 +9,10 @@ import cats.data.{NonEmptyList, Validated}
 import it.marcopaggioro.easypay.actor.TransactionsManagerActor.handleWithPersistenceAndACK
 import it.marcopaggioro.easypay.domain.UsersManager
 import it.marcopaggioro.easypay.domain.UsersManager.{
+  AddPaymentCard,
+  CheckPaymentCard,
   CreateUser,
+  DeletePaymentCard,
   LoginUserWithEmail,
   UpdateUserData,
   UsersManagerCommand,
@@ -52,6 +55,15 @@ object UsersManagerActor extends PersistentActor[UsersManagerCommand, UsersManag
 
       case updateUserData: UpdateUserData =>
         handleWithPersistenceAndACK(context, state, command, updateUserData.replyTo)
+
+      case addPaymentCard: AddPaymentCard =>
+        handleWithPersistenceAndACK(context, state, command, addPaymentCard.replyTo)
+
+      case deletePaymentCard: DeletePaymentCard =>
+        handleWithPersistenceAndACK(context, state, command, deletePaymentCard.replyTo)
+
+      case checkPayment: CheckPaymentCard =>
+        handleWithPersistenceAndACK(context, state, command, checkPayment.replyTo)
 
     }
 

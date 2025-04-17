@@ -16,6 +16,7 @@ import it.marcopaggioro.easypay.actor.{UsersManagerActor, WebSocketsManagerActor
 import it.marcopaggioro.easypay.database.PlainJdbcSession
 import it.marcopaggioro.easypay.database.PostgresProfile._
 import it.marcopaggioro.easypay.database.PostgresProfile.api._
+import it.marcopaggioro.easypay.database.userpaymentcards.{UserPaymentCardRecord, UsersPaymentCardsTable}
 import it.marcopaggioro.easypay.database.users.{UserRecord, UsersTable}
 import it.marcopaggioro.easypay.domain.UsersManager._
 import it.marcopaggioro.easypay.domain.classes.WebSocketMessage.UserDataUpdated
@@ -77,6 +78,21 @@ private class UsersManagerProjectorActor(
               .filter(_.customerId === customerId)
               .map(_.lastEdit)
               .update(instant)
+
+          case PaymentCardAdded(customerId, cardId, paymentCard, instant) =>
+            UsersPaymentCardsTable.Table
+              .insertOrUpdate(
+                UserPaymentCardRecord(
+                  customerId,
+                  cardId,
+                  paymentCard.fullName,
+                  paymentCard.cardNumber.blurred,
+                  paymentCard.expiration.toString
+                )
+              )
+
+          case PaymentCardDeleted(customerId, cardId, instant) =>
+            UsersPaymentCardsTable.Table.filter(record => record.customerId === customerId && record.cardId === cardId).delete
         }
       }
       .map(_.sum)

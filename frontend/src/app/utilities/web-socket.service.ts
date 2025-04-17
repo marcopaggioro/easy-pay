@@ -62,7 +62,6 @@ export class WebSocketService {
     }
   }
 
-  //TODO non ricrea la connection
   getWebSocketMessages(): Observable<WebSocketMessage | null> {
     if (!this.socket$ || this.socket$.closed) {
       console.log("creating")

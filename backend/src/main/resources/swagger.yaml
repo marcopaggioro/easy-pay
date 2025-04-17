@@ -8,6 +8,7 @@ info:
   version: 1.0.0
 servers:
   - url: https://easypay-api.paggiorocloud.it
+    description: Remote server
 tags:
   - name: Wallet
     description: Routes related to wallet
@@ -21,13 +22,13 @@ paths:
       summary: Check if client has a valid JWT token
       parameters:
         - name: Origin
+          description: Header CORS
           in: header
           required: true
           schema:
             type: string
-          description: Header CORS Origin
       security:
-        - EasyPayAuth: [ ]
+        - EasyPayToken: [ ]
       responses:
         '200':
           description: User has a valid JWT
@@ -55,17 +56,17 @@ paths:
       summary: Login user
       parameters:
         - name: Origin
+          description: Header CORS
           in: header
           required: true
           schema:
             type: string
-          description: Header CORS Origin
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LoginPayload'
+              $ref: "#/components/schemas/LoginPayload"
       responses:
         '200':
           description: User logged in
@@ -92,38 +93,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /user/refresh-token:
-    post:
-      tags:
-        - User
-      summary: Refresh JWT token
-      parameters:
-        - name: Origin
-          in: header
-          required: true
-          schema:
-            type: string
-          description: Header CORS Origin
-      responses:
-        '200':
-          description: JWT token refreshed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/LoginResponse"
-        '401':
-          description: Invalid current refresh token
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
   /user/logout:
     post:
       tags:
@@ -131,13 +100,13 @@ paths:
       summary: Logout user
       parameters:
         - name: Origin
+          description: Header CORS
           in: header
           required: true
           schema:
             type: string
-          description: Header CORS Origin
       security:
-        - EasyPayAuth: [ ]
+        - EasyPayToken: [ ]
       responses:
         '200':
           description: User logged out
@@ -151,6 +120,46 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /user/refresh-token:
+    post:
+      tags:
+        - User
+      summary: Refresh JWT token
+      parameters:
+        - name: Origin
+          description: Header CORS
+          in: header
+          required: true
+          schema:
+            type: string
+      security:
+        - EasyPayRefreshToken: [ ]
+      responses:
+        '200':
+          description: JWT token refreshed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        '401':
+          description: Invalid refresh token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
   /user:
     post:
@@ -159,19 +168,19 @@ paths:
       summary: Create an user
       parameters:
         - name: Origin
+          description: Header CORS
           in: header
           required: true
           schema:
             type: string
-          description: Header CORS Origin
       security:
-        - EasyPayAuth: [ ]
+        - EasyPayToken: [ ]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RegisterPayload'
+              $ref: "#/components/schemas/CreateUserPayload"
       responses:
         '200':
           description: User created
@@ -203,13 +212,13 @@ paths:
       summary: Get user data
       parameters:
         - name: Origin
+          description: Header CORS
           in: header
           required: true
           schema:
             type: string
-          description: Header CORS Origin
       security:
-        - EasyPayAuth: [ ]
+        - EasyPayToken: [ ]
       responses:
         '200':
           description: Got user data
@@ -235,13 +244,13 @@ paths:
       summary: Update user data
       parameters:
         - name: Origin
+          description: Header CORS
           in: header
           required: true
           schema:
             type: string
-          description: Header CORS Origin
       security:
-        - EasyPayAuth: [ ]
+        - EasyPayToken: [ ]
       requestBody:
         required: true
         content:
@@ -277,36 +286,23 @@ paths:
   /user/payment-card:
     post:
       tags:
-        - Wallet
+        - User
       summary: Add payment card
       parameters:
         - name: Origin
+          description: Header CORS
           in: header
           required: true
           schema:
             type: string
-          description: Header CORS Origin
       security:
-        - EasyPayAuth: [ ]
+        - EasyPayToken: [ ]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                fullName:
-                  type: string
-                  example: Marco Paggioro
-                cardNumber:
-                  type: number
-                  example: 1234123412341234
-                expiration:
-                  type: string
-                  example: 2025-12
-              required:
-                - fullName
-                - cardNumber
+              $ref: "#/components/schemas/AddPaymentCardPayload"
       responses:
         '200':
           description: Payment card added
@@ -336,15 +332,15 @@ paths:
   /user/payment-card/{cardId}:
     delete:
       tags:
-        - Wallet
+        - User
       summary: Delete a payment card
       parameters:
         - name: Origin
+          description: Header CORS
           in: header
           required: true
           schema:
             type: string
-          description: Header CORS Origin
         - name: cardId
           in: path
           description: Card id
@@ -353,7 +349,7 @@ paths:
             type: integer
             example: 1
       security:
-        - EasyPayAuth: [ ]
+        - EasyPayToken: [ ]
       responses:
         '200':
           description: Payment card deleted
@@ -381,13 +377,13 @@ paths:
       summary: Get wallet balance
       parameters:
         - name: Origin
+          description: Header CORS
           in: header
           required: true
           schema:
             type: string
-          description: Header CORS Origin
       security:
-        - EasyPayAuth: [ ]
+        - EasyPayToken: [ ]
       responses:
         '200':
           description: Got wallet balance
@@ -416,19 +412,19 @@ paths:
       summary: Get wallet operations
       parameters:
         - name: Origin
+          description: Header CORS
           in: header
           required: true
           schema:
             type: string
-          description: Header CORS Origin
       security:
-        - EasyPayAuth: [ ]
+        - EasyPayToken: [ ]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/WalletOperationsPayload'
+              $ref: "#/components/schemas/GetWalletOperationsPayload"
       responses:
         '200':
           description: Got wallet operations
@@ -462,13 +458,13 @@ paths:
       summary: Get recent interacted customers
       parameters:
         - name: Origin
+          description: Header CORS
           in: header
           required: true
           schema:
             type: string
-          description: Header CORS Origin
       security:
-        - EasyPayAuth: [ ]
+        - EasyPayToken: [ ]
       responses:
         '200':
           description: Got recent interacted customers
@@ -477,7 +473,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/InteractedCustomer"
+                  $ref: "#/components/schemas/InteractedCustomerResponse"
         '401':
           description: Unauthorized
           content:
@@ -498,29 +494,19 @@ paths:
       summary: Recharge wallet
       parameters:
         - name: Origin
+          description: Header CORS
           in: header
           required: true
           schema:
             type: string
-          description: Header CORS Origin
       security:
-        - EasyPayAuth: [ ]
+        - EasyPayToken: [ ]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                cardId:
-                  type: integer
-                  example: 1
-                amount:
-                  type: number
-                  example: 123.45
-              required:
-                - cardId
-                - amount
+              $ref: "#/components/schemas/RechargeWalletPayload"
       responses:
         '200':
           description: Wallet recharged
@@ -554,19 +540,19 @@ paths:
       summary: Transfer money
       parameters:
         - name: Origin
+          description: Header CORS
           in: header
           required: true
           schema:
             type: string
-          description: Header CORS Origin
       security:
-        - EasyPayAuth: [ ]
+        - EasyPayToken: [ ]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TransferMoneyPayload'
+              $ref: "#/components/schemas/TransferMoneyPayload"
       responses:
         '200':
           description: Money transferred
@@ -606,16 +592,16 @@ paths:
       summary: Get scheduled operations
       parameters:
         - name: Origin
+          description: Header CORS
           in: header
           required: true
           schema:
             type: string
-          description: Header CORS Origin
       security:
-        - EasyPayAuth: [ ]
+        - EasyPayToken: [ ]
       responses:
         '200':
-          description: Scheduled operation deleted
+          description: Got scheduled operations
           content:
             application/json:
               schema:
@@ -640,13 +626,13 @@ paths:
       summary: Create scheduled operations
       parameters:
         - name: Origin
+          description: Header CORS
           in: header
           required: true
           schema:
             type: string
-          description: Header CORS Origin
       security:
-        - EasyPayAuth: [ ]
+        - EasyPayToken: [ ]
       requestBody:
         required: true
         content:
@@ -672,6 +658,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+        '404':
+          description: Recipient customer email not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         '500':
           description: Internal server error
           content:
@@ -686,11 +678,11 @@ paths:
       summary: Delete a scheduled operation
       parameters:
         - name: Origin
+          description: Header CORS
           in: header
           required: true
           schema:
             type: string
-          description: Header CORS Origin
         - name: scheduledOperationId
           in: path
           description: Scheduled operation id
@@ -698,9 +690,9 @@ paths:
           schema:
             type: string
             format: uuid
-            example: "0afe431b-4e19-4790-a3df-8ececd2a02d2"
+            example: 0afe431b-4e19-4790-a3df-8ececd2a02d2
       security:
-        - EasyPayAuth: [ ]
+        - EasyPayToken: [ ]
       responses:
         '200':
           description: Scheduled operation deleted
@@ -724,11 +716,16 @@ paths:
 
 components:
   securitySchemes:
-    EasyPayAuth:
+    EasyPayToken:
       type: apiKey
       in: header
       name: EasyPayToken
       description: JWT token
+    EasyPayRefreshToken:
+      type: apiKey
+      in: header
+      name: EasyPayRefreshToken
+      description: JWT refresh token
 
   schemas:
     OkResponse:
@@ -749,65 +746,22 @@ components:
       required:
         - error
 
-    LoginPayload:
-      type: object
-      properties:
-        email:
-          type: string
-          format: email
-          example: "marco.paggioro@studenti.unipegaso.it"
-        encryptedPassword:
-          type: string
-          description: SHA512 encrypted password
-          example: "2bbe0c48b91a7d1b8a6753a8b9cbe1db16b84379f3f91fe115621284df7a48f1cd71e9beb90ea614c7bd924250aa9e446a866725e685a65df5d139a5cd180dc9"
-      required:
-        - email
-        - encryptedPassword
-
     LoginResponse:
       type: object
       properties:
         customerId:
           type: string
           format: uuid
-          example: "0afe431b-4e19-4790-a3df-8ececd2a02d2"
+          example: 0afe431b-4e19-4790-a3df-8ececd2a02d2
         expiration:
           type: number
-          description: Millis from EPOCH
+          description: Milliseconds from EPOCH
           example: 1744797585000
       required:
         - customerId
         - expiration
 
-    RegisterPayload:
-      type: object
-      properties:
-        firstName:
-          type: string
-          example: Marco
-        lastName:
-          type: string
-          example: Paggioro
-        birthDate:
-          type: string
-          format: date
-          example: 1998-06-01
-        email:
-          type: string
-          format: email
-          example: "marco.paggioro@studenti.unipegaso.it"
-        lastEdit:
-          type: number
-          description: Millis from EPOCH
-          example: 1744789213639
-      required:
-        - firstName
-        - lastName
-        - birthDate
-        - email
-        - lastEdit
-
-    PaymentCard:
+    PaymentCardResponse:
       type: object
       properties:
         cardId:
@@ -822,15 +776,11 @@ components:
         expiration:
           type: string
           example: 2025-12
-        securityCode:
-          type: number
-          example: 123
       required:
         - cardId
         - fullName
         - cardNumber
         - expiration
-        - securityCode
 
     UserDataResponse:
       type: object
@@ -838,7 +788,7 @@ components:
         id:
           type: string
           format: uuid
-          example: "0afe431b-4e19-4790-a3df-8ececd2a02d2"
+          example: 0afe431b-4e19-4790-a3df-8ececd2a02d2
         firstName:
           type: string
           example: Marco
@@ -852,15 +802,15 @@ components:
         email:
           type: string
           format: email
-          example: "marco.paggioro@studenti.unipegaso.it"
+          example: marco.paggioro@studenti.unipegaso.it
         lastEdit:
           type: number
-          description: Millis from EPOCH
+          description: Milliseconds from EPOCH
           example: 1744789213639
         paymentCards:
           type: array
           items:
-            $ref: '#/components/schemas/PaymentCard'
+            $ref: '#/components/schemas/PaymentCardResponse'
       required:
         - id
         - firstName
@@ -885,9 +835,9 @@ components:
         email:
           type: string
           format: email
-          example: "marco.paggioro@studenti.unipegaso.it"
+          example: marco.paggioro@studenti.unipegaso.it
 
-    WalletOperation:
+    WalletOperationResponse:
       type: object
       properties:
         interactedCustomerId:
@@ -937,30 +887,6 @@ components:
         - instant
         - amount
 
-    WalletOperationsPayload:
-      type: object
-      properties:
-        page:
-          type: number
-          example: 1
-        email:
-          type: string
-          format: email
-          example: "marco.paggioro@studenti.unipegaso.it"
-        fullName:
-          type: string
-          example: "Mario Rossi"
-        start:
-          type: number
-          description: Millis from EPOCH
-          example: 1744789213639
-        end:
-          type: number
-          description: Millis from EPOCH
-          example: 1744789213639
-      required:
-        - page
-
     WalletOperationsResponse:
       type: object
       properties:
@@ -973,53 +899,12 @@ components:
         history:
           type: array
           items:
-            $ref: '#/components/schemas/WalletOperation'
+            $ref: '#/components/schemas/WalletOperationResponse'
       required:
         - pageSize
         - historyCount
         - history
 
-    InteractedCustomer:
-      type: object
-      properties:
-        interactedCustomerId:
-          type: string
-          format: uuid
-          example: "0afe431b-4e19-4790-a3df-8ececd2a02d2"
-        interactedFirstName:
-          type: string
-          example: Marco
-        interactedLastName:
-          type: string
-          example: Paggioro
-        interactedEmail:
-          type: string
-          format: email
-          example: "marco.paggioro@studenti.unipegaso.it"
-      required:
-        - interactedCustomerId
-        - interactedFirstName
-        - interactedLastName
-        - interactedEmail
-
-    TransferMoneyPayload:
-      type: object
-      properties:
-        recipientEmail:
-          type: string
-          format: email
-          example: "marco.paggioro@studenti.unipegaso.it"
-        amount:
-          type: number
-          example: 123.45
-        description:
-          type: string
-          example: "Pizza"
-      required:
-        - recipientEmail
-        - amount
-        - description
-        - interactedEmail
 
     ScheduledOperation:
       type: object
@@ -1027,7 +912,7 @@ components:
         interactedCustomerId:
           type: string
           format: uuid
-          example: "0afe431b-4e19-4790-a3df-8ececd2a02d2"
+          example: 0afe431b-4e19-4790-a3df-8ececd2a02d2
         interactedFirstName:
           type: string
           example: Marco
@@ -1037,35 +922,35 @@ components:
         interactedEmail:
           type: string
           format: email
-          example: "marco.paggioro@studenti.unipegaso.it"
+          example: marco.paggioro@studenti.unipegaso.it
         id:
           type: string
           format: uuid
-          example: "0afe431b-4e19-4790-a3df-8ececd2a02d2"
+          example: 0afe431b-4e19-4790-a3df-8ececd2a02d2
         senderCustomerId:
           type: string
           format: uuid
-          example: "0afe431b-4e19-4790-a3df-8ececd2a02d2"
+          example: 0afe431b-4e19-4790-a3df-8ececd2a02d2
         recipientCustomerId:
           type: string
           format: uuid
-          example: "0afe431b-4e19-4790-a3df-8ececd2a02d2"
+          example: 0afe431b-4e19-4790-a3df-8ececd2a02d2
         description:
           type: string
-          example: "Pizza"
+          example: Pizza
         when:
           type: number
-          description: Millis from EPOCH
+          description: Milliseconds from EPOCH
           example: 1744789213639
         amount:
           type: number
           example: 123.45
         repeat:
           type: string
-          example: "1 Giorno"
+          example: 1 Giorno
         status:
           type: string
-          example: "In attesa"
+          example: In attesa
       required:
         - interactedCustomerId
         - interactedFirstName
@@ -1085,13 +970,13 @@ components:
         recipientEmail:
           type: string
           format: email
-          example: "marco.paggioro@studenti.unipegaso.it"
+          example: marco.paggioro@studenti.unipegaso.it
         description:
           type: string
-          example: "Pizza"
+          example: Pizza
         when:
           type: number
-          description: Millis from EPOCH
+          description: Milliseconds from EPOCH
           example: 1744789213639
         amount:
           type: number
@@ -1099,11 +984,151 @@ components:
         repeat:
           type: string
           description: Period Java-parsable string
-          example: "P1M1D"
+          example: P1M1D
       required:
         - recipientEmail
         - description
         - when
         - amount
-          
-        
+
+    TransferMoneyPayload:
+      type: object
+      properties:
+        recipientEmail:
+          type: string
+          format: email
+          example: marco.paggioro@studenti.unipegaso.it
+        amount:
+          type: number
+          example: 123.45
+        description:
+          type: string
+          example: Pizza
+      required:
+        - recipientEmail
+        - amount
+        - description
+
+    LoginPayload:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: marco.paggioro@studenti.unipegaso.it
+        encryptedPassword:
+          type: string
+          description: SHA512 encrypted password
+          example: 2bbe0c48b91a7d1b8a6753a8b9cbe1db16b84379f3f91fe115621284df7a48f1cd71e9beb90ea614c7bd924250aa9e446a866725e685a65df5d139a5cd180dc9
+      required:
+        - email
+        - encryptedPassword
+
+    RechargeWalletPayload:
+      type: object
+      properties:
+        cardId:
+          type: integer
+          example: 1
+        amount:
+          type: number
+          example: 123.45
+      required:
+        - cardId
+        - amount
+
+    CreateUserPayload:
+      type: object
+      properties:
+        firstName:
+          type: string
+          example: Marco
+        lastName:
+          type: string
+          example: Paggioro
+        birthDate:
+          type: string
+          format: date
+          example: 1998-06-01
+        email:
+          type: string
+          format: email
+          example: marco.paggioro@studenti.unipegaso.it
+        lastEdit:
+          type: number
+          description: Milliseconds from EPOCH
+          example: 1744789213639
+      required:
+        - firstName
+        - lastName
+        - birthDate
+        - email
+        - lastEdit
+
+    AddPaymentCardPayload:
+      type: object
+      properties:
+        fullName:
+          type: string
+          example: Marco Paggioro
+        cardNumber:
+          type: number
+          example: 1234123412341234
+        expiration:
+          type: string
+          example: 2025-12
+        securityCode:
+          type: number
+          example: 123
+      required:
+        - fullName
+        - cardNumber
+        - expiration
+        - securityCode
+
+    GetWalletOperationsPayload:
+      type: object
+      properties:
+        page:
+          type: number
+          example: 1
+        email:
+          type: string
+          format: email
+          example: marco.paggioro@studenti.unipegaso.it
+        fullName:
+          type: string
+          example: Mario Rossi
+        start:
+          type: number
+          description: Milliseconds from EPOCH
+          example: 1744789213639
+        end:
+          type: number
+          description: Milliseconds from EPOCH
+          example: 1744789213639
+      required:
+        - page
+
+    InteractedCustomerResponse:
+      type: object
+      properties:
+        interactedCustomerId:
+          type: string
+          format: uuid
+          example: 0afe431b-4e19-4790-a3df-8ececd2a02d2
+        interactedFirstName:
+          type: string
+          example: Marco
+        interactedLastName:
+          type: string
+          example: Paggioro
+        interactedEmail:
+          type: string
+          format: email
+          example: marco.paggioro@studenti.unipegaso.it
+      required:
+        - interactedCustomerId
+        - interactedFirstName
+        - interactedLastName
+        - interactedEmail

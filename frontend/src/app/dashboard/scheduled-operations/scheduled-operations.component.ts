@@ -15,9 +15,9 @@ import {
   NgbAccordionItem,
   NgbTooltip
 } from '@ng-bootstrap/ng-bootstrap';
-import {emailValidator} from '../../utilities/email.validator';
+import {emailValidator} from '../../utilities/validators/email.validator';
 import {WebSocketService} from '../../utilities/web-socket.service';
-import {maxTwoDecimalsValidator} from '../../utilities/maxTwoDecimals.validator';
+import {maxTwoDecimalsValidator} from '../../utilities/validators/max-two-decimals.validator';
 import {CreateScheduledOperationPayload} from '../../classes/payloads/CreateScheduledOperationPayload';
 
 @Component({

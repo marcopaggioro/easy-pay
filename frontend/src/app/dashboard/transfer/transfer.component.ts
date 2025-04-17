@@ -4,9 +4,9 @@ import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {APP_CONSTANTS} from '../../app.constants';
 import {AlertComponent} from '../../utilities/alert.component';
-import {emailValidator} from '../../utilities/email.validator';
+import {emailValidator} from '../../utilities/validators/email.validator';
 import {ActivatedRoute} from '@angular/router';
-import {maxTwoDecimalsValidator} from '../../utilities/maxTwoDecimals.validator';
+import {maxTwoDecimalsValidator} from '../../utilities/validators/max-two-decimals.validator';
 
 @Component({
   selector: 'app-transfer',

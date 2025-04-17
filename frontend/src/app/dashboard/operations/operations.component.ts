@@ -17,7 +17,7 @@ import {AuthorizationService} from '../../utilities/authorization.service';
 import {NgClass, NgIf} from '@angular/common';
 import {RouterLink} from '@angular/router';
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
-import {emailValidator} from '../../utilities/email.validator';
+import {emailValidator} from '../../utilities/validators/email.validator';
 import {GetWalletOperationsPayload} from '../../classes/payloads/GetWalletOperationsPayload';
 import {AlertComponent} from '../../utilities/alert.component';
 

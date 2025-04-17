@@ -10,9 +10,8 @@
           <form [formGroup]="rechargeForm" (ngSubmit)="onSubmit()">
             <!-- Card ID -->
             <div class="form-floating">
-              <select class="form-select form-control" id="cardId" aria-label="Floating label select example"
-                      [formControl]="rechargeForm.controls.cardId"
-                      [class.is-invalid]="rechargeForm.controls.cardId.dirty && rechargeForm.controls.cardId.invalid">
+              <select class="form-select form-control" id="cardId" aria-label="Card ID"
+                      [formControl]="rechargeForm.controls.cardId">
                 @for (paymentCard of paymentCards; track paymentCard.cardId) {
                   <option [value]="paymentCard.cardId">{{ paymentCard.cardNumber }}</option>
                 }

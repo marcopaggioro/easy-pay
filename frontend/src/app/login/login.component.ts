@@ -4,7 +4,7 @@ import {NgIf} from "@angular/common";
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
 import {Router, RouterLink} from '@angular/router';
 import {APP_CONSTANTS} from '../app.constants';
-import {emailValidator} from '../utilities/email.validator';
+import {emailValidator} from '../utilities/validators/email.validator';
 import {HttpErrorResponse} from '@angular/common/http';
 import {AlertComponent} from '../utilities/alert.component';
 

@@ -2,7 +2,7 @@ import {Component, OnInit, ViewChild} from '@angular/core';
 import {AuthorizationService} from '../utilities/authorization.service';
 import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {NgIf} from '@angular/common';
-import {emailValidator} from '../utilities/email.validator';
+import {emailValidator} from '../utilities/validators/email.validator';
 import {AlertComponent} from '../utilities/alert.component';
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {APP_CONSTANTS} from '../app.constants';

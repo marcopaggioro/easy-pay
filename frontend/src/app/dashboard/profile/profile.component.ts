@@ -6,7 +6,7 @@ import {AlertComponent} from '../../utilities/alert.component';
 import {ProfileFieldComponent} from './profile-field/profile-field.component';
 import {DatePipe} from '@angular/common';
 import {APP_CONSTANTS} from '../../app.constants';
-import {emailValidator} from '../../utilities/email.validator';
+import {emailValidator} from '../../utilities/validators/email.validator';
 import {AuthorizationService} from '../../utilities/authorization.service';
 
 @Component({

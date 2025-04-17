@@ -4,7 +4,7 @@ import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {NgIf} from '@angular/common';
 import {APP_CONSTANTS} from '../../app.constants';
 import {AlertComponent} from '../../utilities/alert.component';
-import {maxTwoDecimalsValidator} from '../../utilities/maxTwoDecimals.validator';
+import {maxTwoDecimalsValidator} from '../../utilities/validators/max-two-decimals.validator';
 import {UserDataService} from '../../utilities/user-data.service';
 import {PaymentCard} from '../../classes/PaymentCard';
 import {RouterLink} from '@angular/router';

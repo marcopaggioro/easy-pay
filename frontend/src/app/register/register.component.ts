@@ -1,13 +1,16 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
-import {AuthorizationService} from '../utilities/authorization.service';
 import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {NgIf} from '@angular/common';
 import {emailValidator} from '../utilities/validators/email.validator';
 import {AlertComponent} from '../utilities/alert.component';
-import {HttpErrorResponse} from '@angular/common/http';
+import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {APP_CONSTANTS} from '../app.constants';
 import {Router, RouterLink} from '@angular/router';
 import {noNumbersValidator} from '../utilities/validators/no-numbers-validator';
+import {AuthorizationUtils} from '../utilities/authorization-utils';
+import {UserDataService} from '../utilities/user-data.service';
+import {CookieService} from 'ngx-cookie-service';
+import {WebSocketService} from '../utilities/web-socket.service';
 
 @Component({
   selector: 'app-register',
@@ -24,7 +27,11 @@ export class RegisterComponent implements OnInit {
   @ViewChild(AlertComponent) alert!: AlertComponent;
   loading = false;
 
-  constructor(private authorizationService: AuthorizationService, private router: Router) {
+  constructor(private router: Router,
+              private http: HttpClient,
+              private userDataService: UserDataService,
+              private cookieService: CookieService,
+              private webSocketService: WebSocketService) {
   }
 
   registerForm = new FormGroup({
@@ -36,7 +43,7 @@ export class RegisterComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.authorizationService.redirectIfLoggedIn();
+    AuthorizationUtils.redirectIfLoggedIn(this.router, this.http);
   }
 
   onSubmit(): void {
@@ -46,7 +53,11 @@ export class RegisterComponent implements OnInit {
       return;
     }
 
-    this.authorizationService.register(this.registerForm.value.firstName!,
+    AuthorizationUtils.register(this.http,
+      this.userDataService,
+      this.webSocketService,
+      this.cookieService,
+      this.registerForm.value.firstName!,
       this.registerForm.value.lastName!,
       this.registerForm.value.birthDate!,
       this.registerForm.value.email!,

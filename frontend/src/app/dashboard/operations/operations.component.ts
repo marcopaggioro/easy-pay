@@ -13,7 +13,6 @@ import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {APP_CONSTANTS} from '../../app.constants';
 import {WalletOperations} from '../../classes/WalletOperations';
 import {WebSocketService} from '../../utilities/web-socket.service';
-import {AuthorizationService} from '../../utilities/authorization.service';
 import {NgClass, NgIf} from '@angular/common';
 import {RouterLink} from '@angular/router';
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
@@ -21,6 +20,8 @@ import {emailValidator} from '../../utilities/validators/email.validator';
 import {GetWalletOperationsPayload} from '../../classes/payloads/GetWalletOperationsPayload';
 import {AlertComponent} from '../../utilities/alert.component';
 import {noNumbersValidator} from '../../utilities/validators/no-numbers-validator';
+import {AuthorizationUtils} from '../../utilities/authorization-utils';
+import {CookieService} from 'ngx-cookie-service';
 
 @Component({
   selector: 'app-operations',
@@ -58,12 +59,14 @@ export class OperationsComponent implements OnInit {
     endDate: new FormControl<Date | null>(null)
   });
 
-  constructor(private http: HttpClient, private webSocketService: WebSocketService, private authorizationService: AuthorizationService) {
+  constructor(private http: HttpClient,
+              private webSocketService: WebSocketService,
+              private cookieService: CookieService) {
   }
 
   ngOnInit(): void {
     this.getOperations();
-    this.customerId = this.authorizationService.getCustomerIdCookie();
+    this.customerId = AuthorizationUtils.getCustomerIdCookie(this.cookieService);
 
     this.webSocketService.getWebSocketMessages().subscribe(
       (message) => {

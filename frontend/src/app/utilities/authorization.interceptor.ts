@@ -3,6 +3,7 @@ import {catchError, switchMap, throwError} from 'rxjs';
 import {inject} from '@angular/core';
 import {Router} from '@angular/router';
 import {APP_CONSTANTS} from '../app.constants';
+import {AuthorizationUtils} from './authorization-utils';
 
 export const authorizationInterceptor: HttpInterceptorFn = (request, next) => {
   const http = inject(HttpClient);
@@ -12,11 +13,7 @@ export const authorizationInterceptor: HttpInterceptorFn = (request, next) => {
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401 && !request.url.includes(APP_CONSTANTS.ENDPOINT_USER_LOGIN_CHECK)) {
         if (!request.url.includes(APP_CONSTANTS.ENDPOINT_USER_REFRESH_TOKEN)) {
-          console.log("Refreshing token");
-          return http.post<void>(APP_CONSTANTS.ENDPOINT_USER_REFRESH_TOKEN, {}, {
-            withCredentials: true,
-            responseType: 'json'
-          }).pipe(
+          return AuthorizationUtils.refreshToken(http).pipe(
             switchMap(() => {
               console.log(`Performing again same request (${request.url})`);
               return next(request)

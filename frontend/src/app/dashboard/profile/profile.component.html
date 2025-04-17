@@ -43,7 +43,7 @@
                 httpFieldName="encryptedPassword" inputType="password"
                 (editResult)="handleEditResult($event)"
                 [additionalValidators]="[Validators.minLength(APP_CONSTANTS.PASSWORD_MIN_LENGHT)]"
-                [fieldTransformation]="authorizationService.hashPassword"></tr>
+                [fieldTransformation]="AuthorizationUtils.hashPassword"></tr>
 
             <tr>
               <th scope="row">Ultima modifica</th>

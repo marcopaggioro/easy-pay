@@ -6,6 +6,8 @@ import {APP_CONSTANTS} from '../app.constants';
 import {CookieService} from 'ngx-cookie-service';
 import {Router} from '@angular/router';
 import {WebSocketMessage} from '../classes/WebSocketMessage';
+import {AuthorizationUtils} from './authorization-utils';
+import {HttpClient} from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
@@ -14,7 +16,7 @@ export class WebSocketService {
   private socket$!: WebSocketSubject<WebSocketMessage>;
   private messageSubject$ = new BehaviorSubject<WebSocketMessage | null>(null);
 
-  constructor(private cookieService: CookieService, private router: Router) {
+  constructor(private cookieService: CookieService, private router: Router, private http: HttpClient) {
     if (router.url.includes(APP_CONSTANTS.PATH_DASHBOARD)) {
       this.createWebSocketConnection();
     }
@@ -30,7 +32,12 @@ export class WebSocketService {
 
         },
         closeObserver: {
-          next: () => console.log("[WS] Connection closed")
+          next: closeEvent => {
+            console.log("[WS] Connection closed")
+            if (closeEvent.code === 1006) {
+              AuthorizationUtils.refreshToken(this.http).subscribe();
+            }
+          }
         }
       };
 
@@ -51,7 +58,7 @@ export class WebSocketService {
                 return timer(APP_CONSTANTS.INTERVAL_WS_RETRY);
               } else {
                 this.close();
-                this.router.navigate([APP_CONSTANTS.PATH_ROOT])
+                this.router.navigate([APP_CONSTANTS.PATH_LOGIN])
                 return throwError(() => new Error("Token expired"));
               }
             }

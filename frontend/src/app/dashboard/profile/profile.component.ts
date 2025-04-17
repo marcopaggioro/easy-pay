@@ -7,8 +7,8 @@ import {ProfileFieldComponent} from './profile-field/profile-field.component';
 import {DatePipe} from '@angular/common';
 import {APP_CONSTANTS} from '../../app.constants';
 import {emailValidator} from '../../utilities/validators/email.validator';
-import {AuthorizationService} from '../../utilities/authorization.service';
 import {noNumbersValidator} from '../../utilities/validators/no-numbers-validator';
+import {AuthorizationUtils} from '../../utilities/authorization-utils';
 
 @Component({
   selector: 'app-profile',
@@ -24,7 +24,7 @@ export class ProfileComponent implements OnInit {
   @ViewChild(AlertComponent) alert!: AlertComponent;
   userData?: UserData;
 
-  constructor(private userDataService: UserDataService, protected authorizationService: AuthorizationService) {
+  constructor(private userDataService: UserDataService) {
   }
 
   ngOnInit(): void {
@@ -47,4 +47,5 @@ export class ProfileComponent implements OnInit {
   protected readonly Validators = Validators;
   protected readonly APP_CONSTANTS = APP_CONSTANTS;
   protected readonly noNumbersValidator = noNumbersValidator;
+  protected readonly AuthorizationUtils = AuthorizationUtils;
 }

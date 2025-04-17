@@ -49,7 +49,8 @@
 
       <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
         <li class="nav-item">
-          <a href="#" class="nav-link" (click)="$event.preventDefault(); authorizationService.logout(webSocketService)">Logout</a>
+          <a href="#" class="nav-link"
+             (click)="$event.preventDefault(); AuthorizationUtils.logout(http, cookieService, router, webSocketService)">Logout</a>
         </li>
       </ul>
     </div>

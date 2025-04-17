@@ -50,10 +50,7 @@ export class WalletComponent implements OnInit {
 
   getBalance(): void {
     this.http.get<Decimal>(APP_CONSTANTS.ENDPOINT_WALLET_BALANCE, {withCredentials: true})
-      .subscribe(balance => {
-        console.log(balance)
-        this.balance = balance
-      });
+      .subscribe(balance => this.balance = balance);
   }
 
   goToTransfer(email: string): void {

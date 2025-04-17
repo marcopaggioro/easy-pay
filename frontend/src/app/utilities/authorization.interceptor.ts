@@ -11,7 +11,7 @@ export const authorizationInterceptor: HttpInterceptorFn = (request, next) => {
 
   return next(request).pipe(
     catchError((error: HttpErrorResponse) => {
-      if (error.status === 401 && !request.url.includes(APP_CONSTANTS.ENDPOINT_USER_LOGIN_CHECK)) {
+      if (error.status === 401 && !request.url.includes(APP_CONSTANTS.ENDPOINT_USER_LOGIN_CHECK) && !request.url.includes(APP_CONSTANTS.ENDPOINT_USER_LOGIN)) {
         if (!request.url.includes(APP_CONSTANTS.ENDPOINT_USER_REFRESH_TOKEN)) {
           return AuthorizationUtils.refreshToken(http).pipe(
             switchMap(() => {

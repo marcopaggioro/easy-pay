@@ -14,6 +14,7 @@ import io.circe.{Decoder, Encoder}
 import it.marcopaggioro.easypay.EasyPayApp.completeWithError
 import it.marcopaggioro.easypay.domain.classes.Aliases.CustomerId
 import pdi.jwt.algorithms.JwtHmacAlgorithm
+import pdi.jwt.exceptions.JwtException
 import pdi.jwt.{JwtAlgorithm, JwtCirce, JwtClaim, JwtOptions}
 
 import java.time.{Duration, Instant}
@@ -24,7 +25,7 @@ object JwtUtils extends LazyLogging {
   private lazy val TokenAlgorithm: JwtHmacAlgorithm = JwtAlgorithm.HS512
   private lazy val TokenEncryptionSecret = "super-secret-key"
   private lazy val TokenDuration: Duration = Duration.ofMinutes(5)
-  private lazy val RefreshTokenDuration: Duration = Duration.ofDays(7)
+  private lazy val RefreshTokenDuration: Duration = Duration.ofHours(8)
   private lazy val TokenCookieName: String = "EasyPayToken"
   lazy val RefreshTokenCookieName: String = "EasyPayRefreshToken"
   private lazy val TokenCustomerField: String = "customerId"
@@ -58,15 +59,11 @@ object JwtUtils extends LazyLogging {
     path = Some("/user/refresh-token")
   ).withSameSite(SameSite.Strict)
 
-  def getSignedJwtCookie(customerId: CustomerId, duration: Duration = TokenDuration): HttpCookie =
-    baseCookie
-      .withValue(generateSignedClaim(customerId, duration))
-      .withExpires(DateTime.now.plus(duration.toMillis))
+  def getSignedJwtCookie(customerId: CustomerId): HttpCookie =
+    baseCookie.withValue(generateSignedClaim(customerId, TokenDuration))
 
   def getSignedRefreshJwtCookie(customerId: CustomerId): HttpCookie =
-    baseRefreshCookie
-      .withValue(generateSignedClaim(customerId, RefreshTokenDuration))
-      .withExpires(DateTime.now.plus(RefreshTokenDuration.toMillis))
+    baseRefreshCookie.withValue(generateSignedClaim(customerId, RefreshTokenDuration))
 
   private def decodeToken(token: String): Try[JwtClaim] = JwtCirce.decode(
     token,
@@ -89,8 +86,12 @@ object JwtUtils extends LazyLogging {
       cookieName: String = TokenCookieName
   )(implicit uri: Uri, system: ActorSystem[Nothing]): Directive1[CustomerId] = withAuthCookie(cookieName).flatMap { cookie =>
     decodeToken(cookie.value).flatMap(jwtClaim => decode[JwtContent](jwtClaim.content).toTry) match {
+      case Failure(exception: JwtException) =>
+        logger.warn(s"Invalid or expired token in ${uri.path.toString()}: [${exception.getMessage}]")
+        completeWithError(StatusCodes.Unauthorized, "Token invalido o scaduto")
+
       case Failure(exception) =>
-        logger.warn(s"Invalid or expired token in ${uri.path.toString()}", exception)
+        logger.warn(s"Error while getting customer from token", exception)
         completeWithError(StatusCodes.Unauthorized, "Token invalido o scaduto")
 
       case Success(jwtContent) =>

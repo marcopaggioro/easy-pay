@@ -8,7 +8,7 @@
           <h1 class="placeholder-glow mb-3 d-grid justify-content-center">
             <span
               [ngClass]="{'placeholder rounded' : balance === undefined}">
-              {{ balance != undefined ? (Number(balance) | number:'1.2-2') : 10000000.00 }}&euro;
+              {{ balance !== undefined ? (Number(balance) | number:'1.2-2') : 10000000.00 }}&euro;
             </span>
           </h1>
         </div>

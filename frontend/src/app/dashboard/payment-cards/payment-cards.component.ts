@@ -1,6 +1,6 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
 import {AlertComponent} from '../../utilities/alert.component';
-import {NgIf} from '@angular/common';
+import {DatePipe, NgIf} from '@angular/common';
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {SpinnerComponent} from '../../utilities/spinner.component';
 import {UserDataService} from '../../utilities/user-data.service';
@@ -16,7 +16,8 @@ import {noNumbersValidator} from '../../utilities/validators/no-numbers-validato
     AlertComponent,
     NgIf,
     ReactiveFormsModule,
-    SpinnerComponent
+    SpinnerComponent,
+    DatePipe
   ],
   templateUrl: './payment-cards.component.html'
 })

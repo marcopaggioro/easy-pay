@@ -15,7 +15,7 @@ export const authorizationInterceptor: HttpInterceptorFn = (request, next) => {
         if (!request.url.includes(APP_CONSTANTS.ENDPOINT_USER_REFRESH_TOKEN)) {
           return AuthorizationUtils.refreshToken(http).pipe(
             switchMap(() => {
-              console.log(`Performing again same request (${request.url})`);
+              console.log(`Performing again same request (${request.method} ${request.url})`);
               return next(request)
             })
           );

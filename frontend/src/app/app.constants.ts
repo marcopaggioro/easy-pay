@@ -33,7 +33,7 @@ export const APP_CONSTANTS = {
 
   // Messages
   MESSAGE_SUCCESSFUL: "Operazione eseguita con successo. Potrai visualizzare le modifiche a breve",
-  MESSAGE_GENERIC_ERROR: "Errore generico",
+  MESSAGE_GENERIC_ERROR: "Errore generico. Riprova più tardi",
 
   // Web socket
   WS_CUSTOMER_REGISTERED: "customer_registered",

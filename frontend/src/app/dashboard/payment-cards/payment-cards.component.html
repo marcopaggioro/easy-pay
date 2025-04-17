@@ -83,7 +83,7 @@
                     <tr>
                       <td>{{ paymentCard.fullName }}</td>
                       <td><code>{{ paymentCard.cardNumber }}</code></td>
-                      <td>{{ paymentCard.expiration }}</td>
+                      <td>{{ paymentCard.expiration | date:'MM/yy' }}</td>
                       <td>
                         <button type="button" class="btn btn-outline-danger btn-sm"
                                 (click)="deletePaymentCard(paymentCard.cardId)"

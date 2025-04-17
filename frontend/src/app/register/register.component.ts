@@ -7,6 +7,7 @@ import {AlertComponent} from '../utilities/alert.component';
 import {HttpErrorResponse} from '@angular/common/http';
 import {APP_CONSTANTS} from '../app.constants';
 import {Router, RouterLink} from '@angular/router';
+import {noNumbersValidator} from '../utilities/validators/no-numbers-validator';
 
 @Component({
   selector: 'app-register',
@@ -27,8 +28,8 @@ export class RegisterComponent implements OnInit {
   }
 
   registerForm = new FormGroup({
-    firstName: new FormControl('', Validators.required),
-    lastName: new FormControl('', Validators.required),
+    firstName: new FormControl('', [Validators.required, noNumbersValidator()]),
+    lastName: new FormControl('', [Validators.required, noNumbersValidator()]),
     birthDate: new FormControl('', Validators.required),
     email: new FormControl('', [Validators.required, Validators.email, emailValidator()]),
     password: new FormControl('', [Validators.required, Validators.minLength(APP_CONSTANTS.PASSWORD_MIN_LENGHT)]),

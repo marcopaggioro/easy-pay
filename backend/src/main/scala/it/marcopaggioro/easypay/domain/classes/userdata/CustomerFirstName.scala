@@ -5,13 +5,14 @@ import cats.data.ValidatedNel
 import io.circe.{Decoder, Encoder}
 import it.marcopaggioro.easypay.domain.classes.Validable
 import it.marcopaggioro.easypay.domain.classes.userdata.CustomerFirstName.maxLength
+import it.marcopaggioro.easypay.utilities.ValidationUtilities.noNumbersRegex
 
 case class CustomerFirstName private (value: String) extends Validable[CustomerFirstName] {
 
   override def validate(): ValidatedNel[String, CustomerFirstName] =
     condNel(value.nonEmpty, this, "Il nome non può essere vuoto")
       .andThen(_ => condNel(value.length <= maxLength, this, s"Il nome può essere lungo al massimo $maxLength caratteri"))
-
+      .andThen(_ => condNel(value.matches(noNumbersRegex), this, "Il nome non può contenere numeri"))
 }
 
 object CustomerFirstName {

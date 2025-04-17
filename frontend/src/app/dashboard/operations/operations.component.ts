@@ -20,6 +20,7 @@ import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/
 import {emailValidator} from '../../utilities/validators/email.validator';
 import {GetWalletOperationsPayload} from '../../classes/payloads/GetWalletOperationsPayload';
 import {AlertComponent} from '../../utilities/alert.component';
+import {noNumbersValidator} from '../../utilities/validators/no-numbers-validator';
 
 @Component({
   selector: 'app-operations',
@@ -51,9 +52,8 @@ export class OperationsComponent implements OnInit {
   @Input() cardClasses = "col col-md-10 col-lg-8 col-xl-6 col-xxl-5";
 
   operationsForm = new FormGroup({
-    name: new FormControl<string | null>(null),
+    fullName: new FormControl<string | null>(null, noNumbersValidator()),
     email: new FormControl<string | null>(null, [Validators.email, emailValidator()]),
-    fullName: new FormControl<string | null>(null),
     startDate: new FormControl<Date | null>(null),
     endDate: new FormControl<Date | null>(null)
   });

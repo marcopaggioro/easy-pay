@@ -8,6 +8,7 @@ import {DatePipe} from '@angular/common';
 import {APP_CONSTANTS} from '../../app.constants';
 import {emailValidator} from '../../utilities/validators/email.validator';
 import {AuthorizationService} from '../../utilities/authorization.service';
+import {noNumbersValidator} from '../../utilities/validators/no-numbers-validator';
 
 @Component({
   selector: 'app-profile',
@@ -45,4 +46,5 @@ export class ProfileComponent implements OnInit {
   protected readonly emailValidator = emailValidator;
   protected readonly Validators = Validators;
   protected readonly APP_CONSTANTS = APP_CONSTANTS;
+  protected readonly noNumbersValidator = noNumbersValidator;
 }

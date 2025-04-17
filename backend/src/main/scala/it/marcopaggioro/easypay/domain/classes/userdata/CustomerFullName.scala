@@ -4,6 +4,7 @@ import cats.data.Validated.condNel
 import cats.data.ValidatedNel
 import io.circe.{Decoder, Encoder}
 import it.marcopaggioro.easypay.domain.classes.Validable
+import it.marcopaggioro.easypay.utilities.ValidationUtilities.noNumbersRegex
 
 case class CustomerFullName private (value: String) extends Validable[CustomerFullName] {
 
@@ -13,6 +14,7 @@ case class CustomerFullName private (value: String) extends Validable[CustomerFu
       .andThen(_ =>
         condNel(value.length <= maxLength, this, s"Il nome completo può essere lungo al massimo $maxLength caratteri")
       )
+      .andThen(_ => condNel(value.matches(noNumbersRegex), this, "Il nome completo non può contenere numeri"))
 
 }
 

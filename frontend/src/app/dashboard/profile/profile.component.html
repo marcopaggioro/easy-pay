@@ -22,11 +22,13 @@
             </tr>
 
             <tr app-profile-field fieldLabel="Nome" [fieldValue]="userData?.firstName" httpFieldName="firstName"
-                inputType="text" (editResult)="handleEditResult($event)">>
+                inputType="text" (editResult)="handleEditResult($event)"
+                [additionalValidators]="[noNumbersValidator()]">
             </tr>
 
             <tr app-profile-field fieldLabel="Cognome" [fieldValue]="userData?.lastName" httpFieldName="lastName"
-                inputType="text" (editResult)="handleEditResult($event)"></tr>
+                inputType="text" (editResult)="handleEditResult($event)"
+                [additionalValidators]="[noNumbersValidator()]"></tr>
 
             <tr app-profile-field fieldLabel="Data di nascita" [fieldValue]="userData?.birthDate"
                 [fieldValueVisualizer]="userData?.birthDate | date: 'dd/MM/YYYY'"

@@ -13,7 +13,7 @@ export function maxTwoDecimalsValidator(): ValidatorFn {
     if (parts.length === 2) {
       const decimals = parts[1];
       if (decimals.length > 2) {
-        return {invalidAmount: value};
+        return {invalidField: value};
       }
     }
 

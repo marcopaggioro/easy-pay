@@ -1,7 +1,7 @@
 import {AbstractControl, ValidationErrors, ValidatorFn} from '@angular/forms';
 
-export function cardNumberValidator(): ValidatorFn {
-  const regex = new RegExp('^\\d{16}$');
+export function noNumbersValidator(): ValidatorFn {
+  const regex = new RegExp('^[^0-9]*$');
 
   return (control: AbstractControl): ValidationErrors | null => {
     if (!control.value) {

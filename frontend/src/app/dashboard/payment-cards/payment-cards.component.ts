@@ -8,6 +8,7 @@ import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {PaymentCard} from '../../classes/PaymentCard';
 import {APP_CONSTANTS} from '../../app.constants';
 import {cardNumberValidator} from '../../utilities/validators/card-number.validator';
+import {noNumbersValidator} from '../../utilities/validators/no-numbers-validator';
 
 @Component({
   selector: 'app-payment-cards',
@@ -26,10 +27,10 @@ export class PaymentCardsComponent implements OnInit {
   deletingPaymentCards: number[] = [];
 
   paymentCardForm = new FormGroup({
-    fullName: new FormControl('', [Validators.required]),
+    fullName: new FormControl('', [Validators.required, noNumbersValidator()]),
     cardNumber: new FormControl('', [Validators.required, cardNumberValidator()]),
     securityCode: new FormControl('', [Validators.required, Validators.min(100), Validators.max(999)]),
-    expiration: new FormControl('', [Validators.required]),
+    expiration: new FormControl('', Validators.required),
   });
 
   constructor(private http: HttpClient, private userDataService: UserDataService) {

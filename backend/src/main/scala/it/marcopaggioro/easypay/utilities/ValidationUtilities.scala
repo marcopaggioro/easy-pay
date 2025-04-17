@@ -7,11 +7,14 @@ import it.marcopaggioro.easypay.domain.classes.Aliases.CustomerId
 import it.marcopaggioro.easypay.domain.classes.Money
 
 import java.time.{Instant, LocalDate, Period, YearMonth}
+import scala.util.matching.compat.Regex
 
 object ValidationUtilities {
 
   lazy val PayloadError: String = "Payload invalido"
   lazy val GenericError: String = "Errore generico"
+
+  lazy val noNumbersRegex: Regex = new Regex("^[^0-9]*$")
 
   private lazy val maxDescriptionLength: Int = 500
   def validateDescription(value: String): ValidatedNel[String, Unit] =

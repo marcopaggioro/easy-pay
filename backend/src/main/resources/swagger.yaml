@@ -73,7 +73,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/LoginResponse"
+                $ref: "#/components/schemas/OkResponse"
         '400':
           description: Invalid payload
           content:
@@ -147,7 +147,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/LoginResponse"
+                $ref: "#/components/schemas/OkResponse"
         '401':
           description: Invalid refresh token
           content:
@@ -187,7 +187,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/LoginResponse"
+                $ref: "#/components/schemas/OkResponse"
         '400':
           description: Invalid payload
           content:
@@ -745,21 +745,6 @@ components:
           example: "Something went wrong"
       required:
         - error
-
-    LoginResponse:
-      type: object
-      properties:
-        customerId:
-          type: string
-          format: uuid
-          example: 0afe431b-4e19-4790-a3df-8ececd2a02d2
-        expiration:
-          type: number
-          description: Milliseconds from EPOCH
-          example: 1744797585000
-      required:
-        - customerId
-        - expiration
 
     PaymentCardResponse:
       type: object

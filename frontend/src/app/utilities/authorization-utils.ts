@@ -1,4 +1,4 @@
-import {catchError, map, Observable, of} from 'rxjs';
+import {catchError, map, Observable, of, tap} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import CryptoJS from 'crypto-js';
 import {Router} from '@angular/router';
@@ -57,7 +57,7 @@ export class AuthorizationUtils {
     return http.post<void>(APP_CONSTANTS.ENDPOINT_USER_REFRESH_TOKEN, {}, {
       withCredentials: true,
       responseType: 'json'
-    });
+    }).pipe(tap(() => console.log("[WS] Token refreshed")));
   }
 
   static logout(http: HttpClient, cookieService: CookieService, router: Router, webSocketService: WebSocketService): void {

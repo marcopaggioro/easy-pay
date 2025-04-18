@@ -20,7 +20,8 @@ case class CustomerFullName private (value: String) extends Validable[CustomerFu
 
 object CustomerFullName {
 
-  lazy val maxLength: Int = CustomerFirstName.maxLength + CustomerLastName.maxLength
+  // Adding 1 for the space between the first and last name
+  lazy val maxLength: Int = CustomerFirstName.maxLength + CustomerLastName.maxLength + 1
 
   private def capitalizeSingleWords(value: String): String = value.split("\\s+").map(_.capitalize).mkString(" ")
 

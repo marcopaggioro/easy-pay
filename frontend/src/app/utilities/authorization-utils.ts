@@ -1,12 +1,10 @@
-import {catchError, map, Observable, of, tap} from 'rxjs';
+import {Observable, tap} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import CryptoJS from 'crypto-js';
 import {Router} from '@angular/router';
 import {APP_CONSTANTS} from '../app.constants';
 import {CookieService} from 'ngx-cookie-service';
 import {WebSocketService} from './web-socket.service';
-import {AuthorizationResponse} from '../classes/AuthorizationResponse';
-import {UserDataService} from './user-data.service';
 
 
 export class AuthorizationUtils {
@@ -15,41 +13,16 @@ export class AuthorizationUtils {
     return CryptoJS.SHA512(password).toString();
   }
 
-  static getCustomerIdCookie(cookieService: CookieService): string {
-    return cookieService.get(APP_CONSTANTS.CUSTOMER_ID_COOKIE_NAME);
-  }
-
-  static setCustomerIdCookie(cookieService: CookieService, authorization: AuthorizationResponse): void {
-    cookieService.set(APP_CONSTANTS.CUSTOMER_ID_COOKIE_NAME, authorization.customerId, {
-      path: "/",
-      expires: new Date(authorization.expiration)
-    });
-  }
-
-  static register(http: HttpClient, userDataService: UserDataService, webSocketService: WebSocketService, cookieService: CookieService, firstName: string, lastName: string, birthDate: string, email: string, password: string): Observable<void> {
+  static register(http: HttpClient, firstName: string, lastName: string, birthDate: string, email: string, password: string): Observable<void> {
     const body = {firstName, lastName, birthDate, email, encryptedPassword: this.hashPassword(password)};
-    return http.post<AuthorizationResponse>(APP_CONSTANTS.ENDPOINT_USER_REGISTER, body, {
-      withCredentials: true,
-      responseType: 'json'
-    }).pipe(map(authorization => {
-      this.setCustomerIdCookie(cookieService, authorization);
-      userDataService.getUserData();
-      webSocketService.createWebSocketConnection();
-    }));
+    return http.post<void>(APP_CONSTANTS.ENDPOINT_USER_REGISTER, body, {withCredentials: true});
   }
 
-  static login(http: HttpClient, userDataService: UserDataService, webSocketService: WebSocketService, cookieService: CookieService, email: string, password: string): Observable<void> {
-    return http.post<AuthorizationResponse>(APP_CONSTANTS.ENDPOINT_USER_LOGIN, {
+  static login(http: HttpClient, email: string, password: string): Observable<void> {
+    return http.post<void>(APP_CONSTANTS.ENDPOINT_USER_LOGIN, {
       email,
       encryptedPassword: this.hashPassword(password)
-    }, {
-      withCredentials: true,
-      responseType: 'json'
-    }).pipe(map(authorization => {
-      this.setCustomerIdCookie(cookieService, authorization);
-      userDataService.getUserData();
-      webSocketService.createWebSocketConnection();
-    }));
+    }, {withCredentials: true});
   }
 
   static refreshToken(http: HttpClient): Observable<void> {
@@ -70,33 +43,15 @@ export class AuthorizationUtils {
     )
   }
 
-  static isLoggedIn(http: HttpClient): Observable<boolean> {
-    return http.get(APP_CONSTANTS.ENDPOINT_USER_LOGIN_CHECK, {
-      withCredentials: true,
-      responseType: 'text'
-    }).pipe(
-      map(() => true),
-      catchError(() => of(false))
-    );
+  static checkLogin(http: HttpClient): Observable<void> {
+    return http.get<void>(APP_CONSTANTS.ENDPOINT_USER_LOGIN_CHECK, {withCredentials: true});
   }
 
   static redirectIfLoggedIn(router: Router, http: HttpClient): void {
-    this.isLoggedIn(http).subscribe(
-      isLogged => {
-        if (isLogged) {
-          router.navigate([APP_CONSTANTS.PATH_DASHBOARD]);
-        }
+    this.checkLogin(http).subscribe({
+      next: () => router.navigate([APP_CONSTANTS.PATH_DASHBOARD]),
+      error: () => {
       }
-    )
-  }
-
-  static redirectIfNotLoggedIn(router: Router, http: HttpClient): void {
-    this.isLoggedIn(http).subscribe(
-      isLogged => {
-        if (!isLogged) {
-          router.navigate([APP_CONSTANTS.PATH_LOGIN]);
-        }
-      }
-    )
+    })
   }
 }

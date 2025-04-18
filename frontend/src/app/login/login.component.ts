@@ -7,9 +7,6 @@ import {emailValidator} from '../utilities/validators/email.validator';
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {AlertComponent} from '../utilities/alert.component';
 import {AuthorizationUtils} from '../utilities/authorization-utils';
-import {UserDataService} from '../utilities/user-data.service';
-import {CookieService} from 'ngx-cookie-service';
-import {WebSocketService} from '../utilities/web-socket.service';
 
 @Component({
   selector: 'app-login',
@@ -25,11 +22,7 @@ export class LoginComponent implements OnInit {
   @ViewChild(AlertComponent) alert!: AlertComponent;
   loading = false;
 
-  constructor(private router: Router,
-              private http: HttpClient,
-              private userDataService: UserDataService,
-              private cookieService: CookieService,
-              private webSocketService: WebSocketService) {
+  constructor(private router: Router, private http: HttpClient) {
   }
 
   loginForm = new FormGroup({
@@ -49,9 +42,6 @@ export class LoginComponent implements OnInit {
     }
 
     AuthorizationUtils.login(this.http,
-      this.userDataService,
-      this.webSocketService,
-      this.cookieService,
       this.loginForm.value.email!,
       this.loginForm.value.password!)
       .subscribe({

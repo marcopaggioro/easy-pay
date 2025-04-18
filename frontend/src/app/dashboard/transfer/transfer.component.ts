@@ -5,9 +5,8 @@ import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {APP_CONSTANTS} from '../../app.constants';
 import {AlertComponent} from '../../utilities/alert.component';
 import {emailValidator} from '../../utilities/validators/email.validator';
-import {ActivatedRoute, Router} from '@angular/router';
+import {ActivatedRoute} from '@angular/router';
 import {maxTwoDecimalsValidator} from '../../utilities/validators/max-two-decimals.validator';
-import {AuthorizationUtils} from '../../utilities/authorization-utils';
 
 @Component({
   selector: 'app-transfer',
@@ -28,8 +27,7 @@ export class TransferComponent implements OnInit {
     amount: new FormControl('', [Validators.required, APP_CONSTANTS.VALIDATOR_MIN_AMOUNT, APP_CONSTANTS.VALIDATOR_MAX_AMOUNT, maxTwoDecimalsValidator()])
   });
 
-  constructor(private http: HttpClient, router: Router, private route: ActivatedRoute) {
-    AuthorizationUtils.redirectIfNotLoggedIn(router, http);
+  constructor(private http: HttpClient, private route: ActivatedRoute) {
   }
 
   ngOnInit() {

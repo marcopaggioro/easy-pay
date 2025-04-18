@@ -3,7 +3,6 @@ import {WebSocketSubject, WebSocketSubjectConfig} from 'rxjs/internal/observable
 import {webSocket} from 'rxjs/webSocket';
 import {BehaviorSubject, catchError, mergeMap, Observable, of, retry, shareReplay, throwError, timer} from 'rxjs';
 import {APP_CONSTANTS} from '../app.constants';
-import {CookieService} from 'ngx-cookie-service';
 import {Router} from '@angular/router';
 import {WebSocketMessage} from '../classes/WebSocketMessage';
 import {AuthorizationUtils} from './authorization-utils';

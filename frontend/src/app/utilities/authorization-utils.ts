@@ -1,4 +1,4 @@
-import {Observable, tap} from 'rxjs';
+import {catchError, EMPTY, Observable, tap} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import CryptoJS from 'crypto-js';
 import {Router} from '@angular/router';
@@ -48,10 +48,9 @@ export class AuthorizationUtils {
   }
 
   static redirectIfLoggedIn(router: Router, http: HttpClient): void {
-    this.checkLogin(http).subscribe({
-      next: () => router.navigate([APP_CONSTANTS.PATH_DASHBOARD]),
-      error: () => {
-      }
-    })
+    this.checkLogin(http).pipe(
+      tap(() => router.navigate([APP_CONSTANTS.PATH_DASHBOARD])),
+      catchError(() => EMPTY)
+    ).subscribe();
   }
 }

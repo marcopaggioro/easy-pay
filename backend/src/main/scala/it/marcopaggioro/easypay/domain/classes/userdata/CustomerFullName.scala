@@ -4,11 +4,11 @@ import cats.data.Validated.condNel
 import cats.data.ValidatedNel
 import io.circe.{Decoder, Encoder}
 import it.marcopaggioro.easypay.domain.classes.Validable
+import it.marcopaggioro.easypay.domain.classes.userdata.CustomerFullName.maxLength
 import it.marcopaggioro.easypay.utilities.ValidationUtilities.noNumbersRegex
 
 case class CustomerFullName private (value: String) extends Validable[CustomerFullName] {
 
-  private lazy val maxLength: Int = CustomerFirstName.maxLength + CustomerLastName.maxLength
   override def validate(): ValidatedNel[String, CustomerFullName] =
     condNel(value.nonEmpty, this, "Il nome completo non può essere vuoto")
       .andThen(_ =>
@@ -19,6 +19,8 @@ case class CustomerFullName private (value: String) extends Validable[CustomerFu
 }
 
 object CustomerFullName {
+
+  lazy val maxLength: Int = CustomerFirstName.maxLength + CustomerLastName.maxLength
 
   private def capitalizeSingleWords(value: String): String = value.split("\\s+").map(_.capitalize).mkString(" ")
 

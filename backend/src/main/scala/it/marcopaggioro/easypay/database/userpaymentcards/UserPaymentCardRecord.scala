@@ -5,12 +5,14 @@ import io.circe.{Encoder, Json}
 import it.marcopaggioro.easypay.domain.classes.Aliases.CustomerId
 import it.marcopaggioro.easypay.domain.classes.userdata.CustomerFullName
 
+import java.time.YearMonth
+
 case class UserPaymentCardRecord(
     customerId: CustomerId,
     cardId: Int,
     fullName: CustomerFullName,
     cardNumber: String,
-    expiration: String
+    expiration: YearMonth
 )
 
 object UserPaymentCardRecord {

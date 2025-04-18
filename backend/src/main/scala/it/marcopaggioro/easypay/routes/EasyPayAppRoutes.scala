@@ -51,7 +51,7 @@ import it.marcopaggioro.easypay.routes.payloads._
 import it.marcopaggioro.easypay.utilities.{JwtUtils, ValidationUtilities}
 import slick.jdbc.JdbcBackend.Database
 
-import java.time.Instant
+import java.time.{Instant, YearMonth}
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
 import scala.util.{Failure, Success, Try}
@@ -375,16 +375,26 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
   }
 
   private def loginUser(payload: LoginPayload)(implicit system: ActorSystem[Nothing], uri: Uri): Route = {
-    lazy val future: Future[CustomerId] = usersManagerActorRef
-      .askWithStatus[CustomerId](replyTo => UsersManager.LoginUserWithEmail(payload.email, payload.encryptedPassword)(replyTo))
+    val result: Future[Option[CustomerId]] = database.run {
+      UsersTable.Table
+        .filter(record => record.email === payload.email && record.encryptedPassword === payload.encryptedPassword)
+        .map(_.customerId)
+        .result
+        .headOption
+    }
 
-    onComplete(future) {
+    onComplete(result) {
       case Failure(throwable) =>
         system.log.error(s"Failure while logging-in user", throwable)
-        // Due to security reasons we do not inform about the reason for the failed login (email does not exist etc.)
+        completeWithError(StatusCodes.InternalServerError, ValidationUtilities.GenericError)
+
+      case Success(None) =>
+        // Due to security reasons, do not inform about the reason for the failed login (email does not exist etc.)
+        system.log.info(s"${payload.email} failed to login")
         completeWithError(StatusCodes.Unauthorized, "Credenziali invalide")
 
-      case Success(customerId) =>
+      case Success(Some(customerId)) =>
+        system.log.info(s"${payload.email} logged-in")
         completeWithTokens(customerId)
     }
   }
@@ -582,15 +592,37 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
       system: ActorSystem[Nothing],
       uri: Uri
   ): Route = {
-    val cardExistsAndNotExpired: Future[Done] = usersManagerActorRef.askWithStatus[Done](
-      UsersManager.CheckPaymentCard(customerId, payload.cardId)(_)
-    )
+    case object CardNotValidException extends RuntimeException("Carta non trovata o scaduta")
+
+    val cardExistsAndNotExpired: Future[Boolean] = database.run {
+      UsersPaymentCardsTable.Table
+        .filter(record =>
+          record.customerId === customerId && record.cardId === payload.cardId && record.expiration >= YearMonth.now
+        )
+        .map(_.cardId)
+        .exists
+        .result
+    }
 
     val rechargeWallet: Future[Done] = transactionsManagerActorRef.askWithStatus[Done](
       TransactionsManager.RechargeWallet(UUID.randomUUID(), customerId, payload.amount)(_)
     )
 
-    onComplete(cardExistsAndNotExpired.flatMap(_ => rechargeWallet)) {
+    val result: Future[Unit] = for {
+      exists <- cardExistsAndNotExpired
+      done <-
+        if (exists) {
+          rechargeWallet
+        } else {
+          Future.failed(CardNotValidException)
+        }
+    } yield ()
+
+    onComplete(result) {
+      case Failure(exception @ CardNotValidException) =>
+        system.log.error(s"Failure while recharging wallet", exception)
+        completeWithError(StatusCodes.InternalServerError, exception.getMessage)
+
       case Failure(throwable) =>
         system.log.error(s"Failure while recharging wallet", throwable)
         completeWithError(StatusCodes.InternalServerError, ValidationUtilities.GenericError)

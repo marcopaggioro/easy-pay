@@ -2,6 +2,7 @@ package it.marcopaggioro.easypay.database.usersbalance
 
 import it.marcopaggioro.easypay.database.PostgresProfile._
 import it.marcopaggioro.easypay.database.PostgresProfile.api._
+import it.marcopaggioro.easypay.database.users.UsersTable
 import it.marcopaggioro.easypay.domain.classes.Aliases.CustomerId
 import it.marcopaggioro.easypay.domain.classes.Money
 import slick.jdbc.H2Profile.Table
@@ -15,6 +16,8 @@ class UsersBalanceTable(tag: Tag) extends Table[UserBalanceRecord](tag, "users_b
   override def * : ProvenShape[UserBalanceRecord] = (customerId, balance).mapTo[UserBalanceRecord]
 
   def pk = primaryKey("pk_users_balance", customerId)
+
+  def customerIdFk = foreignKey("fk_users_balance", customerId, UsersTable.Table)(_.customerId)
 
 }
 

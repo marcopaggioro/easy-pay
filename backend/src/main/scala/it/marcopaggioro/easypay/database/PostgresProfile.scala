@@ -2,11 +2,16 @@ package it.marcopaggioro.easypay.database
 
 import com.github.tminglei.slickpg._
 import it.marcopaggioro.easypay.domain.classes.Money
-import it.marcopaggioro.easypay.domain.classes.userdata.{CustomerFirstName, CustomerFullName, CustomerLastName, Email}
-import slick.ast.BaseTypedType
+import it.marcopaggioro.easypay.domain.classes.userdata.{
+  CustomerFirstName,
+  CustomerFullName,
+  CustomerLastName,
+  Email,
+  EncryptedPassword
+}
 import slick.jdbc.JdbcType
 
-import java.time.Instant
+import java.time.{Instant, LocalDate, YearMonth}
 
 trait PostgresProfile
     extends ExPostgresProfile
@@ -67,9 +72,19 @@ object PostgresProfile extends PostgresProfile {
     value => Email(value)
   )
 
-  implicit val InstantMapper: JdbcType[Instant] & BaseTypedType[Instant] = MappedColumnType.base[Instant, Long](
+  implicit val InstantMapper: JdbcType[Instant] = MappedColumnType.base[Instant, Long](
     instant => instant.toEpochMilli,
     milliSeconds => Instant.ofEpochMilli(milliSeconds)
+  )
+
+  implicit val EncryptedPasswordMapper: JdbcType[EncryptedPassword] = MappedColumnType.base[EncryptedPassword, String](
+    encryptedPassword => encryptedPassword.value,
+    value => EncryptedPassword(value)
+  )
+
+  implicit val YearMonthColumnMapper: JdbcType[YearMonth] = MappedColumnType.base[YearMonth, LocalDate](
+    yearMonth => yearMonth.atDay(1),
+    localDate => YearMonth.from(localDate)
   )
 
 }

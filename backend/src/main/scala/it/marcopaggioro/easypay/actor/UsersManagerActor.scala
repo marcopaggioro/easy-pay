@@ -4,16 +4,12 @@ import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.ActorContext
 import akka.pattern.StatusReply
 import akka.persistence.typed.scaladsl.Effect
-import cats.data.Validated.{Invalid, Valid}
-import cats.data.{NonEmptyList, Validated}
 import it.marcopaggioro.easypay.actor.TransactionsManagerActor.handleWithPersistenceAndACK
 import it.marcopaggioro.easypay.domain.UsersManager
 import it.marcopaggioro.easypay.domain.UsersManager.{
   AddPaymentCard,
-  CheckPaymentCard,
   CreateUser,
   DeletePaymentCard,
-  LoginUserWithEmail,
   UpdateUserData,
   UsersManagerCommand,
   UsersManagerEvent,
@@ -44,15 +40,6 @@ object UsersManagerActor extends PersistentActor[UsersManagerCommand, UsersManag
           errors => defaultInvalidHandler(context, command, errors, createUser.replyTo)
         )
 
-      case loginUserWithEmail: LoginUserWithEmail =>
-        loginUserWithEmail.validateAndGetCustomerId(state) match {
-          case Valid(customerId) =>
-            Effect.reply(loginUserWithEmail.replyTo)(StatusReply.Success(customerId))
-
-          case Invalid(errors) =>
-            defaultInvalidHandler(context, command, errors, loginUserWithEmail.replyTo)
-        }
-
       case updateUserData: UpdateUserData =>
         handleWithPersistenceAndACK(context, state, command, updateUserData.replyTo)
 
@@ -61,9 +48,6 @@ object UsersManagerActor extends PersistentActor[UsersManagerCommand, UsersManag
 
       case deletePaymentCard: DeletePaymentCard =>
         handleWithPersistenceAndACK(context, state, command, deletePaymentCard.replyTo)
-
-      case checkPayment: CheckPaymentCard =>
-        handleWithPersistenceAndACK(context, state, command, checkPayment.replyTo)
 
     }
 

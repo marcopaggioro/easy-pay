@@ -1,6 +1,7 @@
 package it.marcopaggioro.easypay.domain.classes.userdata
 
 import cats.data.ValidatedNel
+import cats.implicits._
 import io.circe.syntax.EncoderOps
 import io.circe.{Decoder, Encoder, Json}
 import it.marcopaggioro.easypay.domain.classes.Validable
@@ -17,12 +18,13 @@ case class UserData(
     encryptedPassword: EncryptedPassword,
     paymentCards: Map[Int, PaymentCard] = Map.empty
 ) extends Validable[UserData] {
-  override def validate(): ValidatedNel[String, UserData] = email
+  override def validate(): ValidatedNel[String, UserData] = firstName
     .validate()
-    .andThen(_ => firstName.validate())
     .andThen(_ => lastName.validate())
-    .andThen(_ => encryptedPassword.validate())
     .andThen(_ => validateBirthDate(birthDate))
+    .andThen(_ => email.validate())
+    .andThen(_ => encryptedPassword.validate())
+    .andThen(_ => paymentCards.values.toList.traverse(_.validate()))
     .map(_ => this)
 }
 

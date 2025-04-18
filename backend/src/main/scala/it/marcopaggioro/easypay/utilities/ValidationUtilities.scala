@@ -16,7 +16,7 @@ object ValidationUtilities {
 
   lazy val noNumbersRegex: Regex = new Regex("^[^0-9]*$")
 
-  private lazy val maxDescriptionLength: Int = 500
+  lazy val maxDescriptionLength: Int = 140
   def validateDescription(value: String): ValidatedNel[String, Unit] =
     condNel(value.trim.nonEmpty, (), "La descrizione non può essere vuota").andThen(_ =>
       condNel(

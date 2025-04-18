@@ -3,7 +3,7 @@ package it.marcopaggioro.easypay.database.users
 import io.circe.syntax.EncoderOps
 import io.circe.{Encoder, Json}
 import it.marcopaggioro.easypay.domain.classes.Aliases.CustomerId
-import it.marcopaggioro.easypay.domain.classes.userdata.{CustomerFirstName, CustomerLastName, Email}
+import it.marcopaggioro.easypay.domain.classes.userdata.{CustomerFirstName, CustomerLastName, Email, EncryptedPassword}
 
 import java.time.{Instant, LocalDate}
 
@@ -13,6 +13,7 @@ case class UserRecord(
     lastName: CustomerLastName,
     birthDate: LocalDate,
     email: Email,
+    encryptedPassword: EncryptedPassword,
     lastEdit: Instant
 )
 

@@ -4,16 +4,18 @@ import cats.data.Validated.condNel
 import cats.data.ValidatedNel
 import io.circe.{Decoder, Encoder}
 import it.marcopaggioro.easypay.domain.classes.Validable
+import it.marcopaggioro.easypay.domain.classes.userdata.EncryptedPassword.maxLength
 
 case class EncryptedPassword private (value: String) extends Validable[EncryptedPassword] {
 
-  private lazy val encryptionLength: Int = 128
   override def validate(): ValidatedNel[String, EncryptedPassword] =
-    condNel(value.length == encryptionLength, this, "Crittografia della password invalida")
+    condNel(value.length == maxLength, this, "Crittografia della password invalida")
 
 }
 
 object EncryptedPassword {
+
+  lazy val maxLength: Int = 128
 
   def apply(value: String): EncryptedPassword = new EncryptedPassword(value.trim)
 

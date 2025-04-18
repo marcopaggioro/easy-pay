@@ -10,7 +10,7 @@ import it.marcopaggioro.easypay.domain.classes.Aliases.CustomerId
 import it.marcopaggioro.easypay.domain.classes.Domain.{DomainCommand, DomainEvent, DomainState}
 import it.marcopaggioro.easypay.domain.classes.userdata.paymentcard.PaymentCard
 import it.marcopaggioro.easypay.domain.classes.userdata.{CustomerFirstName, CustomerLastName, Email, EncryptedPassword, UserData}
-import it.marcopaggioro.easypay.utilities.ValidationUtilities.{validateBirthDate, validateCardExpiration}
+import it.marcopaggioro.easypay.utilities.ValidationUtilities.validateBirthDate
 
 import java.time.{Instant, LocalDate}
 import java.util.UUID
@@ -250,32 +250,6 @@ object UsersManager {
         )
       case None => state
     }
-  }
-
-  // -----
-  case class LoginUserWithEmail(email: Email, encryptedPassword: EncryptedPassword)(
-      val replyTo: ActorRef[StatusReply[CustomerId]]
-  ) extends UsersManagerCommand {
-    def validateAndGetCustomerId(state: UsersManagerState): ValidatedNel[String, CustomerId] =
-      email
-        .validate()
-        .andThen(_ => encryptedPassword.validate())
-        .andThen(_ => customerEmailExistsValidation(state, email))
-        .andThen { case (customerId, userData) =>
-          condNel(userData.encryptedPassword == encryptedPassword, customerId, "Credenziali invalide")
-        }
-
-    override def validate(state: UsersManagerState): ValidatedNel[String, Unit] =
-      validateAndGetCustomerId(state).map(_ => ())
-  }
-
-  // -----
-  case class CheckPaymentCard(customerId: CustomerId, cardId: Int)(
-      val replyTo: ActorRef[StatusReply[Done]]
-  ) extends UsersManagerCommand {
-    override def validate(state: UsersManagerState): ValidatedNel[String, Unit] =
-      cardIdExistsValidation(state, customerId, cardId)
-        .andThen(paymentCard => validateCardExpiration(paymentCard.expiration))
   }
 
 }

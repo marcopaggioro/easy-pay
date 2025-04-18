@@ -46,7 +46,15 @@ private class UsersManagerProjectorActor(
         events.collect {
           case UserCreated(customerId, userData, lastEdit) =>
             UsersTable.Table.insertOrUpdate(
-              UserRecord(customerId, userData.firstName, userData.lastName, userData.birthDate, userData.email, lastEdit)
+              UserRecord(
+                customerId,
+                userData.firstName,
+                userData.lastName,
+                userData.birthDate,
+                userData.email,
+                userData.encryptedPassword,
+                lastEdit
+              )
             )
 
           case FirstNameChanged(customerId, firstName, instant) =>
@@ -73,11 +81,11 @@ private class UsersManagerProjectorActor(
               .map(record => (record.email, record.lastEdit))
               .update((email, instant))
 
-          case PasswordChanged(customerId, _, instant) =>
+          case PasswordChanged(customerId, encryptedPassword, instant) =>
             UsersTable.Table
               .filter(_.customerId === customerId)
-              .map(_.lastEdit)
-              .update(instant)
+              .map(record => (record.encryptedPassword, record.lastEdit))
+              .update((encryptedPassword, instant))
 
           case PaymentCardAdded(customerId, cardId, paymentCard, instant) =>
             UsersPaymentCardsTable.Table
@@ -87,7 +95,7 @@ private class UsersManagerProjectorActor(
                   cardId,
                   paymentCard.fullName,
                   paymentCard.cardNumber.blurred,
-                  paymentCard.expiration.toString
+                  paymentCard.expiration
                 )
               )
 

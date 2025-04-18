@@ -32,8 +32,8 @@ export const APP_CONSTANTS = {
   PATH_TRANSFER: "/dashboard/transfer",
 
   // Messages
-  MESSAGE_SUCCESSFUL: "Operazione eseguita con successo. Potrai visualizzare le modifiche a breve",
-  MESSAGE_GENERIC_ERROR: "Errore generico. Riprova più tardi",
+  MESSAGE_SUCCESSFUL: "Operazione eseguita con successo: potrai visualizzare le modifiche a breve",
+  MESSAGE_GENERIC_ERROR: "Errore generico: riprova più tardi",
 
   // Web socket
   WS_CUSTOMER_REGISTERED: "customer_registered",

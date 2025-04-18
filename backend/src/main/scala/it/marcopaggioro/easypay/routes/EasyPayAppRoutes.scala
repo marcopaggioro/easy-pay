@@ -390,11 +390,11 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
 
       case Success(None) =>
         // Due to security reasons, do not inform about the reason for the failed login (email does not exist etc.)
-        system.log.info(s"${payload.email} failed to login")
+        system.log.info(s"${payload.email.value} failed to login")
         completeWithError(StatusCodes.Unauthorized, "Credenziali invalide")
 
       case Success(Some(customerId)) =>
-        system.log.info(s"${payload.email} logged-in")
+        system.log.info(s"${payload.email.value} logged-in")
         completeWithTokens(customerId)
     }
   }

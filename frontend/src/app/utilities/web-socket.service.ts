@@ -16,12 +16,9 @@ export class WebSocketService {
   private messageSubject$ = new BehaviorSubject<WebSocketMessage | null>(null);
 
   constructor(private router: Router, private http: HttpClient) {
-    if (router.url.includes(APP_CONSTANTS.PATH_DASHBOARD)) {
-      this.createWebSocketConnection();
-    }
   }
 
-  private createWebSocketConnection() {
+  createWebSocketConnection() {
     const webSocketConfig: WebSocketSubjectConfig<WebSocketMessage> = {
       url: APP_CONSTANTS.ENDPOINT_WS,
       openObserver: {

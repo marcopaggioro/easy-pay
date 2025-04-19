@@ -14,9 +14,7 @@ export class UserDataService {
   userData$ = this.userDataSubject.asObservable();
 
   constructor(private http: HttpClient, webSocketService: WebSocketService, router: Router) {
-    if (router.url.includes(APP_CONSTANTS.PATH_DASHBOARD)) {
-      this.getUserData();
-    }
+    this.getUserData();
 
     webSocketService.getWebSocketMessages().subscribe(
       (message) => {
@@ -35,5 +33,13 @@ export class UserDataService {
         })
       )
       .subscribe();
+  }
+
+  // Login -> Logout -> Login
+  // In this flow UserDataService keeps "old" user data
+  getUserDataIfNonEmpty(): void {
+    if (this.userDataSubject.getValue() !== null) {
+      this.getUserData();
+    }
   }
 }

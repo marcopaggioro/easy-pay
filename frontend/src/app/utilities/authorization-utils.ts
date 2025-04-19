@@ -3,8 +3,6 @@ import {HttpClient} from '@angular/common/http';
 import CryptoJS from 'crypto-js';
 import {Router} from '@angular/router';
 import {APP_CONSTANTS} from '../app.constants';
-import {CookieService} from 'ngx-cookie-service';
-import {WebSocketService} from './web-socket.service';
 
 
 export class AuthorizationUtils {
@@ -33,13 +31,9 @@ export class AuthorizationUtils {
     }).pipe(tap(() => console.log("[WS] Token refreshed")));
   }
 
-  static logout(http: HttpClient, cookieService: CookieService, router: Router, webSocketService: WebSocketService): void {
+  static logout(http: HttpClient, router: Router): void {
     http.post(APP_CONSTANTS.ENDPOINT_USER_LOGOUT, {}, {withCredentials: true, responseType: 'text'}).subscribe(
-      () => {
-        cookieService.delete(APP_CONSTANTS.CUSTOMER_ID_COOKIE_NAME);
-        webSocketService.close();
-        router.navigate([APP_CONSTANTS.PATH_ROOT]);
-      }
+      () => router.navigate([APP_CONSTANTS.PATH_ROOT])
     )
   }
 

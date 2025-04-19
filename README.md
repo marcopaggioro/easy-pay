@@ -28,6 +28,7 @@ fintech. Offre servizi moderni e sicuri per la gestione di conti.
 - **Gestione carte di pagamento**: aggiunta, modifica e rimozione di carte con aggiornamento istantaneo delle
   informazioni
 - **Ricarica conto da carta**: ricarica istantanea da carta di debito o credito con sicurezza avanzata
+- **Gestione anagrafica**: modifica dei dati personali in totale autonomia con aggiornamento istantaneo
 - **Interfaccia intuitiva**: design adattivo che garantisce un’esperienza fluida su smartphone, tablet e desktop
 
 ---

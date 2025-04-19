@@ -66,8 +66,8 @@ fintech. Offre servizi moderni e sicuri per la gestione di conti.
 
 Swagger UI interattiva:
 
-- **Locale**: `http://localhost:9000/swagger`
-- **Remoto**: `https://easypay-api.paggiorocloud.it/swagger`
+- **Locale**: [http://localhost:9000/swagger](http://localhost:9000/swagger)
+- **Remoto**: [https://easypay-api.paggiorocloud.it/swagger](https://easypay-api.paggiorocloud.it/swagger)
 
 In alternativa, importare l’URL in [Swagger UI](https://petstore.swagger.io/) per esplorare le API.
 

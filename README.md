@@ -38,7 +38,7 @@ fintech. Offre servizi moderni e sicuri per la gestione di conti.
 - **Front-end**: Angular - HTML, CSS e TypeScript
 - **Back-end**: Akka - Scala
 - **Database**: PostgreSQL
-- **Documentazione API**: Swagger
+- **Documentazione API**: OpenAPI
 - **Versionamento**: Git
 
 ---
@@ -64,12 +64,13 @@ fintech. Offre servizi moderni e sicuri per la gestione di conti.
 
 ## Documentazione API
 
-Swagger UI interattiva:
+Definizione OpenAPI:
 
-- **Locale**: [http://localhost:9000/swagger](http://localhost:9000/swagger)
-- **Remoto**: [https://easypay-api.paggiorocloud.it/swagger](https://easypay-api.paggiorocloud.it/swagger)
+- **Repository**: [backend/src/main/resources/api.yaml](api.yaml)
+- **Locale**: [http://localhost:9000/api](http://localhost:9000/api)
+- **Remoto**: [https://easypay-api.paggiorocloud.it/api](https://easypay-api.paggiorocloud.it/api)
 
-In alternativa, importare l’URL in [Swagger UI](https://petstore.swagger.io/) per esplorare le API.
+In alternativa, importare l’URL in [Swagger UI](https://petstore.swagger.io/) per una visualizzazione più user-friendly.
 
 ---
 

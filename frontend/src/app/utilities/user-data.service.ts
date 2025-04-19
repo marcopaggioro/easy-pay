@@ -4,7 +4,6 @@ import {APP_CONSTANTS} from '../app.constants';
 import {HttpClient} from '@angular/common/http';
 import {BehaviorSubject, tap} from 'rxjs';
 import {WebSocketService} from './web-socket.service';
-import {Router} from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +12,7 @@ export class UserDataService {
   private userDataSubject = new BehaviorSubject<UserData | null>(null);
   userData$ = this.userDataSubject.asObservable();
 
-  constructor(private http: HttpClient, webSocketService: WebSocketService, router: Router) {
+  constructor(private http: HttpClient, webSocketService: WebSocketService) {
     this.getUserData();
 
     webSocketService.getWebSocketMessages().subscribe(

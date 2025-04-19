@@ -616,7 +616,7 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
     onComplete(result) {
       case Failure(exception @ CardNotValidException) =>
         system.log.error(s"Failure while recharging wallet", exception)
-        completeWithError(StatusCodes.InternalServerError, exception.getMessage)
+        completeWithError(StatusCodes.NotAcceptable, exception.getMessage)
 
       case Failure(throwable) =>
         system.log.error(s"Failure while recharging wallet", throwable)

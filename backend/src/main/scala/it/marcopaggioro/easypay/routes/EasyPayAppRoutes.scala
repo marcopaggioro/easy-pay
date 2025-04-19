@@ -309,10 +309,8 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
     system.log.debug(s"Received ${request.method.value} ${request.uri.path.toString()}")
 
     concat(
-      cors(CorsSettings(system).withAllowAnyOrigin()) {
-        path("swagger") {
-          getFromResource("swagger.yaml", ContentTypes.`text/plain(UTF-8)`)
-        }
+      path("swagger") {
+        getFromResource("swagger.yaml", ContentTypes.`text/plain(UTF-8)`)
       },
       cors() {
         handleErrors(request.uri) {

@@ -3,8 +3,8 @@ import {Validators} from '@angular/forms';
 
 export const APP_CONSTANTS = {
   // Endpoints
-  ENDPOINT_WS: environment.API_URL + "/ws",
   ENDPOINT_AVATAR: "https://api.dicebear.com/9.x/personas/svg?radius=50&backgroundColor=ffffff&seed=",
+  ENDPOINT_WS: environment.API_URL + "/ws",
   ENDPOINT_USER_REGISTER: environment.API_URL + "/user",
   ENDPOINT_USER_GET: environment.API_URL + "/user",
   ENDPOINT_USER_UPDATE: environment.API_URL + "/user",
@@ -36,18 +36,15 @@ export const APP_CONSTANTS = {
   MESSAGE_GENERIC_ERROR: "Errore generico: riprova più tardi",
 
   // Web socket
-  WS_CUSTOMER_REGISTERED: "customer_registered",
   WS_WALLET_UPDATED: "wallet_updated",
   WS_SCHEDULED_OPERATIONS_UPDATED: "scheduled_operations_updated",
   WS_USER_DATA_UPDATED: "user_data_updated",
 
   // Intervals
-  INTERVAL_REGISTRATION_CHECK: 1000,
   INTERVAL_WS_RETRY: 5000,
 
   // Misc
   PASSWORD_MIN_LENGHT: 8,
-  CUSTOMER_ID_COOKIE_NAME: "easypay_customer_id",
 
   // Validators
   VALIDATOR_MIN_AMOUNT: Validators.min(0.01),

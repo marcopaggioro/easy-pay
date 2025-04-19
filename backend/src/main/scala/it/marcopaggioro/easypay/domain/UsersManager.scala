@@ -193,9 +193,8 @@ object UsersManager {
   case class AddPaymentCard(customerId: CustomerId, paymentCard: PaymentCard)(val replyTo: ActorRef[StatusReply[Done]])
       extends UsersManagerCommand {
     override def validate(state: UsersManagerState): ValidatedNel[String, Unit] =
-      paymentCard
-        .validate()
-        .andThen(_ => customerIdExistsValidation(state, customerId))
+      customerIdExistsValidation(state, customerId)
+        .andThen(_ => paymentCard.validate())
         .map(_ => ())
 
     override protected def generateEvents(state: UsersManagerState): List[UsersManagerEvent] = {

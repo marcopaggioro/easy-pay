@@ -3,7 +3,7 @@ package it.marcopaggioro.easypay.domain
 import akka.Done
 import akka.actor.typed.ActorRef
 import akka.pattern.StatusReply
-import cats.data.Validated.{condNel, validNel}
+import cats.data.Validated.{condNel, invalidNel, validNel}
 import cats.data.ValidatedNel
 import it.marcopaggioro.easypay.AppConfig
 import it.marcopaggioro.easypay.domain.classes.Aliases.{CustomerId, ScheduledOperationId, TransactionId}
@@ -136,17 +136,12 @@ object TransactionsManager {
           )
 
         case None =>
-          validNel(())
+          invalidNel("Operazione pianificata non trovata")
       }
 
-    override protected def generateEvents(state: TransactionsManagerState): List[TransactionsManagerEvent] =
-      state.scheduledOperations.get(scheduledOperationId) match {
-        case Some(_) =>
-          List(ScheduledOperationDeleted(customerId, scheduledOperationId))
-
-        case None =>
-          List.empty
-      }
+    override protected def generateEvents(state: TransactionsManagerState): List[TransactionsManagerEvent] = List(
+      ScheduledOperationDeleted(customerId, scheduledOperationId)
+    )
   }
 
   case class ScheduledOperationDeleted(
@@ -176,7 +171,7 @@ object TransactionsManager {
 
       state.scheduledOperations.get(scheduledOperationId) match {
         case None =>
-          // Scheduled operation not exists: no generate events
+          // Scheduled operation does not exist: no generate events
           List.empty
 
         case Some(ScheduledOperation(_, _, _, _, _, _, _: Status.Failed)) =>

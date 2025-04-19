@@ -56,7 +56,7 @@ fintech. Offre servizi moderni e sicuri per la gestione di conti.
 
 ## Demo
 
-È possibile visualizzare l’applicazione online all’indirizzo:
+È possibile visualizzare l’applicazione all’indirizzo:
 
 > http://easypay.paggiorocloud.it/
 
@@ -76,16 +76,16 @@ In alternativa, importare l’URL in [Swagger UI](https://petstore.swagger.io/) 
 ## Avvio locale
 
 1. Clonare il repository:
-   ```bash
-   git clone https://github.com/tuo-username/easypay.git
-   cd easypay
-   ```
-2. Avvia i servizi:
+    ```bash
+    git clone https://github.com/tuo-username/easypay.git
+    cd easypay
+    ```
+2. Avviare i servizi:
 
-| Sistema operativo | Script             |
-|-------------------|--------------------|
-| Windows           | `script\start.bat` |
-| Linux/macOS       | `script/start.sh`  |
+    | Sistema operativo | Script             |
+    |-------------------|--------------------|
+    | Windows           | `script\start.bat` |
+    | Linux/macOS       | `script/start.sh`  |
 
 ---
 

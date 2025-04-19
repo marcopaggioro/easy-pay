@@ -1,101 +1,105 @@
-![EasyPay](frontend/public/logo-white.png "EasyPay")
+![EasyPay](frontend/public/logo-white.png)
 
-# Cos'è EasyPay
+# EasyPay
 
-## Traccia del PW
+EasyPay è un’applicazione full-stack basata su API progettata per il settore finanziario: banche e
+fintech. Offre servizi moderni e sicuri per la gestione di conti.
 
-Sviluppo di una applicazione full-stack API-based per un’impresa del settore finanziario
+---
 
-## Descrizione
+## Indice
 
-Le imprese del settore finanziario, come banche, assicurazioni e fintech, gestiscono una grande quantità di dati e
-transazioni, spesso in tempo reale. Per garantire un accesso sicuro, scalabile ed efficiente ai loro servizi, molte di
-queste aziende adottano architetture API-based, che permettono l’integrazione tra diversi sistemi e l’accesso ai servizi
-da parte di applicazioni web e mobile.
+1. [Caratteristiche](#caratteristiche)
+2. [Tecnologie](#tecnologie)
+3. [Struttura del progetto](#struttura-del-progetto)
+4. [Demo](#demo)
+5. [Avvio locale](#avvio-locale)
+6. [Configurazione iniziale](#configurazione-iniziale)
+7. [Documentazione API](#documentazione-api)
 
-Si richiede allo studente di sviluppare un’applicazione full-stack basata su API per un’impresa del settore finanziario.
-L’applicazione dovrà fornire un servizio significativo (es. Gestione conti, simulazione investimenti, richiesta
-prestiti, gestione polizze assicurative) e implementare un’architettura moderna con un backend RESTful e un’interfaccia
-utente intuitiva.
+---
 
-## Obiettivi
+## Caratteristiche
 
-Lo studente sarà in grado di:
+- **Creazione di un utente**: registrazione semplice e accesso immediato per iniziare a gestire le finanze
+- **Trasferimento fondi**: invio e ricezione di denaro in tempo reale
+- **Operazioni pianificate**: programma trasferimenti futuri singoli o ricorrenti in base esigenze
+- **Storico operazioni**: filtra e consulta tutte le operazioni per data, mittente o destinatario
+- **Gestione carte di pagamento**: aggiunta, modifica e rimozione di carte con aggiornamento istantaneo delle
+  informazioni
+- **Ricarica conto da carta**: ricarica istantanea da carta di debito o credito con sicurezza avanzata
+- **Interfaccia intuitiva**: design adattivo che garantisce un’esperienza fluida su smartphone, tablet e desktop
 
-- Implementare un'applicazione web utilizzando HTML, CSS e JavaScript per la parte front-end (qualsiasi framework va
-  bene)
-- Utilizzare Python, Java o qualsiasi altro linguaggio per creare una semplice backe-nd API che gestisca i casi d’uso in
-  ambito finanziario selezionati, purché object-oriented
+---
 
-## Elaborato
+## Tecnologie
 
-Selezionare un’impresa del settore finanziario e individuare lo scenario d’uso preferito.
+- **Front-end**: Angular - HTML, CSS e TypeScript
+- **Back-end**: Akka - Scala
+- **Database**: PostgreSQL
+- **Documentazione API**: Swagger
+- **Versionamento**: Git
 
-Sviluppare un'applicazione web utilizzando HTML, CSS e JavaScript per la parte front-end e utilizzare il linguaggio
-Python, Java o qualsiasi altro linguaggio object-oriented per creare un semplice back-end API che gestisca le logiche
-selezionate.
+---
 
-Produrre un rapporto che contenga:
+## Struttura del progetto
 
-- Il racconto del contesto in cui opera l’impresa e il tipo di servizio che offre.
-- I dettagli degli aspetti di design (UML, ER)
-- La documentazione delle API sviluppate (tipo Swagger)
-- I codici front-end e back-end su repository Git o similari
-- Un resoconto del processo seguito per lo sviluppo dei codici, includendo una descrizione di dettaglio degli snippet
-  ritenuti più interessanti
-- Test funzionale dell’applicazione mediante screenshot
-
-# Elaborato
-
-È possibile visualizzare l'elaborato all'indirizzo
-[http://easypay.paggiorocloud.it/](http://easypay.paggiorocloud.it/)
-
-## Avvio in locale
-
-In un sistema Windows:
-
-```batch
-script\start.bat
+```
+├── frontend/           # Interfaccia utente
+├── backend/            # API e logica di business
+├── scripts/            # Script di avvio e setup
+└── README.md           # Documentazione del progetto
 ```
 
-In un sistema Linux:
+---
 
-```bash
-script/start.sh
-```
+## Demo
 
-## Inizializzare utenti
+È possibile visualizzare l’applicazione online all’indirizzo:
 
-È possibile inizializzare il sistema con la creazione di 3 utenti:
+> http://easypay.paggiorocloud.it/
 
-- marco.paggioro@studenti.unipegaso.it
-- mario@rossi.it
-- luca@moro.it
+---
 
-In un sistema Windows:
+## Documentazione API
 
-```batch
-script\initialize.bat
-```
+Swagger UI interattiva:
 
-In un sistema Linux:
+- **Locale**: `http://localhost:9000/swagger`
+- **Remoto**: `https://easypay-api.paggiorocloud.it/swagger`
 
-```bash
-script/initialize.sh
-```
+In alternativa, importare l’URL in [Swagger UI](https://petstore.swagger.io/) per esplorare le API.
 
-## API
+---
 
-Per visualizzare la documentazione Swagger relativa alle API è possibile visitare la URL locale o
-la [URL remota](https://easypay-api.paggiorocloud.it/swagger):
+## Avvio locale
 
-```http request
-http://localhost:9000/swagger
-```
+1. Clonare il repository:
+   ```bash
+   git clone https://github.com/tuo-username/easypay.git
+   cd easypay
+   ```
+2. Avvia i servizi:
 
-È, inoltre, possibile visualizzarle tale configurazione più user-friendly visitando la pagina
-dello [Swagger Client UI](https://petstore.swagger.io/) e inserendo la URL remota del file swagger:
+| Sistema operativo | Script             |
+|-------------------|--------------------|
+| Windows           | `script\start.bat` |
+| Linux/macOS       | `script/start.sh`  |
 
-```http request
-https://easypay-api.paggiorocloud.it/swagger
-```
+---
+
+## Configurazione iniziale
+
+Per popolare il database con utenti di test, eseguire lo script di inizializzazione:
+
+| Sistema operativo | Script                  |
+|-------------------|-------------------------|
+| Windows           | `script\initialize.bat` |
+| Linux/macOS       | `script/initialize.sh`  |
+
+Utenti predefiniti:
+
+| Email          | Password |
+|----------------|----------|
+| mario@rossi.it | test1234 |
+| luca@moro.it   | test1234 |

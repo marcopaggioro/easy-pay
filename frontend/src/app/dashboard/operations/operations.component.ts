@@ -15,12 +15,13 @@ import {WalletOperations} from '../../classes/WalletOperations';
 import {WebSocketService} from '../../utilities/web-socket.service';
 import {NgClass, NgIf} from '@angular/common';
 import {RouterLink} from '@angular/router';
-import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {FormControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import {emailValidator} from '../../utilities/validators/email.validator';
 import {GetWalletOperationsPayload} from '../../classes/payloads/GetWalletOperationsPayload';
 import {AlertComponent} from '../../utilities/alert.component';
 import {noNumbersValidator} from '../../utilities/validators/no-numbers-validator';
 import {UserDataService} from '../../utilities/user-data.service';
+import {ValidationUtils} from '../../utilities/validators/validation-utils';
 
 @Component({
   selector: 'app-operations',
@@ -53,7 +54,7 @@ export class OperationsComponent implements OnInit {
 
   operationsForm = new FormGroup({
     fullName: new FormControl<string | null>(null, noNumbersValidator()),
-    email: new FormControl<string | null>(null, [Validators.email, emailValidator()]),
+    email: new FormControl<string | null>(null, emailValidator()),
     startDate: new FormControl<Date | null>(null),
     endDate: new FormControl<Date | null>(null)
   });
@@ -66,11 +67,7 @@ export class OperationsComponent implements OnInit {
   ngOnInit(): void {
     this.getOperations();
 
-    this.userDataService.userData$.subscribe(userData => {
-      if (userData) {
-        this.customerId = userData.id;
-      }
-    });
+    this.userDataService.userData$.subscribe(userData => userData && (this.customerId = userData.id));
 
     this.webSocketService.getWebSocketMessages().subscribe(
       (message) => {
@@ -110,4 +107,5 @@ export class OperationsComponent implements OnInit {
     });
   }
 
+  protected readonly ValidationUtils = ValidationUtils;
 }

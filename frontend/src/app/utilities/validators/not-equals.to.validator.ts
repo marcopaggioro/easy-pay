@@ -7,7 +7,7 @@ export function notEqualsToValidator(otherValue: () => string): ValidatorFn {
     if (control.value && otherValue() && control.value !== otherValue()) {
       return null;
     } else {
-      return {invalidField: {value: control.value}};
+      return {invalidField: "Non puoi inviare a te stesso"};
     }
   };
 }

@@ -6,17 +6,22 @@
 
         <h2 class="card-title d-flex justify-content-center">Ricarica wallet</h2>
         <hr/>
-        @if (paymentCards && paymentCards.length > 0) {
+        @if (userData && userData.paymentCards.length > 0) {
           <form [formGroup]="rechargeForm" (ngSubmit)="onSubmit()">
             <!-- Card ID -->
             <div class="form-floating">
               <select class="form-select form-control" id="cardId" aria-label="Card ID"
                       [formControl]="rechargeForm.controls.cardId">
-                @for (paymentCard of paymentCards; track paymentCard.cardId) {
-                  <option [value]="paymentCard.cardId">{{ paymentCard.cardNumber }}</option>
+                @for (paymentCard of userData.paymentCards; track paymentCard.cardId) {
+                  <option
+                    [value]="paymentCard.cardId">{{ `${userData.firstName} ${userData.lastName} ${paymentCard.cardNumber}` }}
+                  </option>
                 }
               </select>
               <label for="cardId">Carta di pagamento</label>
+              <div class="invalid-tooltip">
+                {{ ValidationUtils.printErrors(rechargeForm.controls.cardId) }}
+              </div>
             </div>
             <!-- Amount -->
             <div class="form-floating my-3">
@@ -24,6 +29,9 @@
                      [formControl]="rechargeForm.controls.amount"
                      [class.is-invalid]="rechargeForm.controls.amount.dirty && rechargeForm.controls.amount.invalid">
               <label for="amount">Importo</label>
+              <div class="invalid-tooltip">
+                {{ ValidationUtils.printErrors(rechargeForm.controls.amount) }}
+              </div>
             </div>
 
             <button class="btn btn-outline-dark w-100 py-2" type="submit" id="submit"

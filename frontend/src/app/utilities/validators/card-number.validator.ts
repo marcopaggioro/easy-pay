@@ -7,6 +7,6 @@ export function cardNumberValidator(): ValidatorFn {
     if (!control.value) {
       return null;
     }
-    return regex.test(control.value) ? null : {invalidField: {value: control.value}};
+    return regex.test(control.value) ? null : {invalidField: "Formato carta non valido"};
   };
 }

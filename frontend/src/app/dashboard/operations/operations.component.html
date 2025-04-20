@@ -15,6 +15,9 @@
                          [formControl]="operationsForm.controls.fullName"
                          [class.is-invalid]="operationsForm.controls.fullName.dirty && operationsForm.controls.fullName.invalid">
                   <label for="fullName">Nome completo</label>
+                  <div class="invalid-tooltip">
+                    {{ ValidationUtils.printErrors(operationsForm.controls.fullName) }}
+                  </div>
                 </div>
               </div>
               <div class="col-6">
@@ -23,6 +26,9 @@
                          [formControl]="operationsForm.controls.email"
                          [class.is-invalid]="operationsForm.controls.email.dirty && operationsForm.controls.email.invalid">
                   <label for="email">Email</label>
+                  <div class="invalid-tooltip">
+                    {{ ValidationUtils.printErrors(operationsForm.controls.email) }}
+                  </div>
                 </div>
               </div>
               <div class="col-6">
@@ -31,6 +37,9 @@
                          [formControl]="operationsForm.controls.startDate"
                          [class.is-invalid]="operationsForm.controls.startDate.dirty && operationsForm.controls.startDate.invalid">
                   <label for="startDate">Data di inizio</label>
+                  <div class="invalid-tooltip">
+                    {{ ValidationUtils.printErrors(operationsForm.controls.startDate) }}
+                  </div>
                 </div>
               </div>
               <div class="col-6">
@@ -39,6 +48,9 @@
                          [formControl]="operationsForm.controls.endDate"
                          [class.is-invalid]="operationsForm.controls.endDate.dirty && operationsForm.controls.endDate.invalid">
                   <label for="endDate">Data di fine</label>
+                  <div class="invalid-tooltip">
+                    {{ ValidationUtils.printErrors(operationsForm.controls.endDate) }}
+                  </div>
                 </div>
               </div>
             </div>

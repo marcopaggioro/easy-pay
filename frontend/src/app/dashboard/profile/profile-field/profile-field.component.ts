@@ -13,6 +13,7 @@ import {NgIf} from '@angular/common';
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {APP_CONSTANTS} from '../../../app.constants';
 import {FormControl, ReactiveFormsModule, ValidatorFn, Validators} from '@angular/forms';
+import {ValidationUtils} from '../../../utilities/validators/validation-utils';
 
 @Component({
   selector: 'tr[app-profile-field]',
@@ -100,4 +101,5 @@ export class ProfileFieldComponent implements OnInit, OnChanges {
     }
   }
 
+  protected readonly ValidationUtils = ValidationUtils;
 }

@@ -8,6 +8,6 @@ export function emailValidator(): ValidatorFn {
     if (!control.value) {
       return null;
     }
-    return regex.test(control.value) ? null : {invalidField: {value: control.value}};
+    return regex.test(control.value) ? null : {invalidField: "Formato email non valido"};
   };
 }

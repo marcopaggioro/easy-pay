@@ -14,6 +14,9 @@
                    [formControl]="scheduledOperationForm.controls.recipientEmail"
                    [class.is-invalid]="scheduledOperationForm.controls.recipientEmail.dirty && scheduledOperationForm.controls.recipientEmail.invalid"/>
             <label for="email">Email</label>
+            <div class="invalid-tooltip">
+              {{ ValidationUtils.printErrors(scheduledOperationForm.controls.recipientEmail) }}
+            </div>
           </div>
           <!-- Description -->
           <div class="form-floating my-3">
@@ -21,6 +24,9 @@
                       [formControl]="scheduledOperationForm.controls.description"
                       [class.is-invalid]="scheduledOperationForm.controls.description.dirty && scheduledOperationForm.controls.description.invalid"></textarea>
             <label for="description">Descrizione</label>
+            <div class="invalid-tooltip">
+              {{ ValidationUtils.printErrors(scheduledOperationForm.controls.description) }}
+            </div>
           </div>
           <!-- Amount -->
           <div class="form-floating my-3">
@@ -28,6 +34,9 @@
                    [formControl]="scheduledOperationForm.controls.amount"
                    [class.is-invalid]="scheduledOperationForm.controls.amount.dirty && scheduledOperationForm.controls.amount.invalid">
             <label for="amount">Importo</label>
+            <div class="invalid-tooltip">
+              {{ ValidationUtils.printErrors(scheduledOperationForm.controls.amount) }}
+            </div>
           </div>
           <!-- Date time -->
           <div class="form-floating my-3">
@@ -35,6 +44,9 @@
                    [formControl]="scheduledOperationForm.controls.dateTime"
                    [class.is-invalid]="scheduledOperationForm.controls.dateTime.dirty && scheduledOperationForm.controls.dateTime.invalid">
             <label for="dateTime">Data dell'operazione</label>
+            <div class="invalid-tooltip">
+              {{ ValidationUtils.printErrors(scheduledOperationForm.controls.dateTime) }}
+            </div>
           </div>
           <div class="form-check">
             <input class="form-check-input" type="checkbox" id="repeat-toggle" [checked]="repeatToggle"
@@ -52,6 +64,9 @@
                          [formControl]="scheduledOperationForm.controls.repeatMonths"
                          [class.is-invalid]="scheduledOperationForm.controls.repeatMonths.dirty && scheduledOperationForm.controls.repeatMonths.invalid">
                   <label for="repeatMonths">Mesi</label>
+                  <div class="invalid-tooltip">
+                    {{ ValidationUtils.printErrors(scheduledOperationForm.controls.repeatMonths) }}
+                  </div>
                 </div>
               </div>
               <div class="col-6">
@@ -60,6 +75,9 @@
                          [formControl]="scheduledOperationForm.controls.repeatDays"
                          [class.is-invalid]="scheduledOperationForm.controls.repeatDays.dirty && scheduledOperationForm.controls.repeatDays.invalid">
                   <label for="repeatDays">Giorni</label>
+                  <div class="invalid-tooltip">
+                    {{ ValidationUtils.printErrors(scheduledOperationForm.controls.repeatDays) }}
+                  </div>
                 </div>
               </div>
             </div>

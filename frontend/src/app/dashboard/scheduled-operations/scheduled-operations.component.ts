@@ -21,6 +21,7 @@ import {maxTwoDecimalsValidator} from '../../utilities/validators/max-two-decima
 import {CreateScheduledOperationPayload} from '../../classes/payloads/CreateScheduledOperationPayload';
 import {notEqualsToValidator} from '../../utilities/validators/not-equals.to.validator';
 import {UserDataService} from '../../utilities/user-data.service';
+import {ValidationUtils} from '../../utilities/validators/validation-utils';
 
 @Component({
   selector: 'app-scheduled-operations',
@@ -52,9 +53,9 @@ export class ScheduledOperationsComponent implements OnInit {
   deletingOperations: string[] = [];
 
   scheduledOperationForm = new FormGroup({
-    recipientEmail: new FormControl('', [Validators.required, Validators.email, emailValidator(), notEqualsToValidator(() => this.customerEmail)]),
+    recipientEmail: new FormControl('', [Validators.required, emailValidator(), notEqualsToValidator(() => this.customerEmail)]),
     description: new FormControl('', Validators.required),
-    amount: new FormControl<number | null>(null, [Validators.required, APP_CONSTANTS.VALIDATOR_MIN_AMOUNT, APP_CONSTANTS.VALIDATOR_MAX_AMOUNT, maxTwoDecimalsValidator()]),
+    amount: new FormControl<number | null>(null, [Validators.required, ValidationUtils.getMinAmountValidator(), ValidationUtils.getMaxAmountValidator(), maxTwoDecimalsValidator()]),
     dateTime: new FormControl('', Validators.required),
     repeatMonths: new FormControl('', Validators.min(1)),
     repeatDays: new FormControl('', Validators.min(1))
@@ -67,11 +68,7 @@ export class ScheduledOperationsComponent implements OnInit {
   ngOnInit(): void {
     this.getScheduledOperations();
 
-    this.userDataService.userData$.subscribe(userData => {
-      if (userData) {
-        this.customerEmail = userData.email;
-      }
-    });
+    this.userDataService.userData$.subscribe(userData => userData && (this.customerEmail = userData.email));
 
     this.webSocketService.getWebSocketMessages().subscribe(
       (message) => {
@@ -148,4 +145,5 @@ export class ScheduledOperationsComponent implements OnInit {
 
   protected readonly Number = Number;
   protected readonly APP_CONSTANTS = APP_CONSTANTS;
+  protected readonly ValidationUtils = ValidationUtils;
 }

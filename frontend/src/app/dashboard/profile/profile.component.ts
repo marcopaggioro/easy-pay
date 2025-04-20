@@ -28,11 +28,7 @@ export class ProfileComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.userDataService.userData$.subscribe(userData => {
-      if (userData) {
-        this.userData = userData;
-      }
-    });
+    this.userDataService.userData$.subscribe(userData => userData && (this.userData = userData));
   }
 
   handleEditResult(error: string | null): void {

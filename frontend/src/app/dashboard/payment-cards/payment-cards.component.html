@@ -16,6 +16,9 @@
                        [formControl]="paymentCardForm.controls.fullName"
                        [class.is-invalid]="paymentCardForm.controls.fullName.dirty && paymentCardForm.controls.fullName.invalid"/>
                 <label for="fullName">Nome completo</label>
+                <div class="invalid-tooltip">
+                  {{ ValidationUtils.printErrors(paymentCardForm.controls.fullName) }}
+                </div>
               </div>
             </div>
             <!-- Card number -->
@@ -25,6 +28,9 @@
                        [formControl]="paymentCardForm.controls.cardNumber"
                        [class.is-invalid]="paymentCardForm.controls.cardNumber.dirty && paymentCardForm.controls.cardNumber.invalid">
                 <label for="expiration">Numero della carta</label>
+                <div class="invalid-tooltip">
+                  {{ ValidationUtils.printErrors(paymentCardForm.controls.cardNumber) }}
+                </div>
               </div>
             </div>
             <!-- Expiration -->
@@ -34,6 +40,9 @@
                        [formControl]="paymentCardForm.controls.expiration"
                        [class.is-invalid]="paymentCardForm.controls.expiration.dirty && paymentCardForm.controls.expiration.invalid">
                 <label for="expiration">Scadenza</label>
+                <div class="invalid-tooltip">
+                  {{ ValidationUtils.printErrors(paymentCardForm.controls.expiration) }}
+                </div>
               </div>
             </div>
             <!-- Security code -->
@@ -43,6 +52,9 @@
                        [formControl]="paymentCardForm.controls.securityCode"
                        [class.is-invalid]="paymentCardForm.controls.securityCode.dirty && paymentCardForm.controls.securityCode.invalid">
                 <label for="securityCode">CVV</label>
+                <div class="invalid-tooltip">
+                  {{ ValidationUtils.printErrors(paymentCardForm.controls.securityCode) }}
+                </div>
               </div>
             </div>
           </div>

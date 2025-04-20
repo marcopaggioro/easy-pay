@@ -9,6 +9,7 @@ import {PaymentCard} from '../../classes/PaymentCard';
 import {APP_CONSTANTS} from '../../app.constants';
 import {cardNumberValidator} from '../../utilities/validators/card-number.validator';
 import {noNumbersValidator} from '../../utilities/validators/no-numbers-validator';
+import {ValidationUtils} from '../../utilities/validators/validation-utils';
 
 @Component({
   selector: 'app-payment-cards',
@@ -30,7 +31,7 @@ export class PaymentCardsComponent implements OnInit {
   paymentCardForm = new FormGroup({
     fullName: new FormControl('', [Validators.required, noNumbersValidator()]),
     cardNumber: new FormControl('', [Validators.required, cardNumberValidator()]),
-    securityCode: new FormControl('', [Validators.required, Validators.min(100), Validators.max(999)]),
+    securityCode: new FormControl('', [Validators.required, Validators.minLength(3), Validators.maxLength(3)]),
     expiration: new FormControl('', Validators.required),
   });
 
@@ -38,11 +39,7 @@ export class PaymentCardsComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.userDataService.userData$.subscribe(userData => {
-      if (userData) {
-        this.paymentCards = userData.paymentCards;
-      }
-    });
+    this.userDataService.userData$.subscribe(userData => userData && (this.paymentCards = userData.paymentCards));
   }
 
   createPaymentCard(): void {
@@ -91,4 +88,5 @@ export class PaymentCardsComponent implements OnInit {
     });
   }
 
+  protected readonly ValidationUtils = ValidationUtils;
 }

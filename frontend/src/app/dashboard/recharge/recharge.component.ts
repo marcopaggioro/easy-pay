@@ -6,8 +6,9 @@ import {APP_CONSTANTS} from '../../app.constants';
 import {AlertComponent} from '../../utilities/alert.component';
 import {maxTwoDecimalsValidator} from '../../utilities/validators/max-two-decimals.validator';
 import {UserDataService} from '../../utilities/user-data.service';
-import {PaymentCard} from '../../classes/PaymentCard';
 import {RouterLink} from '@angular/router';
+import {ValidationUtils} from '../../utilities/validators/validation-utils';
+import {UserData} from '../../classes/UserData';
 
 @Component({
   selector: 'app-recharge',
@@ -21,23 +22,19 @@ import {RouterLink} from '@angular/router';
 })
 export class RechargeComponent implements OnInit {
   @ViewChild(AlertComponent) alert!: AlertComponent;
-  paymentCards?: PaymentCard[];
+  userData?: UserData;
   loading = false;
 
   rechargeForm = new FormGroup({
     cardId: new FormControl('', Validators.required),
-    amount: new FormControl('', [Validators.required, APP_CONSTANTS.VALIDATOR_MIN_AMOUNT, APP_CONSTANTS.VALIDATOR_MAX_AMOUNT, maxTwoDecimalsValidator()])
+    amount: new FormControl('', [Validators.required, ValidationUtils.getMinAmountValidator(), ValidationUtils.getMaxAmountValidator(), maxTwoDecimalsValidator()])
   });
 
   constructor(private http: HttpClient, private userDataService: UserDataService) {
   }
 
   ngOnInit() {
-    this.userDataService.userData$.subscribe(userData => {
-      if (userData) {
-        this.paymentCards = userData.paymentCards;
-      }
-    });
+    this.userDataService.userData$.subscribe(userData => userData && (this.userData = userData));
   }
 
   onSubmit(): void {
@@ -68,4 +65,6 @@ export class RechargeComponent implements OnInit {
       }
     });
   }
+
+  protected readonly ValidationUtils = ValidationUtils;
 }

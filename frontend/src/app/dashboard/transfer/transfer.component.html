@@ -13,6 +13,9 @@
                    [formControl]="transferForm.controls.recipientEmail"
                    [class.is-invalid]="transferForm.controls.recipientEmail.dirty && transferForm.controls.recipientEmail.invalid"/>
             <label for="email">Email</label>
+            <div class="invalid-tooltip">
+              {{ ValidationUtils.printErrors(transferForm.controls.recipientEmail) }}
+            </div>
           </div>
           <!-- Description -->
           <div class="form-floating my-3">
@@ -20,6 +23,9 @@
                     [formControl]="transferForm.controls.description"
                     [class.is-invalid]="transferForm.controls.description.dirty && transferForm.controls.description.invalid"></textarea>
             <label for="description">Descrizione</label>
+            <div class="invalid-tooltip">
+              {{ ValidationUtils.printErrors(transferForm.controls.description) }}
+            </div>
           </div>
           <!-- Amount -->
           <div class="form-floating my-3">
@@ -27,6 +33,9 @@
                    [formControl]="transferForm.controls.amount"
                    [class.is-invalid]="transferForm.controls.amount.dirty && transferForm.controls.amount.invalid"/>
             <label for="amount">Importo</label>
+            <div class="invalid-tooltip">
+              {{ ValidationUtils.printErrors(transferForm.controls.amount) }}
+            </div>
           </div>
 
           <button class="btn btn-outline-dark w-100 py-2" type="submit" id="submit"

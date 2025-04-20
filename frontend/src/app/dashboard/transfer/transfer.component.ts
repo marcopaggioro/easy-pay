@@ -9,6 +9,7 @@ import {ActivatedRoute} from '@angular/router';
 import {maxTwoDecimalsValidator} from '../../utilities/validators/max-two-decimals.validator';
 import {notEqualsToValidator} from '../../utilities/validators/not-equals.to.validator';
 import {UserDataService} from '../../utilities/user-data.service';
+import {ValidationUtils} from '../../utilities/validators/validation-utils';
 
 @Component({
   selector: 'app-transfer',
@@ -25,9 +26,9 @@ export class TransferComponent implements OnInit {
   loading = false;
 
   transferForm = new FormGroup({
-    recipientEmail: new FormControl('', [Validators.required, Validators.email, emailValidator(), notEqualsToValidator(() => this.customerEmail)]),
+    recipientEmail: new FormControl('', [Validators.required, emailValidator(), notEqualsToValidator(() => this.customerEmail)]),
     description: new FormControl('', Validators.required),
-    amount: new FormControl('', [Validators.required, APP_CONSTANTS.VALIDATOR_MIN_AMOUNT, APP_CONSTANTS.VALIDATOR_MAX_AMOUNT, maxTwoDecimalsValidator()])
+    amount: new FormControl('', [Validators.required, ValidationUtils.getMinAmountValidator(), ValidationUtils.getMaxAmountValidator(), maxTwoDecimalsValidator()])
   });
 
   constructor(private http: HttpClient, private route: ActivatedRoute, private userDataService: UserDataService) {
@@ -37,11 +38,7 @@ export class TransferComponent implements OnInit {
     const emailFromQuery = this.route.snapshot.queryParams['email'];
     this.transferForm.patchValue({recipientEmail: emailFromQuery})
 
-    this.userDataService.userData$.subscribe(userData => {
-      if (userData) {
-        this.customerEmail = userData.email;
-      }
-    });
+    this.userDataService.userData$.subscribe(userData => userData && (this.customerEmail = userData.email));
   }
 
   onSubmit(): void {
@@ -73,4 +70,5 @@ export class TransferComponent implements OnInit {
     });
   }
 
+  protected readonly ValidationUtils = ValidationUtils;
 }

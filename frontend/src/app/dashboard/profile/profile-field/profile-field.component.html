@@ -3,9 +3,14 @@
   <code *ngIf="!editing">{{ fieldValueVisualizer || fieldValue }}</code>
 
   <div *ngIf="editing">
-    <input #inputField [type]="inputType" class="form-control" placeholder
-           [formControl]="formField" (keyup.enter)="editField()"
-           [class.is-invalid]="formField.dirty && formField.invalid">
+    <div class="position-relative">
+      <input #inputField [type]="inputType" class="form-control"
+             [formControl]="formField" (keyup.enter)="editField()"
+             [class.is-invalid]="formField.dirty && formField.invalid">
+      <div class="invalid-tooltip">
+        {{ ValidationUtils.printErrors(formField) }}
+      </div>
+    </div>
   </div>
 </td>
 <td>

@@ -19,6 +19,8 @@ import {emailValidator} from '../../utilities/validators/email.validator';
 import {WebSocketService} from '../../utilities/web-socket.service';
 import {maxTwoDecimalsValidator} from '../../utilities/validators/max-two-decimals.validator';
 import {CreateScheduledOperationPayload} from '../../classes/payloads/CreateScheduledOperationPayload';
+import {notEqualsToValidator} from '../../utilities/validators/not-equals.to.validator';
+import {UserDataService} from '../../utilities/user-data.service';
 
 @Component({
   selector: 'app-scheduled-operations',
@@ -43,13 +45,14 @@ import {CreateScheduledOperationPayload} from '../../classes/payloads/CreateSche
 })
 export class ScheduledOperationsComponent implements OnInit {
   @ViewChild(AlertComponent) alert!: AlertComponent;
+  customerEmail!: string;
   loading = false;
   repeatToggle = false;
   scheduledOperations!: ScheduledOperation[];
   deletingOperations: string[] = [];
 
   scheduledOperationForm = new FormGroup({
-    recipientEmail: new FormControl('', [Validators.required, Validators.email, emailValidator()]),
+    recipientEmail: new FormControl('', [Validators.required, Validators.email, emailValidator(), notEqualsToValidator(() => this.customerEmail)]),
     description: new FormControl('', Validators.required),
     amount: new FormControl<number | null>(null, [Validators.required, APP_CONSTANTS.VALIDATOR_MIN_AMOUNT, APP_CONSTANTS.VALIDATOR_MAX_AMOUNT, maxTwoDecimalsValidator()]),
     dateTime: new FormControl('', Validators.required),
@@ -58,11 +61,17 @@ export class ScheduledOperationsComponent implements OnInit {
   });
 
 
-  constructor(private http: HttpClient, private webSocketService: WebSocketService) {
+  constructor(private http: HttpClient, private webSocketService: WebSocketService, private userDataService: UserDataService) {
   }
 
   ngOnInit(): void {
     this.getScheduledOperations();
+
+    this.userDataService.userData$.subscribe(userData => {
+      if (userData) {
+        this.customerEmail = userData.email;
+      }
+    });
 
     this.webSocketService.getWebSocketMessages().subscribe(
       (message) => {

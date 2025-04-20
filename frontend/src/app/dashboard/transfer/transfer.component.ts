@@ -7,6 +7,8 @@ import {AlertComponent} from '../../utilities/alert.component';
 import {emailValidator} from '../../utilities/validators/email.validator';
 import {ActivatedRoute} from '@angular/router';
 import {maxTwoDecimalsValidator} from '../../utilities/validators/max-two-decimals.validator';
+import {notEqualsToValidator} from '../../utilities/validators/not-equals.to.validator';
+import {UserDataService} from '../../utilities/user-data.service';
 
 @Component({
   selector: 'app-transfer',
@@ -19,20 +21,27 @@ import {maxTwoDecimalsValidator} from '../../utilities/validators/max-two-decima
 })
 export class TransferComponent implements OnInit {
   @ViewChild(AlertComponent) alert!: AlertComponent;
+  customerEmail!: string;
   loading = false;
 
   transferForm = new FormGroup({
-    recipientEmail: new FormControl('', [Validators.required, Validators.email, emailValidator()]),
+    recipientEmail: new FormControl('', [Validators.required, Validators.email, emailValidator(), notEqualsToValidator(() => this.customerEmail)]),
     description: new FormControl('', Validators.required),
     amount: new FormControl('', [Validators.required, APP_CONSTANTS.VALIDATOR_MIN_AMOUNT, APP_CONSTANTS.VALIDATOR_MAX_AMOUNT, maxTwoDecimalsValidator()])
   });
 
-  constructor(private http: HttpClient, private route: ActivatedRoute) {
+  constructor(private http: HttpClient, private route: ActivatedRoute, private userDataService: UserDataService) {
   }
 
   ngOnInit() {
     const emailFromQuery = this.route.snapshot.queryParams['email'];
     this.transferForm.patchValue({recipientEmail: emailFromQuery})
+
+    this.userDataService.userData$.subscribe(userData => {
+      if (userData) {
+        this.customerEmail = userData.email;
+      }
+    });
   }
 
   onSubmit(): void {

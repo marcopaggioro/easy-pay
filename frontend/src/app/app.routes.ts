@@ -6,7 +6,7 @@ import {WalletComponent} from './dashboard/wallet/wallet.component';
 import {TransferComponent} from './dashboard/transfer/transfer.component';
 import {RechargeComponent} from './dashboard/recharge/recharge.component';
 import {ProfileComponent} from './dashboard/profile/profile.component';
-import {ScheduledOperationsComponent} from './dashboard/scheduled-operations/scheduled-operations.component';
+import {SchedulerComponent} from './dashboard/scheduled-operations/scheduler.component';
 import {OperationsComponent} from './dashboard/operations/operations.component';
 import {PaymentCardsComponent} from './dashboard/payment-cards/payment-cards.component';
 
@@ -19,7 +19,7 @@ export const routes: Routes = [
       {path: "wallet", component: WalletComponent},
       {path: "operations", component: OperationsComponent},
       {path: "transfer", component: TransferComponent},
-      {path: "scheduled", component: ScheduledOperationsComponent},
+      {path: "scheduler", component: SchedulerComponent},
       {path: "recharge", component: RechargeComponent},
       {path: "payment-cards", component: PaymentCardsComponent},
       {path: "profile", component: ProfileComponent}

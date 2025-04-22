@@ -42,9 +42,9 @@ import {ValidationUtils} from '../../utilities/validators/validation-utils';
     NgbTooltip,
     NgClass
   ],
-  templateUrl: './scheduled-operations.component.html'
+  templateUrl: './scheduler.component.html'
 })
-export class ScheduledOperationsComponent implements OnInit {
+export class SchedulerComponent implements OnInit {
   @ViewChild(AlertComponent) alert!: AlertComponent;
   customerEmail!: string;
   loading = false;

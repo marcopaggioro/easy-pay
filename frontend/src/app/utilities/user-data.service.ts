@@ -27,9 +27,7 @@ export class UserDataService {
   getUserData(): void {
     this.http.get<UserData>(APP_CONSTANTS.ENDPOINT_USER_GET, {withCredentials: true, responseType: 'json'})
       .pipe(
-        tap(userData => {
-          this.userDataSubject.next(userData);
-        })
+        tap(userData => this.userDataSubject.next(userData))
       )
       .subscribe();
   }

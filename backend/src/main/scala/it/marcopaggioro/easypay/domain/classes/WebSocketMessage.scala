@@ -7,15 +7,11 @@ sealed trait WebSocketMessage
 
 object WebSocketMessage {
 
-  case object CustomerRegistered extends WebSocketMessage
   case object WalletUpdated extends WebSocketMessage
   case object ScheduledOperationsUpdated extends WebSocketMessage
   case object UserDataUpdated extends WebSocketMessage
 
   implicit val WebSocketMessageEncoder: Encoder[WebSocketMessage] = Encoder.instance {
-    case CustomerRegistered =>
-      Json.obj("type" -> "customer_registered".asJson)
-
     case WalletUpdated =>
       Json.obj("type" -> "wallet_updated".asJson)
 

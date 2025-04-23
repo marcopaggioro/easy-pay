@@ -6,6 +6,8 @@ services:
       - POSTGRES_DB=easypay
       - POSTGRES_USER=easypay
       - POSTGRES_PASSWORD=easypay
+    ports:
+      - 5432:5432
     healthcheck:
       test: [ "CMD", "pg_isready", "-U", "easypay", "-d", "easypay" ]
       interval: 5s

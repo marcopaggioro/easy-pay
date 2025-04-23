@@ -110,20 +110,24 @@
                   <h2 ngbAccordionHeader>
                     <button ngbAccordionButton class="bg-opacity-10"
                             [ngClass]="scheduledOperation.status === 'Fallita' ? 'bg-danger' : 'bg-secondary'">
-                      <div class="container row">
-                        <div class="col-1 d-flex align-items-center justify-content-center">
-                          <img class="img-fluid"
-                               [src]="APP_CONSTANTS.ENDPOINT_AVATAR + scheduledOperation.recipientCustomerId"
-                               alt="user-avatar"/>
-                        </div>
-                        <div class="col-8">
-                          <h5>
-                            <b>{{ scheduledOperation.interactedFirstName + " " + scheduledOperation.interactedLastName }}</b>
-                          </h5>
-                          <small class="m-0 ps-1">{{ scheduledOperation.when | date:'dd MMMM HH:mm' }}</small>
-                        </div>
-                        <div class="col-3 d-flex align-items-center justify-content-end">
-                          <h5 class="text-danger">-{{ Number(scheduledOperation.amount) | number:'1.2-2' }} &euro;</h5>
+                      <div class="container-fluid">
+                        <div class="row">
+                          <div class="col-2 col-md-1 d-flex align-items-center justify-content-center">
+                            <img class="img-fluid"
+                                 [src]="APP_CONSTANTS.ENDPOINT_AVATAR + scheduledOperation.recipientCustomerId"
+                                 alt="user-avatar"/>
+                          </div>
+                          <div class="col-8">
+                            <h5>
+                              <b>{{ scheduledOperation.interactedFirstName + " " + scheduledOperation.interactedLastName }}</b>
+                            </h5>
+                            <small class="m-0 ps-1">{{ scheduledOperation.when | date:'dd MMMM HH:mm' }}</small>
+                          </div>
+                          <div class="col-2 col-md-3 d-flex align-items-center justify-content-end">
+                            <h5 class="text-danger">
+                              -{{ Number(scheduledOperation.amount) | number:'1.2-2' }}&euro;
+                            </h5>
+                          </div>
                         </div>
                       </div>
                     </button>

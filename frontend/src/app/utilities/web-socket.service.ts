@@ -31,7 +31,7 @@ export class WebSocketService {
 
     // Close previous connection
     if (this.socket$ && !this.socket$.closed) {
-      this.socket$.complete();
+      this.close();
     }
 
     // Create a new connection

@@ -1,4 +1,4 @@
-import {Component, OnInit, ViewChild} from '@angular/core';
+import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {ReactiveFormsModule, Validators} from '@angular/forms';
 import {UserDataService} from '../../utilities/user-data.service';
 import {UserData} from '../../classes/UserData';
@@ -9,6 +9,7 @@ import {APP_CONSTANTS} from '../../app.constants';
 import {emailValidator} from '../../utilities/validators/email.validator';
 import {noNumbersValidator} from '../../utilities/validators/no-numbers-validator';
 import {AuthorizationUtils} from '../../utilities/authorization-utils';
+import {Subscription} from 'rxjs';
 
 @Component({
   selector: 'app-profile',
@@ -20,15 +21,20 @@ import {AuthorizationUtils} from '../../utilities/authorization-utils';
   ],
   templateUrl: './profile.component.html'
 })
-export class ProfileComponent implements OnInit {
-  @ViewChild(AlertComponent) alert!: AlertComponent;
-  userData?: UserData;
+export class ProfileComponent implements OnInit, OnDestroy {
+  @ViewChild(AlertComponent) private alert!: AlertComponent;
+  private userDataSubscription?: Subscription;
+  protected userData?: UserData;
 
   constructor(private userDataService: UserDataService) {
   }
 
   ngOnInit(): void {
-    this.userDataService.userData$.subscribe(userData => userData && (this.userData = userData));
+    this.userDataSubscription = this.userDataService.userData$.subscribe(userData => userData && (this.userData = userData));
+  }
+
+  ngOnDestroy() {
+    this.userDataSubscription?.unsubscribe();
   }
 
   handleEditResult(error: string | null): void {

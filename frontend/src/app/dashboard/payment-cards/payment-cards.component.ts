@@ -1,4 +1,4 @@
-import {Component, OnInit, ViewChild} from '@angular/core';
+import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {AlertComponent} from '../../utilities/alert.component';
 import {DatePipe, NgIf} from '@angular/common';
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
@@ -10,6 +10,7 @@ import {APP_CONSTANTS} from '../../app.constants';
 import {cardNumberValidator} from '../../utilities/validators/card-number.validator';
 import {noNumbersValidator} from '../../utilities/validators/no-numbers-validator';
 import {ValidationUtils} from '../../utilities/validators/validation-utils';
+import {Subscription} from 'rxjs';
 
 @Component({
   selector: 'app-payment-cards',
@@ -22,13 +23,15 @@ import {ValidationUtils} from '../../utilities/validators/validation-utils';
   ],
   templateUrl: './payment-cards.component.html'
 })
-export class PaymentCardsComponent implements OnInit {
-  @ViewChild(AlertComponent) alert!: AlertComponent;
-  loading = false;
-  paymentCards?: PaymentCard[];
-  deletingPaymentCards: number[] = [];
+export class PaymentCardsComponent implements OnInit, OnDestroy {
+  @ViewChild(AlertComponent) private alert!: AlertComponent;
+  private userDataSubscription?: Subscription;
 
-  paymentCardForm = new FormGroup({
+  protected loading = false;
+  protected paymentCards?: PaymentCard[];
+  protected deletingPaymentCards: number[] = [];
+
+  protected paymentCardForm = new FormGroup({
     fullName: new FormControl('', [Validators.required, noNumbersValidator()]),
     cardNumber: new FormControl('', [Validators.required, cardNumberValidator()]),
     securityCode: new FormControl('', [Validators.required, Validators.minLength(3), Validators.maxLength(3)]),
@@ -39,7 +42,11 @@ export class PaymentCardsComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.userDataService.userData$.subscribe(userData => userData && (this.paymentCards = userData.paymentCards));
+    this.userDataSubscription = this.userDataService.userData$.subscribe(userData => userData && (this.paymentCards = userData.paymentCards));
+  }
+
+  ngOnDestroy() {
+    this.userDataSubscription?.unsubscribe();
   }
 
   createPaymentCard(): void {

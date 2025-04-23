@@ -1,4 +1,4 @@
-import {Component, Input, OnInit, ViewChild} from '@angular/core';
+import {Component, Input, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {AccordionBodyComponent} from './accordion-body/accordion-body.component';
 import {AccordionButtonComponent} from './accordion-button/accordion-button.component';
 import {
@@ -22,6 +22,7 @@ import {AlertComponent} from '../../utilities/alert.component';
 import {noNumbersValidator} from '../../utilities/validators/no-numbers-validator';
 import {UserDataService} from '../../utilities/user-data.service';
 import {ValidationUtils} from '../../utilities/validators/validation-utils';
+import {Subscription} from 'rxjs';
 
 @Component({
   selector: 'app-operations',
@@ -42,17 +43,21 @@ import {ValidationUtils} from '../../utilities/validators/validation-utils';
   ],
   templateUrl: './operations.component.html'
 })
-export class OperationsComponent implements OnInit {
-  @ViewChild(AlertComponent) alert?: AlertComponent;
+export class OperationsComponent implements OnInit, OnDestroy {
+  @ViewChild(AlertComponent) private alert?: AlertComponent;
+  private userDataSubscription?: Subscription;
+  private wsSubscription?: Subscription;
+
   protected customerId!: string;
   protected operations!: WalletOperations;
   protected page = 1;
   protected loading = true;
-  @Input() cardTitle = "Storico operazioni";
-  @Input() completeNavigation = true;
-  @Input() cardClasses = "col col-md-10 col-lg-8 col-xl-6 col-xxl-5";
 
-  operationsForm = new FormGroup({
+  @Input() public cardTitle = "Storico operazioni";
+  @Input() public completeNavigation = true;
+  @Input() public cardClasses = "col col-md-10 col-lg-8 col-xl-6 col-xxl-5";
+
+  protected operationsForm = new FormGroup({
     fullName: new FormControl<string | null>(null, noNumbersValidator()),
     email: new FormControl<string | null>(null, emailValidator()),
     startDate: new FormControl<Date | null>(null),
@@ -67,15 +72,20 @@ export class OperationsComponent implements OnInit {
   ngOnInit(): void {
     this.getOperations();
 
-    this.userDataService.userData$.subscribe(userData => userData && (this.customerId = userData.id));
+    this.userDataSubscription = this.userDataService.userData$.subscribe(userData => userData && (this.customerId = userData.id));
 
-    this.webSocketService.getWebSocketMessages().subscribe(
+    this.wsSubscription = this.webSocketService.getWebSocketMessages().subscribe(
       (message) => {
         if (message?.type == APP_CONSTANTS.WS_WALLET_UPDATED) {
           this.getOperations();
         }
       }
     );
+  }
+
+  ngOnDestroy() {
+    this.userDataSubscription?.unsubscribe();
+    this.wsSubscription?.unsubscribe();
   }
 
   getOperations(): void {

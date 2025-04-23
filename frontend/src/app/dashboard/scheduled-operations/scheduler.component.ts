@@ -1,4 +1,4 @@
-import {Component, OnInit, ViewChild} from '@angular/core';
+import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {SpinnerComponent} from '../../utilities/spinner.component';
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {ScheduledOperation} from '../../classes/ScheduledOperation';
@@ -22,6 +22,7 @@ import {CreateScheduledOperationPayload} from '../../classes/payloads/CreateSche
 import {notEqualsToValidator} from '../../utilities/validators/not-equals.to.validator';
 import {UserDataService} from '../../utilities/user-data.service';
 import {ValidationUtils} from '../../utilities/validators/validation-utils';
+import {Subscription} from 'rxjs';
 
 @Component({
   selector: 'app-scheduled-operations',
@@ -44,15 +45,18 @@ import {ValidationUtils} from '../../utilities/validators/validation-utils';
   ],
   templateUrl: './scheduler.component.html'
 })
-export class SchedulerComponent implements OnInit {
+export class SchedulerComponent implements OnInit, OnDestroy {
   @ViewChild(AlertComponent) alert!: AlertComponent;
-  customerEmail!: string;
-  loading = false;
-  repeatToggle = false;
-  scheduledOperations!: ScheduledOperation[];
-  deletingOperations: string[] = [];
+  private userDataSubscription?: Subscription;
+  private wsSubscription?: Subscription;
 
-  scheduledOperationForm = new FormGroup({
+  private customerEmail!: string;
+  protected loading = false;
+  protected repeatToggle = false;
+  protected scheduledOperations!: ScheduledOperation[];
+  protected deletingOperations: string[] = [];
+
+  protected scheduledOperationForm = new FormGroup({
     recipientEmail: new FormControl('', [Validators.required, emailValidator(), notEqualsToValidator(() => this.customerEmail)]),
     description: new FormControl('', Validators.required),
     amount: new FormControl<number | null>(null, [Validators.required, ValidationUtils.getMinAmountValidator(), ValidationUtils.getMaxAmountValidator(), maxTwoDecimalsValidator()]),
@@ -68,15 +72,20 @@ export class SchedulerComponent implements OnInit {
   ngOnInit(): void {
     this.getScheduledOperations();
 
-    this.userDataService.userData$.subscribe(userData => userData && (this.customerEmail = userData.email));
+    this.userDataSubscription = this.userDataService.userData$.subscribe(userData => userData && (this.customerEmail = userData.email));
 
-    this.webSocketService.getWebSocketMessages().subscribe(
+    this.wsSubscription = this.webSocketService.getWebSocketMessages().subscribe(
       (message) => {
         if (message?.type == APP_CONSTANTS.WS_SCHEDULED_OPERATIONS_UPDATED) {
           this.getScheduledOperations();
         }
       }
     );
+  }
+
+  ngOnDestroy() {
+    this.userDataSubscription?.unsubscribe();
+    this.wsSubscription?.unsubscribe();
   }
 
   getScheduledOperations(): void {

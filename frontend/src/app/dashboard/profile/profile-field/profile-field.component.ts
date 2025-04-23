@@ -24,20 +24,20 @@ import {ValidationUtils} from '../../../utilities/validators/validation-utils';
   templateUrl: './profile-field.component.html'
 })
 export class ProfileFieldComponent implements OnInit, OnChanges {
-  @ViewChild('inputField') set inputFieldRef(input: ElementRef | null) {
+  @ViewChild('inputField') protected set inputFieldRef(input: ElementRef | null) {
     if (input && this.editing) {
       input.nativeElement.focus();
     }
   }
 
-  @Input() fieldLabel!: string;
-  @Input() httpFieldName!: string;
-  @Input() fieldValue?: string;
-  @Input() fieldValueVisualizer?: string | null;
-  @Input() inputType!: string;
-  @Input() additionalValidators: ValidatorFn[] = [];
-  @Input() fieldTransformation?: (input: string) => string;
-  @Output() editResult = new EventEmitter<string | null>();
+  @Input() public fieldLabel!: string;
+  @Input() public httpFieldName!: string;
+  @Input() public fieldValue?: string;
+  @Input() public fieldValueVisualizer?: string | null;
+  @Input() public inputType!: string;
+  @Input() public additionalValidators: ValidatorFn[] = [];
+  @Input() public fieldTransformation?: (input: string) => string;
+  @Output() public editResult = new EventEmitter<string | null>();
 
   protected editing = false;
   protected waitingResponse = false;

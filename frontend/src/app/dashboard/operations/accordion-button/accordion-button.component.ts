@@ -15,8 +15,8 @@ import {APP_CONSTANTS} from '../../../app.constants';
   templateUrl: './accordion-button.component.html'
 })
 export class AccordionButtonComponent implements OnChanges {
-  @Input() customerId!: string;
-  @Input() operation!: WalletOperation;
+  @Input() public customerId!: string;
+  @Input() public operation!: WalletOperation;
   protected otherCustomerId!: string;
   protected operationClass!: string;
 

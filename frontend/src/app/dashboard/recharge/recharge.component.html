@@ -6,15 +6,15 @@
 
         <h2 class="card-title d-flex justify-content-center">Ricarica wallet</h2>
         <hr/>
-        @if (userData && userData.paymentCards.length > 0) {
+        @if (paymentCards.length > 0) {
           <form [formGroup]="rechargeForm" (ngSubmit)="onSubmit()">
             <!-- Card ID -->
             <div class="form-floating">
               <select class="form-select form-control" id="cardId" aria-label="Card ID"
                       [formControl]="rechargeForm.controls.cardId">
-                @for (paymentCard of userData.paymentCards; track paymentCard.cardId) {
+                @for (paymentCard of paymentCards; track paymentCard.cardId) {
                   <option
-                    [value]="paymentCard.cardId">{{ `${userData.firstName} ${userData.lastName} ${paymentCard.cardNumber}` }}
+                    [value]="paymentCard.cardId">{{ `${paymentCard.fullName} ${paymentCard.cardNumber}` }}
                   </option>
                 }
               </select>

@@ -1,4 +1,4 @@
-import {Component, OnInit, ViewChild} from '@angular/core';
+import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {NgIf} from '@angular/common';
@@ -8,7 +8,8 @@ import {maxTwoDecimalsValidator} from '../../utilities/validators/max-two-decima
 import {UserDataService} from '../../utilities/user-data.service';
 import {RouterLink} from '@angular/router';
 import {ValidationUtils} from '../../utilities/validators/validation-utils';
-import {UserData} from '../../classes/UserData';
+import {PaymentCard} from '../../classes/PaymentCard';
+import {Subscription} from 'rxjs';
 
 @Component({
   selector: 'app-recharge',
@@ -20,12 +21,13 @@ import {UserData} from '../../classes/UserData';
   ],
   templateUrl: './recharge.component.html'
 })
-export class RechargeComponent implements OnInit {
-  @ViewChild(AlertComponent) alert!: AlertComponent;
-  userData?: UserData;
-  loading = false;
+export class RechargeComponent implements OnInit, OnDestroy {
+  @ViewChild(AlertComponent) private alert!: AlertComponent;
+  private userDataSubscription?: Subscription;
+  protected paymentCards: PaymentCard[] = [];
+  protected loading = false;
 
-  rechargeForm = new FormGroup({
+  protected rechargeForm = new FormGroup({
     cardId: new FormControl('', Validators.required),
     amount: new FormControl('', [Validators.required, ValidationUtils.getMinAmountValidator(), ValidationUtils.getMaxAmountValidator(), maxTwoDecimalsValidator()])
   });
@@ -34,7 +36,11 @@ export class RechargeComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.userDataService.userData$.subscribe(userData => userData && (this.userData = userData));
+    this.userDataSubscription = this.userDataService.userData$.subscribe(userData => userData && (this.paymentCards = userData.paymentCards));
+  }
+
+  ngOnDestroy() {
+    this.userDataSubscription?.unsubscribe();
   }
 
   onSubmit(): void {

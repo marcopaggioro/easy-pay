@@ -1,4 +1,4 @@
-import {Component, OnInit, ViewChild} from '@angular/core';
+import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {NgIf} from '@angular/common';
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
@@ -10,6 +10,7 @@ import {maxTwoDecimalsValidator} from '../../utilities/validators/max-two-decima
 import {notEqualsToValidator} from '../../utilities/validators/not-equals.to.validator';
 import {UserDataService} from '../../utilities/user-data.service';
 import {ValidationUtils} from '../../utilities/validators/validation-utils';
+import {Subscription} from 'rxjs';
 
 @Component({
   selector: 'app-transfer',
@@ -20,12 +21,14 @@ import {ValidationUtils} from '../../utilities/validators/validation-utils';
   ],
   templateUrl: './transfer.component.html'
 })
-export class TransferComponent implements OnInit {
-  @ViewChild(AlertComponent) alert!: AlertComponent;
-  customerEmail!: string;
-  loading = false;
+export class TransferComponent implements OnInit, OnDestroy {
+  @ViewChild(AlertComponent) private alert!: AlertComponent;
+  private userDataSubscription?: Subscription;
 
-  transferForm = new FormGroup({
+  private customerEmail!: string;
+  protected loading = false;
+
+  protected transferForm = new FormGroup({
     recipientEmail: new FormControl('', [Validators.required, emailValidator(), notEqualsToValidator(() => this.customerEmail)]),
     description: new FormControl('', Validators.required),
     amount: new FormControl('', [Validators.required, ValidationUtils.getMinAmountValidator(), ValidationUtils.getMaxAmountValidator(), maxTwoDecimalsValidator()])
@@ -38,7 +41,11 @@ export class TransferComponent implements OnInit {
     const emailFromQuery = this.route.snapshot.queryParams['email'];
     this.transferForm.patchValue({recipientEmail: emailFromQuery})
 
-    this.userDataService.userData$.subscribe(userData => userData && (this.customerEmail = userData.email));
+    this.userDataSubscription = this.userDataService.userData$.subscribe(userData => userData && (this.customerEmail = userData.email));
+  }
+
+  ngOnDestroy() {
+    this.userDataSubscription?.unsubscribe();
   }
 
   onSubmit(): void {

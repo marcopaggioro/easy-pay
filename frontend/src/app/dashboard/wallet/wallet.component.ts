@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {SpinnerComponent} from "../../utilities/spinner.component";
 import {HttpClient} from '@angular/common/http';
 import {APP_CONSTANTS} from '../../app.constants';
@@ -8,6 +8,7 @@ import {WebSocketService} from '../../utilities/web-socket.service';
 import {InteractedCustomer} from '../../classes/InteractedCustomer';
 import {OperationsComponent} from '../operations/operations.component';
 import Decimal from 'decimal.js';
+import {Subscription} from 'rxjs';
 
 @Component({
   selector: 'app-wallet',
@@ -20,9 +21,10 @@ import Decimal from 'decimal.js';
   ],
   templateUrl: './wallet.component.html'
 })
-export class WalletComponent implements OnInit {
-  interactedCustomers!: InteractedCustomer[];
-  balance?: Decimal;
+export class WalletComponent implements OnInit, OnDestroy {
+  protected interactedCustomers!: InteractedCustomer[];
+  private wsSubscription?: Subscription;
+  protected balance?: Decimal;
 
   constructor(private http: HttpClient, private router: Router, private webSocketService: WebSocketService) {
   }
@@ -31,7 +33,7 @@ export class WalletComponent implements OnInit {
     this.getBalance();
     this.getInteractedUsers();
 
-    this.webSocketService.getWebSocketMessages().subscribe(
+    this.wsSubscription = this.webSocketService.getWebSocketMessages().subscribe(
       (message) => {
         if (message?.type == APP_CONSTANTS.WS_WALLET_UPDATED) {
           this.getBalance();
@@ -39,6 +41,10 @@ export class WalletComponent implements OnInit {
         }
       }
     );
+  }
+
+  ngOnDestroy() {
+    this.wsSubscription?.unsubscribe();
   }
 
   getInteractedUsers(): void {

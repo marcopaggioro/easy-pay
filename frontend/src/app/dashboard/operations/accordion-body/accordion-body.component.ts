@@ -14,8 +14,8 @@ import {WalletOperation} from '../../../classes/WalletOperation';
   templateUrl: './accordion-body.component.html'
 })
 export class AccordionBodyComponent {
-  @Input() customerId!: string;
-  @Input() operation!: WalletOperation;
+  @Input() public customerId!: string;
+  @Input() public operation!: WalletOperation;
 
 
   protected readonly Number = Number;

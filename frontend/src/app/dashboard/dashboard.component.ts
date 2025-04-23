@@ -17,7 +17,7 @@ import {UserDataService} from '../utilities/user-data.service';
   templateUrl: './dashboard.component.html'
 })
 export class DashboardComponent implements OnInit, OnDestroy {
-  mobileNavBarCollapsed = true;
+  protected mobileNavBarCollapsed = true;
 
   constructor(protected router: Router,
               protected http: HttpClient,

@@ -309,13 +309,12 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
     system.log.debug(s"Received ${request.method.value} ${request.uri.path.toString()}")
 
     concat(
-      cors(CorsSettings(system).withAllowAnyOrigin()) {
+      cors(CorsSettings(system).withAllowAnyOrigin().withAllowGenericHttpRequests(true)) {
         path("api") {
           getFromResource("api.yaml", ContentTypes.`text/plain(UTF-8)`)
         }
-        ,
-      }
-        cors () {
+      },
+      cors() {
         handleErrors(request.uri) {
           concat(
             UserRoutes(uri),

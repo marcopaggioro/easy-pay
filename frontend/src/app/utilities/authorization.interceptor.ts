@@ -28,5 +28,4 @@ export const authorizationInterceptor: HttpInterceptorFn = (request, next) => {
       }
     })
   );
-
 };

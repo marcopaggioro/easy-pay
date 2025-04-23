@@ -18,6 +18,9 @@
                      [formControl]="registerForm.controls.firstName"
                      [class.is-invalid]="registerForm.controls.firstName.dirty && registerForm.controls.firstName.invalid">
               <label for="firstName">Nome</label>
+              <div class="invalid-tooltip">
+                {{ ValidationUtils.printErrors(registerForm.controls.firstName) }}
+              </div>
             </div>
             <!-- Last name -->
             <div class="form-floating my-3">
@@ -25,12 +28,18 @@
                      [formControl]="registerForm.controls.lastName"
                      [class.is-invalid]="registerForm.controls.lastName.dirty && registerForm.controls.lastName.invalid">
               <label for="lastName">Cognome</label>
+              <div class="invalid-tooltip">
+                {{ ValidationUtils.printErrors(registerForm.controls.lastName) }}
+              </div>
             </div>
             <!-- Birth date -->
             <div class="form-floating my-3">
               <input type="date" class="form-control" id="birthDate" [formControl]="registerForm.controls.birthDate"
                      [class.is-invalid]="registerForm.controls.birthDate.dirty && registerForm.controls.birthDate.invalid">
               <label for="birthDate">Data di nascita</label>
+              <div class="invalid-tooltip">
+                {{ ValidationUtils.printErrors(registerForm.controls.birthDate) }}
+              </div>
             </div>
             <!-- Email -->
             <div class="form-floating my-3">
@@ -38,6 +47,9 @@
                      [formControl]="registerForm.controls.email"
                      [class.is-invalid]="registerForm.controls.email.dirty && registerForm.controls.email.invalid">
               <label for="email">Email</label>
+              <div class="invalid-tooltip">
+                {{ ValidationUtils.printErrors(registerForm.controls.email) }}
+              </div>
             </div>
             <!-- Password -->
             <div class="form-floating my-3">
@@ -45,6 +57,9 @@
                      [formControl]="registerForm.controls.password"
                      [class.is-invalid]="registerForm.controls.password.dirty && registerForm.controls.password.invalid">
               <label for="password">Password</label>
+              <div class="invalid-tooltip">
+                {{ ValidationUtils.printErrors(registerForm.controls.password) }}
+              </div>
             </div>
 
             <button class="btn btn-primary w-100 py-2" type="submit" id="submit"

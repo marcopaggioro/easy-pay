@@ -7,6 +7,7 @@ import {emailValidator} from '../utilities/validators/email.validator';
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {AlertComponent} from '../utilities/alert.component';
 import {AuthorizationUtils} from '../utilities/authorization-utils';
+import {ValidationUtils} from '../utilities/validators/validation-utils';
 
 @Component({
   selector: 'app-login',
@@ -19,16 +20,16 @@ import {AuthorizationUtils} from '../utilities/authorization-utils';
   templateUrl: './login.component.html'
 })
 export class LoginComponent implements OnInit {
-  @ViewChild(AlertComponent) alert!: AlertComponent;
-  loading = false;
+  @ViewChild(AlertComponent) private alert!: AlertComponent;
+  protected loading = false;
 
-  constructor(private router: Router, private http: HttpClient) {
-  }
-
-  loginForm = new FormGroup({
+  protected loginForm = new FormGroup({
     email: new FormControl('', [Validators.required, emailValidator()]),
     password: new FormControl('', [Validators.required, Validators.minLength(APP_CONSTANTS.PASSWORD_MIN_LENGHT)]),
   });
+
+  constructor(private router: Router, private http: HttpClient) {
+  }
 
   ngOnInit(): void {
     AuthorizationUtils.redirectIfLoggedIn(this.router, this.http);
@@ -54,4 +55,5 @@ export class LoginComponent implements OnInit {
   }
 
   protected readonly APP_CONSTANTS = APP_CONSTANTS;
+  protected readonly ValidationUtils = ValidationUtils;
 }

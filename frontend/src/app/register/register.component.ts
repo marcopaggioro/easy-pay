@@ -8,6 +8,7 @@ import {APP_CONSTANTS} from '../app.constants';
 import {Router, RouterLink} from '@angular/router';
 import {noNumbersValidator} from '../utilities/validators/no-numbers-validator';
 import {AuthorizationUtils} from '../utilities/authorization-utils';
+import {ValidationUtils} from '../utilities/validators/validation-utils';
 
 @Component({
   selector: 'app-register',
@@ -21,13 +22,13 @@ import {AuthorizationUtils} from '../utilities/authorization-utils';
   templateUrl: './register.component.html'
 })
 export class RegisterComponent implements OnInit {
-  @ViewChild(AlertComponent) alert!: AlertComponent;
-  loading = false;
+  @ViewChild(AlertComponent) private alert!: AlertComponent;
+  protected loading = false;
 
   constructor(private router: Router, private http: HttpClient) {
   }
 
-  registerForm = new FormGroup({
+  protected registerForm = new FormGroup({
     firstName: new FormControl('', [Validators.required, noNumbersValidator()]),
     lastName: new FormControl('', [Validators.required, noNumbersValidator()]),
     birthDate: new FormControl('', Validators.required),
@@ -61,4 +62,5 @@ export class RegisterComponent implements OnInit {
   }
 
   protected readonly APP_CONSTANTS = APP_CONSTANTS;
+  protected readonly ValidationUtils = ValidationUtils;
 }

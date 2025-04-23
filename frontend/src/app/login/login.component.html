@@ -18,6 +18,9 @@
                      [formControl]="loginForm.controls.email"
                      [class.is-invalid]="loginForm.controls.email.dirty && loginForm.controls.email.invalid">
               <label for="email">Email</label>
+              <div class="invalid-tooltip">
+                {{ ValidationUtils.printErrors(loginForm.controls.email) }}
+              </div>
             </div>
             <!-- Password -->
             <div class="form-floating my-3">
@@ -25,6 +28,9 @@
                      [formControl]="loginForm.controls.password"
                      [class.is-invalid]="loginForm.controls.password.dirty && loginForm.controls.password.invalid">
               <label for="password">Password</label>
+              <div class="invalid-tooltip">
+                {{ ValidationUtils.printErrors(loginForm.controls.password) }}
+              </div>
             </div>
 
             <button class="btn btn-primary w-100 py-2" type="submit" id="submit"

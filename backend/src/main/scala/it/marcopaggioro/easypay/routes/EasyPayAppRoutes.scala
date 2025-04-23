@@ -9,6 +9,7 @@ import akka.http.scaladsl.model.ws.{Message, TextMessage}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server._
 import akka.http.scaladsl.server.directives.BasicDirectives.extractRequest
+import akka.http.scaladsl.settings.CorsSettings
 import akka.http.scaladsl.unmarshalling.{FromEntityUnmarshaller, Unmarshaller}
 import akka.pattern.StatusReply
 import akka.pattern.StatusReply.ErrorMessage
@@ -308,10 +309,13 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
     system.log.debug(s"Received ${request.method.value} ${request.uri.path.toString()}")
 
     concat(
-      path("api") {
-        getFromResource("api.yaml", ContentTypes.`text/plain(UTF-8)`)
-      },
-      cors() {
+      cors(CorsSettings(system).withAllowAnyOrigin()) {
+        path("api") {
+          getFromResource("api.yaml", ContentTypes.`text/plain(UTF-8)`)
+        }
+        ,
+      }
+        cors () {
         handleErrors(request.uri) {
           concat(
             UserRoutes(uri),

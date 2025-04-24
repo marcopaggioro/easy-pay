@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS users_payment_cards
 (
     customer_id UUID REFERENCES users (customer_id),
     card_id     INT          NOT NULL,
-    full_name   VARCHAR(100) NOT NULL,
+    full_name   VARCHAR(101) NOT NULL,
     card_number VARCHAR(19)  NOT NULL,
     expiration  DATE NOT NULL,
     PRIMARY KEY (customer_id, card_id)

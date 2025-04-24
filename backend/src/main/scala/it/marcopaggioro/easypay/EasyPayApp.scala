@@ -13,7 +13,7 @@ import io.circe.Json
 import io.circe.syntax.EncoderOps
 import it.marcopaggioro.easypay.actor.WebSocketsManagerActor
 import it.marcopaggioro.easypay.actor.WebSocketsManagerActor.WebSocketsManagerActorCommand
-import it.marcopaggioro.easypay.actor.projection.{TransactionsProjectorActor, UsersManagerProjectorActor}
+import it.marcopaggioro.easypay.actor.projection.{TransactionsProjectorActor, UsersProjectorActor}
 import it.marcopaggioro.easypay.routes.EasyPayAppRoutes
 import org.flywaydb.core.Flyway
 import slick.jdbc.JdbcBackend.Database
@@ -38,7 +38,7 @@ object EasyPayApp {
   private def startProjectors(webSocketManagerActorRef: ActorRef[WebSocketsManagerActorCommand], database: Database)(implicit
       system: ActorSystem[Nothing]
   ): Unit = {
-    UsersManagerProjectorActor.startProjectorActor(webSocketManagerActorRef, database, system)
+    UsersProjectorActor.startProjectorActor(webSocketManagerActorRef, database, system)
     TransactionsProjectorActor.startProjectorActor(webSocketManagerActorRef, database, system)
   }
 

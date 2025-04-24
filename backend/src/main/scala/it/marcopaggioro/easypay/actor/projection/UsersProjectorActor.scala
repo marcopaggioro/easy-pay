@@ -27,7 +27,7 @@ import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
-private class UsersManagerProjectorActor(
+private class UsersProjectorActor(
     webSocketManagerActorRef: ActorRef[WebSocketsManagerActorCommand],
     database: Database,
     system: ActorSystem[Nothing]
@@ -122,7 +122,7 @@ private class UsersManagerProjectorActor(
 
 }
 
-object UsersManagerProjectorActor {
+object UsersProjectorActor {
 
   def startProjectorActor(
       webSocketManagerActorRef: ActorRef[WebSocketsManagerActorCommand],
@@ -137,7 +137,7 @@ object UsersManagerProjectorActor {
         ProjectionId(s"${UsersManagerActor.Name}-jdbc-projection", UsersManagerActor.EventTag),
         sourceProvider,
         () => new PlainJdbcSession,
-        () => new UsersManagerProjectorActor(webSocketManagerActorRef, database, system)
+        () => new UsersProjectorActor(webSocketManagerActorRef, database, system)
       )(system)
       .withGroup(groupAfterEnvelopes = 100, groupAfterDuration = 100.milliseconds)
 

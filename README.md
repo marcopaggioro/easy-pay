@@ -49,6 +49,7 @@ fintech. Offre servizi moderni e sicuri per la gestione di conti.
 ├── frontend/           # Interfaccia utente
 ├── backend/            # API e logica di business
 ├── scripts/            # Script di avvio e setup
+├── resources/          # Screenshots e flows
 └── README.md           # Documentazione del progetto
 ```
 
@@ -67,8 +68,8 @@ fintech. Offre servizi moderni e sicuri per la gestione di conti.
 Definizione OpenAPI:
 
 - **Repository**: [backend/src/main/resources/api.yaml](api.yaml)
-- **Locale**: [http://localhost:9000/api](http://localhost:9000/api)
-- **Remoto**: [https://easypay-api.paggiorocloud.it/api](https://easypay-api.paggiorocloud.it/api)
+- **Locale**: [http://localhost:9000](http://localhost:9000)
+- **Remoto**: [https://easypay-api.paggiorocloud.it](https://easypay-api.paggiorocloud.it)
 
 In alternativa, importare l’URL in [Swagger UI](https://petstore.swagger.io/) per una visualizzazione più user-friendly.
 
@@ -78,7 +79,7 @@ In alternativa, importare l’URL in [Swagger UI](https://petstore.swagger.io/) 
 
 1. Clonare il repository:
     ```bash
-    git clone https://github.com/tuo-username/easypay.git
+    git clone https://github.com/marcopaggioro/easy-pay.git
     cd easypay
     ```
 2. Avviare i servizi:

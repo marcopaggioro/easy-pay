@@ -139,11 +139,7 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
             path(IntNumber) { cardId =>
               delete { // DELETE /user/payment-card/{cardId}
                 JwtUtils.withCustomerIdFromToken()() { customerId =>
-                  askToActor[UsersManagerCommand, Done](
-                    usersManagerActorRef,
-                    UsersManager.DeletePaymentCard(customerId, cardId)(_),
-                    _ => completeWithOK()
-                  )
+                  deletePaymentCard(customerId, cardId)
                 }
               }
             },
@@ -222,11 +218,7 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
                 concat(
                   path(JavaUUID) { scheduledOperationId =>
                     delete { // DELETE /wallet/transfer/scheduler/{scheduledOperationId}
-                      askToActor[TransactionsManagerCommand, Done](
-                        transactionsManagerActorRef,
-                        TransactionsManager.DeleteScheduledOperation(customerId, scheduledOperationId)(_),
-                        _ => completeWithOK()
-                      )
+                      deleteScheduledOperations(customerId, scheduledOperationId)
                     }
                   },
                   pathEndOrSingleSlash {
@@ -346,6 +338,40 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
         onSuccess(response)
     }
 
+  private def executeWithRequirement(context: String, requirementFuture: Future[Boolean], operation: () => Future[Done])(implicit
+      system: ActorSystem[Nothing],
+      uri: Uri
+  ): Route = {
+    case object RequirementNotSatisfiedException extends RuntimeException
+
+    val result: Future[Unit] = for {
+      requirement <- requirementFuture
+      done <-
+        if (requirement) {
+          operation()
+        } else {
+          Future.failed(RequirementNotSatisfiedException)
+        }
+    } yield ()
+
+    onComplete(result) {
+      case Failure(notSatisfied @ RequirementNotSatisfiedException) =>
+        system.log.error(s"Failure in $context", notSatisfied)
+        completeWithError(StatusCodes.NotAcceptable, "Operazione non possibile")
+
+      case Failure(errorMessage: ErrorMessage) =>
+        system.log.error(s"Failure in $context", errorMessage)
+        completeWithError(StatusCodes.InternalServerError, errorMessage.getMessage)
+
+      case Failure(throwable) =>
+        system.log.error(s"Failure in $context", throwable)
+        completeWithError(StatusCodes.InternalServerError, ValidationUtilities.GenericError)
+
+      case Success(_) =>
+        completeWithOK()
+    }
+  }
+
   private def createUser(userData: UserData)(implicit system: ActorSystem[Nothing], uri: Uri): Route = {
     val result: Future[CustomerId] = for {
       customerId <- usersManagerActorRef
@@ -397,12 +423,65 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
     }
   }
 
-  private def getCustomerId(email: Email): Future[CustomerId] =
-    database
-      .run(UsersTable.Table.filter(_.email === email).map(_.customerId).result.head)
-      .recoverWith { case _: NoSuchElementException =>
-        Future.failed(new NoSuchElementException(s"Email ${email.value} non trovata"))
+  private def getUser(customerId: CustomerId)(implicit system: ActorSystem[Nothing], uri: Uri): Route = {
+    val getUser: Future[Option[UserRecord]] = database
+      .run {
+        UsersTable.Table
+          .filter(record => record.customerId === customerId)
+          .result
+          .headOption
       }
+
+    val getUserPaymentCards: Future[Seq[UserPaymentCardRecord]] = database
+      .run {
+        UsersPaymentCardsTable.Table
+          .filter(record => record.customerId === customerId)
+          .result
+      }
+
+    val result: Future[Option[Json]] = for {
+      maybeUser <- getUser
+      paymentCards <- getUserPaymentCards
+    } yield maybeUser.map(user => user.asJson.deepMerge(Json.obj("paymentCards" -> paymentCards.asJson)))
+
+    onComplete(result) {
+      case Failure(throwable) =>
+        system.log.error(s"Failure while getting user", throwable)
+        completeWithError(StatusCodes.InternalServerError, ValidationUtilities.GenericError)
+
+      case Success(None) =>
+        completeWithError(StatusCodes.NotFound, s"Cliente $customerId non trovato")
+
+      case Success(Some(json)) =>
+        completeWithJson(json)
+    }
+  }
+
+  private def deletePaymentCard(customerId: CustomerId, cardId: Int)(implicit system: ActorSystem[Nothing], uri: Uri): Route = {
+    val cardExists: Future[Boolean] = database.run {
+      UsersPaymentCardsTable.Table
+        .filter(record => record.customerId === customerId && record.cardId === cardId)
+        .exists
+        .result
+    }
+
+    val deleteCard: () => Future[Done] = () =>
+      usersManagerActorRef.askWithStatus[Done](
+        UsersManager.DeletePaymentCard(customerId, cardId)(_)
+      )
+
+    executeWithRequirement(
+      "deletePaymentCard",
+      cardExists,
+      deleteCard
+    )
+  }
+
+  private def getCustomerId(email: Email): Future[CustomerId] = database
+    .run(UsersTable.Table.filter(_.email === email).map(_.customerId).result.head)
+    .recoverWith { case _: NoSuchElementException =>
+      Future.failed(new NoSuchElementException(s"Email ${email.value} non trovata"))
+    }
 
   private def transferMoney(senderCustomerId: CustomerId, payload: TransferMoneyPayload)(implicit
       system: ActorSystem[Nothing],
@@ -437,40 +516,6 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
 
       case Success(_) =>
         completeWithOK()
-    }
-  }
-
-  private def getUser(customerId: CustomerId)(implicit system: ActorSystem[Nothing], uri: Uri): Route = {
-    val getUser: Future[Option[UserRecord]] = database
-      .run {
-        UsersTable.Table
-          .filter(record => record.customerId === customerId)
-          .result
-          .headOption
-      }
-
-    val getUserPaymentCards: Future[Seq[UserPaymentCardRecord]] = database
-      .run {
-        UsersPaymentCardsTable.Table
-          .filter(record => record.customerId === customerId)
-          .result
-      }
-
-    val result: Future[Option[Json]] = for {
-      maybeUser <- getUser
-      paymentCards <- getUserPaymentCards
-    } yield maybeUser.map(user => user.asJson.deepMerge(Json.obj("paymentCards" -> paymentCards.asJson)))
-
-    onComplete(result) {
-      case Failure(throwable) =>
-        system.log.error(s"Failure while getting user", throwable)
-        completeWithError(StatusCodes.InternalServerError, ValidationUtilities.GenericError)
-
-      case Success(None) =>
-        completeWithError(StatusCodes.NotFound, s"Cliente $customerId non trovato")
-
-      case Success(Some(json)) =>
-        completeWithJson(json)
     }
   }
 
@@ -590,44 +635,48 @@ class EasyPayAppRoutes(webSocketManagerActorRef: ActorRef[WebSocketsManagerActor
       system: ActorSystem[Nothing],
       uri: Uri
   ): Route = {
-    case object CardNotValidException extends RuntimeException("Carta non trovata o scaduta")
-
     val cardExistsAndNotExpired: Future[Boolean] = database.run {
       UsersPaymentCardsTable.Table
         .filter(record =>
           record.customerId === customerId && record.cardId === payload.cardId && record.expiration >= YearMonth.now
         )
-        .map(_.cardId)
         .exists
         .result
     }
 
-    val rechargeWallet: Future[Done] = transactionsManagerActorRef.askWithStatus[Done](
-      TransactionsManager.RechargeWallet(UUID.randomUUID(), customerId, payload.amount)(_)
+    val rechargeWallet: () => Future[Done] = () =>
+      transactionsManagerActorRef.askWithStatus[Done](
+        TransactionsManager.RechargeWallet(UUID.randomUUID(), customerId, payload.amount)(_)
+      )
+
+    executeWithRequirement(
+      "rechargeWallet",
+      cardExistsAndNotExpired,
+      rechargeWallet
     )
+  }
 
-    val result: Future[Unit] = for {
-      exists <- cardExistsAndNotExpired
-      done <-
-        if (exists) {
-          rechargeWallet
-        } else {
-          Future.failed(CardNotValidException)
-        }
-    } yield ()
-
-    onComplete(result) {
-      case Failure(exception @ CardNotValidException) =>
-        system.log.error(s"Failure while recharging wallet", exception)
-        completeWithError(StatusCodes.NotAcceptable, exception.getMessage)
-
-      case Failure(throwable) =>
-        system.log.error(s"Failure while recharging wallet", throwable)
-        completeWithError(StatusCodes.InternalServerError, ValidationUtilities.GenericError)
-
-      case Success(_) =>
-        completeWithOK()
+  private def deleteScheduledOperations(customerId: CustomerId, scheduledOperationId: ScheduledOperationId)(implicit
+      system: ActorSystem[Nothing],
+      uri: Uri
+  ): Route = {
+    val scheduledOperationExists: Future[Boolean] = database.run {
+      ScheduledOperationsTable.Table
+        .filter(record => record.senderCustomerId === customerId && record.scheduledOperationId === scheduledOperationId)
+        .exists
+        .result
     }
+
+    val deleteOperation: () => Future[Done] = () =>
+      transactionsManagerActorRef.askWithStatus[Done](
+        TransactionsManager.DeleteScheduledOperation(customerId, scheduledOperationId)(_)
+      )
+
+    executeWithRequirement(
+      "deleteScheduledOperations",
+      scheduledOperationExists,
+      deleteOperation
+    )
   }
 
   private def getScheduledOperations(customerId: CustomerId)(implicit system: ActorSystem[Nothing], uri: Uri): Route = {

@@ -8,9 +8,10 @@ import it.marcopaggioro.easypay.utilities.ValidationUtilities.{validateAmount, v
 
 case class RechargeWalletPayload(cardId: Int, amount: Money) extends Validable[RechargeWalletPayload] {
 
-  override def validate(): ValidatedNel[String, RechargeWalletPayload] = validateCardId(cardId)
-    .andThen(_ => validateAmount(amount))
-    .map(_ => this)
+  override def validate(): ValidatedNel[String, RechargeWalletPayload] =
+    validateCardId(cardId)
+      .andThen(_ => validateAmount(amount))
+      .map(_ => this)
 
 }
 

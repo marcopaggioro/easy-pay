@@ -25,7 +25,7 @@ export class TransferComponent implements OnInit, OnDestroy {
   @ViewChild(AlertComponent) private alert!: AlertComponent;
   private userDataSubscription?: Subscription;
 
-  private customerEmail!: string;
+  protected customerEmail!: string;
   protected loading = false;
 
   protected transferForm = new FormGroup({
@@ -41,7 +41,10 @@ export class TransferComponent implements OnInit, OnDestroy {
     const emailFromQuery = this.route.snapshot.queryParams['email'];
     this.transferForm.patchValue({recipientEmail: emailFromQuery})
 
-    this.userDataSubscription = this.userDataService.userData$.subscribe(userData => userData && (this.customerEmail = userData.email));
+    this.userDataSubscription = this.userDataService.userData$.subscribe(userData => {
+      userData && (this.customerEmail = userData.email);
+      this.transferForm.controls.recipientEmail.updateValueAndValidity();
+    });
   }
 
   ngOnDestroy() {

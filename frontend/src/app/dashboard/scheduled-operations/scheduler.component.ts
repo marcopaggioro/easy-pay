@@ -72,7 +72,10 @@ export class SchedulerComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.getScheduledOperations();
 
-    this.userDataSubscription = this.userDataService.userData$.subscribe(userData => userData && (this.customerEmail = userData.email));
+    this.userDataSubscription = this.userDataService.userData$.subscribe(userData => {
+      userData && (this.customerEmail = userData.email);
+      this.scheduledOperationForm.controls.recipientEmail.updateValueAndValidity();
+    });
 
     this.wsSubscription = this.webSocketService.getWebSocketMessages().subscribe(
       (message) => {

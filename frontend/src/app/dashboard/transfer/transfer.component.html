@@ -11,7 +11,7 @@
           <div class="form-floating my-3">
             <input type="email" class="form-control" id="email" placeholder
                    [formControl]="transferForm.controls.recipientEmail"
-                   [class.is-invalid]="transferForm.controls.recipientEmail.dirty && transferForm.controls.recipientEmail.invalid"/>
+                   [class.is-invalid]="transferForm.value.recipientEmail === customerEmail || (transferForm.controls.recipientEmail.dirty && transferForm.controls.recipientEmail.invalid)"/>
             <label for="email">Email</label>
             <div class="invalid-tooltip">
               {{ ValidationUtils.printErrors(transferForm.controls.recipientEmail) }}

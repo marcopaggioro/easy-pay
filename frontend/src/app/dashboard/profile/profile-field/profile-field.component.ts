@@ -69,7 +69,7 @@ export class ProfileFieldComponent implements OnInit, OnChanges {
       return;
     }
 
-    if (this.fieldValue != this.formField.value) {
+    if (this.fieldValue == this.formField.value) {
       this.editing = false;
       return;
     }

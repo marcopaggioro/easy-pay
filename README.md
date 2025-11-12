@@ -5,6 +5,7 @@
 EasyPay è un’applicazione full-stack basata su API progettata per il settore finanziario: banche e
 fintech. Offre servizi moderni e sicuri per la gestione di conti.
 
+![Dashboard](resources/mockups/dashboard-mockup.jpeg)
 ---
 
 ## Indice
@@ -12,7 +13,6 @@ fintech. Offre servizi moderni e sicuri per la gestione di conti.
 1. [Caratteristiche](#caratteristiche)
 2. [Tecnologie](#tecnologie)
 3. [Struttura del progetto](#struttura-del-progetto)
-4. [Demo](#demo)
 5. [Avvio locale](#avvio-locale)
 6. [Configurazione iniziale](#configurazione-iniziale)
 7. [Documentazione API](#documentazione-api)
@@ -53,23 +53,12 @@ fintech. Offre servizi moderni e sicuri per la gestione di conti.
 └── README.md           # Documentazione del progetto
 ```
 
----
-
-## Demo
-
-È possibile visualizzare l’applicazione all’indirizzo:
-
-> http://easypay.paggiorocloud.it/
-
----
-
 ## Documentazione API
 
 Definizione OpenAPI:
 
-- **Repository**: [backend/src/main/resources/api.yaml](api.yaml)
+- **Repository**: [api.yaml](backend/src/main/resources/api.yaml)
 - **Locale**: [http://localhost:9000](http://localhost:9000)
-- **Remoto**: [https://easypay-api.paggiorocloud.it](https://easypay-api.paggiorocloud.it)
 
 In alternativa, importare l’URL in [Swagger UI](https://petstore.swagger.io/) per una visualizzazione più user-friendly.
 
